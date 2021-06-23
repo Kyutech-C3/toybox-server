@@ -1,13 +1,21 @@
-from sqlalchemy.ext.declarative import declarative_base
+from typing import Any
 from sqlalchemy import Column, String, Enum, ForeignKey, TIMESTAMP
 from uuid import uuid4
+from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
 
 def generate_uuid():
     return str(uuid4())
 
-Base = declarative_base()
+@as_declarative()
+class Base:
+    id: Any
+    __name__: Any
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return self.__name__.lower()
 
 class AssetType(str, enum.Enum):
     image = 'image'
@@ -15,7 +23,6 @@ class AssetType(str, enum.Enum):
     music = 'music'
 
 class User(Base):
-    __tablename__ = 'user'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     email = Column(String(length=255))
@@ -27,9 +34,10 @@ class User(Base):
     avatar_url = Column(String)
     created_at = Column(TIMESTAMP)
     updated_at = Column(TIMESTAMP)
+    works = relationship('Work', foreign_keys='Work.user_id')
+    assets = relationship('Asset', foreign_keys='Asset.user_id')
 
 class Work(Base):
-    __tablename__ = 'work'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     title = Column(String(length=100))
     description = Column(String)
@@ -38,9 +46,9 @@ class Work(Base):
     github_url = Column(String, nullable=True)
     work_url = Column(String, nullable=True)
     community_id = Column(String(length=255), ForeignKey('community.id'))
+    assets = relationship('Asset', foreign_keys='Asset.work_id')
 
 class Asset(Base):
-    __tablename__ = 'asset'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     work_id = Column(String(length=255), ForeignKey('work.id'))
     asset_type = Column(Enum(AssetType))
@@ -50,21 +58,20 @@ class Asset(Base):
 
 
 class Tag(Base):
-    __tablename__ = 'tag'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     community_id = Column(String(length=255), ForeignKey('community.id'), nullable=True)
     color = Column(String)  
 
 class Tagging(Base):
-    __tablename__ = 'tagging'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     work_id = Column(String(length=255), ForeignKey('work.id'))
     tag_id = Column(String(length=255), ForeignKey('tag.id'))
 
 class Community(Base):
-    __tablename__ = 'community'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     description = Column(String)
     description_html = Column(String)
+    works = relationship('Work', foreign_keys='Work.community_id')
+    tags = relationship('Tag', foreign_keys='Tag.community_id')

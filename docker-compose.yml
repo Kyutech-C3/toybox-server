@@ -3,10 +3,9 @@ services:
   db:
     image: postgres:13.3-alpine
     volumes:
-      - ./postgres:/var/lib/postgresql/data
-    environment: 
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - dbdata:/var/lib/postgresql/data
+    env_file:
+      - .env
 
   api:
     build: .
@@ -15,5 +14,10 @@ services:
       - .:/api
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     depends_on: 
       - db
+
+volumes: 
+  dbdata:
