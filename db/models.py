@@ -1,9 +1,11 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, TIMESTAMP
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.functions import func
 
 def generate_uuid():
     return str(uuid4())
@@ -25,15 +27,15 @@ class AssetType(str, enum.Enum):
 class User(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
-    email = Column(String(length=255))
+    email = Column(String(length=255),unique=True)
     password_hash = Column(String, nullable=True)
     display_name = Column(String(length=32))
-    discord_token = Column(String)
-    discord_refresh_token = Column(String)
-    discord_user_id = Column(String(length=18))
-    avatar_url = Column(String)
-    created_at = Column(TIMESTAMP)
-    updated_at = Column(TIMESTAMP)
+    discord_token = Column(String, nullable=True)
+    discord_refresh_token = Column(String, nullable=True)
+    discord_user_id = Column(String(length=18), nullable=True)
+    avatar_url = Column(String, nullable=True)
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     works = relationship('Work', foreign_keys='Work.user_id')
     assets = relationship('Asset', foreign_keys='Asset.user_id')
 
@@ -47,6 +49,8 @@ class Work(Base):
     work_url = Column(String, nullable=True)
     community_id = Column(String(length=255), ForeignKey('community.id'))
     assets = relationship('Asset', foreign_keys='Asset.work_id')
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -55,6 +59,8 @@ class Asset(Base):
     thumb_url = Column(String, nullable=True)
     url = Column(String, nullable=True)
     user_id = Column(String(length=255), ForeignKey('user.id'))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 
 class Tag(Base):
@@ -62,6 +68,8 @@ class Tag(Base):
     name = Column(String(length=32))
     community_id = Column(String(length=255), ForeignKey('community.id'), nullable=True)
     color = Column(String)  
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
 class Tagging(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -75,3 +83,5 @@ class Community(Base):
     description_html = Column(String)
     works = relationship('Work', foreign_keys='Work.community_id')
     tags = relationship('Tag', foreign_keys='Tag.community_id')
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
