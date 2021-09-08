@@ -1,3 +1,4 @@
+from db import get_db
 from os import stat
 from schemas.user import TokenData
 from fastapi.exceptions import HTTPException
@@ -12,7 +13,7 @@ from datetime import datetime, timedelta
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
 ALGORITHM = "HS256"
@@ -46,7 +47,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 	return encoded_jwt
 
 
-async def get_current_user(db: Session, token: str = Depends(oauth2_scheme)):
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)):
 	credentials_exception = HTTPException(
 		status_code=status.HTTP_401_UNAUTHORIZED,
 		detail="Could not validate credentials",
