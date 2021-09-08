@@ -27,7 +27,7 @@ def create_test_database():
     session.connection().connection.set_isolation_level(0)
     result = session.execute("SELECT datname from pg_database where datname='%s'" % 'toybox_test')
     if len(result.all()) == 0:
-        session.execute("CREATE DATABASE %s WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '%s');" % ('toybox_test', 'toybox_test'))
+        session.execute("CREATE DATABASE %s;" % ('toybox_test'))
     session.connection().connection.set_isolation_level(1)
     session.close()
 
