@@ -1,13 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator, EmailStr, HttpUrl
 from datetime import date, datetime
 from typing import Optional
 
 class UserCreateRequest(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
     display_name: str
-    avatar_url: Optional[str]
+    avatar_url: Optional[HttpUrl]
+
 
 class User(BaseModel):
     id: str
