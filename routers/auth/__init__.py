@@ -1,10 +1,10 @@
 from os import access
-from fastapi.security.oauth2 import OAuth2PasswordRequestForm
-from starlette import status
-from cruds.users.auth import ACCESS_TOKEN_EXPIRE_MINUTES, authenticate_user, create_access_token, get_password_hash
+import os
+from starlette.responses import RedirectResponse
+from cruds.users.auth import authenticate_discord_user, get_password_hash, renew_token
 from fastapi.exceptions import HTTPException
 from cruds.users import create_user, get_user
-from schemas.user import UserCreateRequest, UserWithPlainPassword
+from schemas.user import RefreshTokenExchangeRequest, TokenResponse, UserCreateRequest
 from fastapi.params import Depends
 from db.models import User as UserModel
 from schemas.user import User
@@ -12,7 +12,9 @@ from db import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordBearer
-from datetime import timedelta
+from utils.discord import discord_exchange_code
+
+FRONTEND_HOST_URL = os.environ.get('FRONTEND_HOST_URL')
 
 auth_router = APIRouter()
 
@@ -40,17 +42,13 @@ def sign_up(user_request: UserCreateRequest, db: Session = Depends(get_db)):
 
 	return User.from_orm(created_user)
 
-@auth_router.post("/token")
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-	user = authenticate_user(db, form_data.username, form_data.password)
-	if not user:
-		raise HTTPException(
-			status_code=status.HTTP_401_UNAUTHORIZED,
-			detail="Incorrect email or password",
-		)
-	access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-	access_token = create_access_token(
-		data={"sub": user.email, "token_type": "bearer"},
-		expires_delta=access_token_expires
-	)
-	return {"access_token": access_token, "token_type": "bearer"}
+@auth_router.post("/token", response_model=TokenResponse)
+async def refresh_token_exchange(token_request: RefreshTokenExchangeRequest, db: Session = Depends(get_db)):
+	token = renew_token(token_request.refresh_token, db)
+	return token
+
+@auth_router.get("/discord/callback", response_model=TokenResponse)
+async def discord_callback(code: str = '', db: Session = Depends(get_db)):
+	r = discord_exchange_code(code)
+	token_response = authenticate_discord_user(r, db)
+	return RedirectResponse(f'{FRONTEND_HOST_URL}/discord?access_token={token_response.access_token}&refresh_token={token_response.refresh_token}&expired_at={token_response.expired_at}')
