@@ -73,9 +73,13 @@ def create_tokens(user: User, db: Session = Depends(get_db)) -> TokenResponse:
 	return t
 
 def renew_token(refresh_token_str: str, db: Session = Depends(get_db)) -> TokenResponse:
-	refresh_token = verify_refresh_token(refresh_token_str, db)
+	token, old_t = verify_refresh_token(refresh_token_str, db)
 
-	u = db.query(User).filter(User.id == refresh_token.user.id).first()
+	# force expire old refresh token
+	old_t.expired_at = datetime.now().isoformat()
+	db.commit()
+
+	u = db.query(User).filter(User.id == token.user.id).first()
 
 	return create_tokens(u, db)
 
@@ -93,7 +97,7 @@ def create_refresh_token(
 	token = TokenSchema.from_orm(t)
 	return token
 
-def verify_refresh_token(refresh_token: str, db: Session = Depends(get_db)) -> TokenSchema:
+def verify_refresh_token(refresh_token: str, db: Session = Depends(get_db)) -> tuple[TokenSchema, Token]:
 	t = db.query(Token).filter(Token.refresh_token == refresh_token).first()
 	if t == None:
 		raise HTTPException(
@@ -108,7 +112,7 @@ def verify_refresh_token(refresh_token: str, db: Session = Depends(get_db)) -> T
 			detail="Specified refresh token has expired"
 		)
 
-	return token	
+	return [token, t]
 	
 def create_access_token(user: User, expires_delta: Optional[timedelta] = None):
 	to_encode = {

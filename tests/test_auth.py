@@ -48,3 +48,22 @@ class TestAuth:
 			"Authorization": f"Bearer { token.access_token }"
 		})
 		assert res.status_code == 401, '有効期限切れのアクセストークンを使った自分の情報の取得に失敗する'
+	
+	def test_exchanged_refresh_token_should_be_expired(user_for_test, user_token_factory_for_test):
+		"""
+		一度アクセストークンの更新に用いたリフレッシュトークンは失効される
+		"""
+
+		original_refresh_token = user_token_factory_for_test().refresh_token
+		res = client.post('/api/v1/auth/token', json={
+			'refresh_token': original_refresh_token,
+		})
+
+		assert res.status_code == 200, 'アクセストークンの更新が成功する'
+		body_dict = res.json()
+		renewed_refresh_token = body_dict['refresh_token']
+		
+		res = client.post('/api/v1/auth/token', json={
+			'refresh_token': original_refresh_token,
+		})
+		assert res.status_code == 401, '一度アクセストークンの更新に使われたリフレッシュトークンは失効される'
