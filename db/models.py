@@ -4,8 +4,12 @@ from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
+import datetime
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.functions import func
+
+# 2 weeks
+DEFAULT_REFRESH_TOKEN_EXPIRED_DAYS = 14
 
 def generate_uuid():
     return str(uuid4())
@@ -38,6 +42,15 @@ class User(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     works = relationship('Work', foreign_keys='Work.user_id')
     assets = relationship('Asset', foreign_keys='Asset.user_id')
+    tokens = relationship('Token', foreign_keys='Token.user_id')
+
+class Token(Base):
+    refresh_token = Column(String(length=255), primary_key=True, default=generate_uuid)
+    user_id = Column(String(length=255), ForeignKey('user.id'))
+    expired_at = Column(DateTime, default=func.now() + datetime.timedelta(days=14))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    user = relationship('User', back_populates='tokens')
 
 class Work(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)

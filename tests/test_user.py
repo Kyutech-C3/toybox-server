@@ -1,55 +1,41 @@
 from datetime import timedelta
-from fastapi.param_functions import Form
-from tests import TestingSessionLocal, client, fixture, override_get_db
-from cruds.users.auth import create_access_token
+import pytest
+from .fixtures import client, use_test_db_fixture, session_for_test, user_for_test, user_token_factory_for_test
 
-def login():
-	res = client.post('/api/v1/auth/token', data={
-		'username': 'test@test.com',
-		'password': 'insecurepasswordfortest'
-	})
-	print(res.request.body)
-	assert res.status_code == 200
-	return res.json()['access_token']
+@pytest.mark.usefixtures('use_test_db_fixture')
+class TestUser:
 
-@fixture(scope='session', autouse=True)
-def before_session():
-	db = TestingSessionLocal()
-	print("Delete all users on test database")
-	db.execute("DELETE FROM public.user")
-	db.commit()
+	def test_get_me(use_test_db_fixture, user_for_test, user_token_factory_for_test):
+		"""
+		自分の情報を取得
+		"""
+		token = user_token_factory_for_test()
+		print('Token', token)
+		res = client.get('/api/v1/users/@me', headers={
+			"Authorization": f"Bearer { token.access_token }"
+		})
+		assert res.status_code == 200
+		assert res.json()['email'] == 'test@test.com'
 
-	# Create test user
-	res = client.post('/api/v1/auth/sign_up', json={
-		'name': 'iamtestuser',
-		'email': 'test@test.com',
-		'display_name': 'I am test user',
-		'password': 'insecurepasswordfortest'
-	})
-	assert res.status_code == 200
+	def test_get_me_unauthorized(user_for_test, user_token_factory_for_test):
+		"""
+		アクセストークンなしで自分の情報の取得に失敗する
+		"""
+		user_token_factory_for_test()
+		res = client.get('/api/v1/users/@me', headers={
+			# Without Authorization header...
+		})
+		assert res.status_code == 401, 'アクセストークンなしで自分の情報の取得に失敗する'
 
-def test_get_me():
-	access_token = login()
-	res = client.get('/api/v1/users/@me', headers={
-		"Authorization": f"Bearer { access_token }"
-	})
-	assert res.status_code == 200
+	def test_get_me_with_expired_access_token(use_test_db_fixture, user_for_test, user_token_factory_for_test):
+		"""
+		期限切れのアクセストークンを用いて自分の情報の取得をしようとし、失敗する
+		"""
+		# Create access_token which is expired before 10s
+		token = user_token_factory_for_test(access_token_expires_delta=timedelta(seconds=-10))
 
-def test_get_me_unauthorized():
-	res = client.get('/api/v1/users/@me', headers={
-		# Without Authorization header...
-	})
-	assert res.status_code == 401
-
-def test_get_me_with_expired_access_token():
-	# Create access_token which is expired before 10s
-	access_token = create_access_token(
-		data={"sub": "test@test.com", "token_type": "bearer"},
-		expires_delta=timedelta(seconds=-10)
-	)
-
-	access_token = login()
-	res = client.get('/api/v1/users/@me', headers={
-		"Authorization": f"Bearer { access_token }"
-	})
-	assert res.status_code == 200
+		res = client.get('/api/v1/users/@me', headers={
+			"Authorization": f"Bearer { token.access_token }"
+		})
+		assert res.status_code == 401, '有効期限切れのアクセストークンを使った自分の情報の取得に失敗する'
+	
