@@ -37,8 +37,9 @@ jobs:
       - run:
           name: Run Test
           command: pipenv run pytest
+      
       - discord/status
-          
+
 orbs:
   discord: antonioned/discord@0.1.0
 
