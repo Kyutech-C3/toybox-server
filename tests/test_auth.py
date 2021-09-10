@@ -67,3 +67,11 @@ class TestAuth:
 			'refresh_token': original_refresh_token,
 		})
 		assert res.status_code == 401, '一度アクセストークンの更新に使われたリフレッシュトークンは失効される'
+	
+	def test_redirecting_discord_login(self):
+		"""
+		Discordログイン画面へ遷移する
+		"""
+		res = client.get('/api/v1/auth/discord', allow_redirects=False)
+
+		assert res.status_code == 307, 'Discordログイン画面へリダイレクトする'

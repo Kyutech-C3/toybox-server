@@ -15,6 +15,9 @@ from fastapi.security import OAuth2PasswordBearer
 from utils.discord import discord_exchange_code
 
 FRONTEND_HOST_URL = os.environ.get('FRONTEND_HOST_URL')
+CLIENT_ID = os.environ.get('DISCORD_CLIENT_ID')
+CLIENT_SECRET = os.environ.get('DISCORD_CLIENT_SECRET')
+HOST_URL = os.environ.get('HOST_URL')
 
 auth_router = APIRouter()
 
@@ -46,6 +49,11 @@ def sign_up(user_request: UserCreateRequest, db: Session = Depends(get_db)):
 async def refresh_token_exchange(token_request: RefreshTokenExchangeRequest, db: Session = Depends(get_db)):
 	token = renew_token(token_request.refresh_token, db)
 	return token
+
+@auth_router.get("/discord")
+async def discord_login_redirect():
+	redirect_url = f'https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={HOST_URL}/api/v1/auth/discord/callback&response_type=code&scope=identify email'
+	return RedirectResponse(url=redirect_url)
 
 @auth_router.get("/discord/callback", response_model=TokenResponse)
 async def discord_callback(code: str = '', db: Session = Depends(get_db)):
