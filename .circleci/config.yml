@@ -1,0 +1,51 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.9.7
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_DB: toybox
+          DISCORD_CLIENT_ID: ''
+          DISCORD_CLIENT_SECRET: ''
+          HOST_URL: http://127.0.0.1:8000
+          FRONTEND_HOST_URL: http://127.0.0.1:3000
+          TOKEN_SECRET_KEY: af89c46ffb3af96c74729b8f86a322f74ce48de2d2143b5a76cfcfec482e9c96
+
+      - image: circleci/postgres:13.3
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_HOST: 127.0.0.1
+          POSTGRES_DB: toybox
+
+    steps:
+      - checkout
+
+      - restore_cache:
+          key: toybox-{{ checksum "Pipfile.lock" }}
+      
+      - run:
+          name: Install Pipfile dependencies
+          command: |
+            pip install pipenv
+            pipenv install
+      
+      - run:
+          name: Run Test
+          command: pipenv run pytest
+      
+      - discord/status:
+          mentions: '@here'
+
+orbs:
+  discord: antonioned/discord@0.1.0
+
+workflows:
+  version: 2
+  testing:
+    jobs:
+      - test
