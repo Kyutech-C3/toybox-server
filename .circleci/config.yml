@@ -37,3 +37,8 @@ jobs:
       - run:
           name: Run Test
           command: pipenv run pytest
+workflows:
+  version: 2
+  testing:
+    jobs:
+      - test
