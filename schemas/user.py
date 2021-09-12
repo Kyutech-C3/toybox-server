@@ -1,6 +1,5 @@
-from time import time
-from pydantic import BaseModel, validator, EmailStr, HttpUrl
-from datetime import date, datetime
+from pydantic import BaseModel, EmailStr, HttpUrl
+from datetime import datetime
 from typing import Optional
 
 class UserCreateRequest(BaseModel):

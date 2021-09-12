@@ -1,7 +1,7 @@
 from typing import Optional
-from db.models import User, Work
+from .user import User
+from .work import Work
 from pydantic import BaseModel
-from pydantic.errors import StrRegexError
 
 class Asset(BaseModel):
     id: str

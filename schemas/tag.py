@@ -1,4 +1,4 @@
-from db.models import Community
+from .community import Community
 from pydantic import BaseModel
 
 class Tag(BaseModel):

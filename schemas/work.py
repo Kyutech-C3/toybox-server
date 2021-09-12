@@ -1,5 +1,6 @@
 from typing import Optional
-from db.models import Community, User
+from .community import Community
+from .user import User
 from pydantic import BaseModel
 
 class Work(BaseModel):
