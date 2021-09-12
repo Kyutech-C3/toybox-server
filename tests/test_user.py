@@ -25,7 +25,7 @@ class TestUser:
 		res = client.get('/api/v1/users/@me', headers={
 			# Without Authorization header...
 		})
-		assert res.status_code == 401, 'アクセストークンなしで自分の情報の取得に失敗する'
+		assert res.status_code == 403, 'アクセストークンなしで自分の情報の取得に失敗する'
 
 	def test_get_me_with_expired_access_token(use_test_db_fixture, user_for_test, user_token_factory_for_test):
 		"""

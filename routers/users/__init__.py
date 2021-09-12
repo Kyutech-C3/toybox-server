@@ -1,6 +1,6 @@
 from sqlalchemy.orm.session import Session
 from db import get_db
-from cruds.users.auth import get_current_user, oauth2_scheme
+from cruds.users.auth import get_current_user
 from fastapi import APIRouter
 from fastapi.params import Depends
 from schemas.user import User
