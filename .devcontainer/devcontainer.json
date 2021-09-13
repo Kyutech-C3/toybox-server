@@ -1,0 +1,7 @@
+{
+  "name": "toybox-server",
+  "dockerComposeFile": "./docker-compose.yml",
+  "service": "api",
+  "workspaceFolder": "/api",
+  "remoteUser": "root"
+}
