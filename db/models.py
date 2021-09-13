@@ -1,11 +1,10 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
 import datetime
-from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.functions import func
 
 # 2 weeks
@@ -62,8 +61,12 @@ class Work(Base):
     work_url = Column(String, nullable=True)
     community_id = Column(String(length=255), ForeignKey('community.id'))
     assets = relationship('Asset', foreign_keys='Asset.work_id')
+    private = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    user = relationship("User")
+    community = relationship("Community")
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)

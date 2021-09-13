@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 
-class Community(BaseModel):
-    id: str
+class BaseCommunity(BaseModel):
     name: str
     description: str
-    description_html: str
 
     class Config:
         orm_mode = True
+
+class Community(BaseCommunity):
+    id: str
+    description_html: str
