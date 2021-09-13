@@ -47,7 +47,7 @@ class TestAuth:
 		res = client.get('/api/v1/users/@me', headers={
 			"Authorization": f"Bearer { token.access_token }"
 		})
-		assert res.status_code == 401, '有効期限切れのアクセストークンを使った自分の情報の取得に失敗する'
+		assert res.status_code == 403, '有効期限切れのアクセストークンを使った自分の情報の取得に失敗する'
 	
 	def test_exchanged_refresh_token_should_be_expired(user_for_test, user_token_factory_for_test):
 		"""

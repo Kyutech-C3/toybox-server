@@ -163,7 +163,7 @@ class GetCurrentUser:
 	def handle_error(self, detail: str = "Authorization error"):
 		if self.auto_error:
 			raise HTTPException(
-				status_code=status.HTTP_401_UNAUTHORIZED,
+				status_code=status.HTTP_403_FORBIDDEN,
 				detail=detail,
 				headers={"WWW-Authenticate": "Bearer"},
 			)
