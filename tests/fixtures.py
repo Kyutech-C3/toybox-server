@@ -7,13 +7,17 @@ from pytest import fixture
 from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.view import refresh_materialized_view
 
-from db.models import User
+from db.models import User, Community
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
+from schemas.work import Work as WorkSchema
+from schemas.community import Community as CommunitySchema
 from db import Base, get_db
 from main import app
 import os
 from datetime import timedelta
 from cruds.users import auth
+from cruds.works import create_work
+from cruds.communities import create_community
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
@@ -81,6 +85,21 @@ def user_for_test(
   return UserSchema.from_orm(u)
 
 @pytest.fixture
+def creating_user_for_test(
+  session_for_test: Session,
+  email: str = 'creating@test.co.jp',
+  name: str = 'iamcreatingtestuser',
+  display_name: str ='I am creating Test User'
+) -> UserSchema:
+  """
+  Create creating test user
+  """
+  u = User(email=email, name=name, display_name=display_name)
+  session_for_test.add(u)
+  session_for_test.commit()
+  return UserSchema.from_orm(u)
+
+@pytest.fixture
 def user_token_factory_for_test(
   session_for_test: Session,
   user_for_test: UserSchema,
@@ -107,3 +126,43 @@ def user_token_factory_for_test(
     return token
   return factory
     
+@pytest.fixture
+def community_for_test(
+  session_for_test: Session,
+  user_for_test: UserSchema,
+  name: str = "test_community",
+  description: str = "this is test community"
+) -> CommunitySchema:
+  """
+  Create test community
+  """
+  c = create_community(session_for_test, name, description)
+  return c
+
+@pytest.fixture
+def work_for_test_public(
+  session_for_test: Session,
+  community_for_test: CommunitySchema,
+  creating_user_for_test: UserSchema,
+  title: str = "testworkpublic",
+  description: str = "this is public test work"
+) -> WorkSchema:
+  """
+  Create test public work
+  """
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, False)
+  return w
+
+@pytest.fixture
+def work_for_test_private(
+  session_for_test: Session,
+  community_for_test: CommunitySchema,
+  creating_user_for_test: UserSchema,
+  title: str = "testworkprivate",
+  description: str = "this is private test work"
+) -> WorkSchema:
+  """
+  Create test public work
+  """
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, True)
+  return w
