@@ -39,7 +39,7 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    works = relationship('Work', foreign_keys='Work.user_id')
+    works = relationship('Work', foreign_keys='Work.user_id', back_populates='user')
     assets = relationship('Asset', foreign_keys='Asset.user_id')
     tokens = relationship('Token', foreign_keys='Token.user_id')
 
@@ -65,8 +65,8 @@ class Work(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    user = relationship("User")
-    community = relationship("Community")
+    user = relationship('User', back_populates='works')
+    community = relationship('Community', back_populates='works')
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -101,3 +101,5 @@ class Community(Base):
     tags = relationship('Tag', foreign_keys='Tag.community_id')
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    works = relationship('Work', back_populates='community')

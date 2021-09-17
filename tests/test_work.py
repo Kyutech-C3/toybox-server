@@ -1,10 +1,10 @@
 import pytest
-from .fixtures import client, community_for_test, user_for_test, use_test_db_fixture, session_for_test, user_token_factory_for_test, creating_user_for_test, work_for_test_public, work_for_test_private
+from .fixtures import client, community_for_test, user_factory_for_test, use_test_db_fixture, session_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
 
-    def test_post_work(use_test_db_fixture, user_for_test, community_for_test, user_token_factory_for_test):
+    def test_post_work(use_test_db_fixture, community_for_test, user_token_factory_for_test):
         """
         Workを投稿する
         """
@@ -26,7 +26,8 @@ class TestWork:
             "private": private
         })
 
-        assert res.status_code == 200
+        assert res.status_code == 200, 'Workの投稿に成功する'
+
         res_json = res.json()
         assert res_json['title'] == title
         assert res_json['description'] == description
@@ -35,12 +36,13 @@ class TestWork:
         assert res_json['community'] == community_for_test
         assert res_json['private'] == private
 
-    def test_get_work(use_test_db_fixture, user_token_factory_for_test, creating_user_for_test, work_for_test_public, work_for_test_private):
+    def test_get_work(use_test_db_fixture, user_token_factory_for_test, work_for_test_public, work_for_test_private):
         """
         サインインの有り無しで他人のWorkを閲覧する
         """
         res_public = client.get(f'/api/v1/works/{work_for_test_public.id}')
-        assert res_public.status_code == 200
+
+        assert res_public.status_code == 200, 'サインイン無しでpublicのWorkの取得に成功する'
 
         res_public_json = res_public.json()
         assert res_public_json['id'] == work_for_test_public.id
@@ -51,15 +53,21 @@ class TestWork:
         assert res_public_json['work_url'] == work_for_test_public.work_url
         assert res_public_json['community'] == work_for_test_public.community
         assert res_public_json['private'] == work_for_test_public.private
+        dict_work_for_test_public_user = dict(work_for_test_public.user)
+        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
+        assert res_public_json['user'] == dict_work_for_test_public_user
 
         res_private = client.get(f'/api/v1/works/{work_for_test_private.id}')
-        assert res_private.status_code == 403
+
+        assert res_private.status_code == 403, 'サインイン無しでprivateのWorkの取得に失敗する'
 
         token = user_token_factory_for_test()
         res_public = client.get(f'/api/v1/works/{work_for_test_public.id}', headers={
             "Authorization": f"Bearer { token.access_token }"
         })
-        assert res_public.status_code == 200
+
+        assert res_public.status_code == 200, 'サインイン有りでpublicのWorkの取得に成功する'
         
         res_public_json = res_public.json()
         assert res_public_json['id'] == work_for_test_public.id
@@ -70,11 +78,16 @@ class TestWork:
         assert res_public_json['work_url'] == work_for_test_public.work_url
         assert res_public_json['community'] == work_for_test_public.community
         assert res_public_json['private'] == work_for_test_public.private
+        dict_work_for_test_public_user = dict(work_for_test_public.user)
+        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
+        assert res_public_json['user'] == dict_work_for_test_public_user
 
         res_private = client.get(f'/api/v1/works/{work_for_test_private.id}', headers={
             "Authorization": f"Bearer { token.access_token }"
         })
-        assert res_private.status_code == 200
+
+        assert res_private.status_code == 200, 'サインイン有りでprivateのWorkの取得に成功する'
         
         res_private_json = res_private.json()
         assert res_private_json['id'] == work_for_test_private.id
@@ -85,13 +98,18 @@ class TestWork:
         assert res_private_json['work_url'] == work_for_test_private.work_url
         assert res_private_json['community'] == work_for_test_private.community
         assert res_private_json['private'] == work_for_test_private.private
+        dict_work_for_test_private_user = dict(work_for_test_private.user)
+        dict_work_for_test_private_user['created_at'] = dict_work_for_test_private_user['created_at'].isoformat(sep='T')
+        dict_work_for_test_private_user['updated_at'] = dict_work_for_test_private_user['updated_at'].isoformat(sep='T')
+        assert res_private_json['user'] == dict_work_for_test_private_user
 
-    def test_get_works(use_test_db_fixture, creating_user_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private):
+    def test_get_works(use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private):
         """
         サインインの有り無しでWork一覧を入手する
         """
         res_no_auth = client.get(f'/api/v1/works')
-        assert res_no_auth.status_code == 200
+
+        assert res_no_auth.status_code == 200, 'サインイン無しでpublicのみのWorkListの取得に成功する'
 
         res_no_auth_json = res_no_auth.json()
         assert len(res_no_auth_json)==1
@@ -104,12 +122,17 @@ class TestWork:
         assert get_work['work_url'] == work_for_test_public.work_url
         assert get_work['community'] == work_for_test_public.community
         assert get_work['private'] == work_for_test_public.private
+        dict_work_for_test_public_user = dict(work_for_test_public.user)
+        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
+        assert get_work['user'] == dict_work_for_test_public_user
 
         token = user_token_factory_for_test()
         res_with_auth = client.get(f'/api/v1/works', headers={
             "Authorization": f"Bearer { token.access_token }"
         })
-        assert res_with_auth.status_code == 200
+
+        assert res_with_auth.status_code == 200, 'サインイン有りでWorkListの取得に成功する'
         
         res_with_auth_json = res_with_auth.json()
-        assert len(res_with_auth_json)==2
+        assert len(res_with_auth_json) == 2

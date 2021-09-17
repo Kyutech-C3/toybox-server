@@ -6,7 +6,7 @@ from schemas.work import Work
 import markdown
 
 def create_work(db: Session, title: str, description: str, work_url: str, github_url: str, user_id: str, community_id: str, private: bool) -> Work:
-    if len(title) <= 0:
+    if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
 
     md = markdown.Markdown(extensions=['tables'])
@@ -37,10 +37,15 @@ def get_work_by_id(db: Session, work_id: str) -> Work:
         return None
     return Work.from_orm(work_orm)
 
-def get_new_works(db: Session, private: bool = False) -> List[Work]:
+def get_works_by_limit(db: Session, limit: int, oldest_id: str, private: bool = False) -> List[Work]:
     works_orm = db.query(models.Work).order_by(models.Work.created_at)
+    if oldest_id:
+        limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
+        limit_created_at = limit_work.created_at
+        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
     if not private:
         works_orm = works_orm.filter(models.Work.private == False)
+    works_orm = works_orm.limit(limit)
     works_orm = works_orm.all()
     works = list(map(Work.from_orm, works_orm))
     return works

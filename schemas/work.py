@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from .community import Community
 from .user import User
@@ -24,6 +25,8 @@ class Work(BaseModel):
     user: User
     community: Community
     private: bool
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True

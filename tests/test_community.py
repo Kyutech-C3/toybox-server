@@ -1,10 +1,10 @@
 import pytest
-from .fixtures import client, use_test_db_fixture, user_for_test, user_token_factory_for_test, session_for_test
+from .fixtures import client, use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, session_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestCommunity:
 
-    def test_post_community(use_test_db_fixture, user_for_test, user_token_factory_for_test):
+    def test_post_community(use_test_db_fixture, user_token_factory_for_test):
         """
         Communityを投稿する
         """
@@ -19,7 +19,8 @@ class TestCommunity:
             "description": description,
         })
 
-        assert res.status_code == 200
+        assert res.status_code == 200, 'Communityの作成に成功する'
+
         res_json = res.json()
         assert res_json['name'] == name
         assert res_json['description'] == description
