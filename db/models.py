@@ -1,11 +1,10 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
 import datetime
-from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.functions import func
 
 # 2 weeks
@@ -40,7 +39,7 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    works = relationship('Work', foreign_keys='Work.user_id')
+    works = relationship('Work', foreign_keys='Work.user_id', back_populates='user')
     assets = relationship('Asset', foreign_keys='Asset.user_id')
     tokens = relationship('Token', foreign_keys='Token.user_id')
 
@@ -62,8 +61,12 @@ class Work(Base):
     work_url = Column(String, nullable=True)
     community_id = Column(String(length=255), ForeignKey('community.id'))
     assets = relationship('Asset', foreign_keys='Asset.work_id')
+    private = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    user = relationship('User', back_populates='works')
+    community = relationship('Community', back_populates='works')
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -98,3 +101,5 @@ class Community(Base):
     tags = relationship('Tag', foreign_keys='Tag.community_id')
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    works = relationship('Work', back_populates='community')

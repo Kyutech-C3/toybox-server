@@ -7,13 +7,17 @@ from pytest import fixture
 from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.view import refresh_materialized_view
 
-from db.models import User
+from db.models import User, Community
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
+from schemas.work import Work as WorkSchema
+from schemas.community import Community as CommunitySchema
 from db import Base, get_db
 from main import app
 import os
 from datetime import timedelta
 from cruds.users import auth
+from cruds.works import create_work
+from cruds.communities import create_community
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
@@ -66,29 +70,34 @@ def session_for_test():
   session.close()
 
 @pytest.fixture
-def user_for_test(
-  session_for_test: Session,
-  email: str = 'test@test.com',
-  name: str = 'iamtestuser',
-  display_name: str ='I am Test User'
+def user_factory_for_test(
+  session_for_test: Session
 ) -> UserSchema:
   """
   Create test user
   """
-  u = User(email=email, name=name, display_name=display_name)
-  session_for_test.add(u)
-  session_for_test.commit()
-  return UserSchema.from_orm(u)
+  def user_for_test(
+    session_for_test: Session = session_for_test,
+    email: str = 'test@test.com',
+    name: str = 'iamtestuser',
+    display_name: str ='I am Test User'
+  ) -> UserSchema:
+    u = User(email=email, name=name, display_name=display_name)
+    session_for_test.add(u)
+    session_for_test.commit()
+    return UserSchema.from_orm(u)
+  return user_for_test
 
 @pytest.fixture
 def user_token_factory_for_test(
   session_for_test: Session,
-  user_for_test: UserSchema,
+  user_factory_for_test: UserSchema,
 ) -> TokenResponseSchema:
   """
   Create test user's token
   """
-  user = session_for_test.query(User).filter(User.id == user_for_test.id).first()
+  test_user = user_factory_for_test()
+  user = session_for_test.query(User).filter(User.id == test_user.id).first()
   def factory(
     access_token_expires_delta: timedelta = timedelta(minutes=15),
     refresh_token_expires_delta: timedelta = timedelta(days=14)
@@ -107,3 +116,44 @@ def user_token_factory_for_test(
     return token
   return factory
     
+@pytest.fixture
+def community_for_test(
+  session_for_test: Session,
+  name: str = "test_community",
+  description: str = "this is test community"
+) -> CommunitySchema:
+  """
+  Create test community
+  """
+  c = create_community(session_for_test, name, description)
+  return c
+
+@pytest.fixture
+def work_for_test_public(
+  session_for_test: Session,
+  community_for_test: CommunitySchema,
+  user_factory_for_test: UserSchema,
+  title: str = "testworkpublic",
+  description: str = "this is public test work"
+) -> WorkSchema:
+  """
+  Create test public work
+  """
+  creating_user_for_test = user_factory_for_test(email='publicwork@test.co.jp', name='icreatepublicwork', display_name='I create public work')
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, False)
+  return w
+
+@pytest.fixture
+def work_for_test_private(
+  session_for_test: Session,
+  community_for_test: CommunitySchema,
+  user_factory_for_test: UserSchema,
+  title: str = "testworkprivate",
+  description: str = "this is private test work"
+) -> WorkSchema:
+  """
+  Create test public work
+  """
+  creating_user_for_test = user_factory_for_test(email='privatework@test.co.jp', name='icreateprivatework', display_name='I create private work')
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, True)
+  return w

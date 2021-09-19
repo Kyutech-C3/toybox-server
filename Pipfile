@@ -16,6 +16,7 @@ requests = "*"
 pylint = "*"
 pydantic = {extras = ["email"], version = "*"}
 sqlalchemy-utils = "*"
+markdown = "*"
 
 [dev-packages]
 

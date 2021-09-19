@@ -130,29 +130,44 @@ def create_access_token(user: User, expires_delta: Optional[timedelta] = None):
 	encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 	return encoded_jwt
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
-async def get_current_user(
-	db: Session = Depends(get_db),
-	credentials: HTTPAuthorizationCredentials = Security(security)
-):
-	credentials_exception = HTTPException(
-		status_code=status.HTTP_401_UNAUTHORIZED,
-		detail="Could not validate credentials",
-		headers={"WWW-Authenticate": "Bearer"},
-	)
-	try:
-		if credentials.scheme != 'Bearer':
-			raise credentials_exception
 
-		payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
-		email: str = payload.get("sub")
-		if email is None:
-			raise credentials_exception
-		token_data = TokenData(email=email)
-	except JWTError:
-		raise credentials_exception
-	user = get_user(db, token_data.email)
-	if user is None:
-		raise credentials_exception
-	return user
+class GetCurrentUser:
+	def __init__(self, auto_error: bool = True) -> None:
+		self.auto_error = auto_error
+	
+	def __call__(
+		self,
+		db: Session = Depends(get_db),
+		credentials: HTTPAuthorizationCredentials = Security(security)
+	):
+		try:
+			if credentials == None:
+				return self.handle_error(detail="Credential is missing")
+			if credentials.scheme != 'Bearer':
+				return self.handle_error(detail="Invalid scheme")
+
+			payload = jwt.decode(credentials.credentials, SECRET_KEY, algorithms=[ALGORITHM])
+			email: str = payload.get("sub")
+			if email is None:
+				return self.handle_error(detail="Email is missing")
+			token_data = TokenData(email=email)
+		except JWTError:
+			return self.handle_error(detail="JWT error")
+		user = get_user(db, token_data.email)
+		if user is None:
+			return self.handle_error(detail="User not found")
+		return user
+
+	def handle_error(self, detail: str = "Authorization error"):
+		if self.auto_error:
+			raise HTTPException(
+				status_code=status.HTTP_403_FORBIDDEN,
+				detail=detail,
+				headers={"WWW-Authenticate": "Bearer"},
+			)
+		else:
+			return None
+			
+
