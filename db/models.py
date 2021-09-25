@@ -87,6 +87,11 @@ class Tag(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
+    
+    community = relationship(
+        'Community', back_populates="tag"
+    )
+
 class Tagging(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     work_id = Column(String(length=255), ForeignKey('work.id'))
@@ -103,3 +108,7 @@ class Community(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     works = relationship('Work', back_populates='community')
+
+    tag = relationship(
+        'Tag', back_populates="community"
+    )
