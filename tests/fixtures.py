@@ -117,21 +117,27 @@ def user_token_factory_for_test(
   return factory
     
 @pytest.fixture
-def community_for_test(
-  session_for_test: Session,
-  name: str = "test_community",
-  description: str = "this is test community"
-) -> CommunitySchema:
-  """
-  Create test community
-  """
-  c = create_community(session_for_test, name, description)
-  return c
+def community_factory_for_test(
+  session_for_test: Session
+  ) -> CommunitySchema:
+  def community_for_test(
+    session_for_test: Session = session_for_test,
+    name: str = "test_community",
+    description: str = "this is test community"
+  ) -> CommunitySchema:
+    """
+    Create test community
+    """
+    c = create_community(session_for_test, name, description)
+    return c
+  return community_for_test
+
+
 
 @pytest.fixture
 def work_for_test_public(
   session_for_test: Session,
-  community_for_test: CommunitySchema,
+  community_factory_for_test: CommunitySchema,
   user_factory_for_test: UserSchema,
   title: str = "testworkpublic",
   description: str = "this is public test work"
@@ -139,14 +145,15 @@ def work_for_test_public(
   """
   Create test public work
   """
+  community = community_factory_for_test()
   creating_user_for_test = user_factory_for_test(email='publicwork@test.co.jp', name='icreatepublicwork', display_name='I create public work')
-  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, False)
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community.id, False)
   return w
 
 @pytest.fixture
 def work_for_test_private(
   session_for_test: Session,
-  community_for_test: CommunitySchema,
+  community_factory_for_test: CommunitySchema,
   user_factory_for_test: UserSchema,
   title: str = "testworkprivate",
   description: str = "this is private test work"
@@ -154,6 +161,7 @@ def work_for_test_private(
   """
   Create test public work
   """
+  community = community_factory_for_test()
   creating_user_for_test = user_factory_for_test(email='privatework@test.co.jp', name='icreateprivatework', display_name='I create private work')
-  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community_for_test.id, True)
+  w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community.id, True)
   return w
