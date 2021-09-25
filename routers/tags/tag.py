@@ -6,7 +6,7 @@ from db import get_db
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.tags.tag import create_tag, get_tag_by_id, get_tags_all, get_tags_by_community_id
+from cruds.tags.tag import create_tag, get_tag_by_id, get_tags_all, get_tags_by_community_id, change_tag_by_id, delete_tag_by_id
 
 tag_router = APIRouter()
 
@@ -29,3 +29,13 @@ async def tags_by_community_id(community_id: str, limit: int = 10, offset_id: st
 async def tag_by_id(tag_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
     tag = get_tag_by_id(db, tag_id)
     return tag
+
+@tag_router.put('/{tag_id}', response_model=Tag)
+async def tag_by_id(tag_id: str, payload: BaseTag, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+    tag = change_tag_by_id(db, payload.name, payload.community_id, payload.color, tag_id)
+    return tag
+
+@tag_router.delete('/{tag_id}', response_model=str)
+async def tag_by_id(tag_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+    result = delete_tag_by_id(db, tag_id)
+    return result
