@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import HTTPException
 from db import models
 from sqlalchemy.orm.session import Session
@@ -38,12 +39,51 @@ def create_tag(db: Session, name: str, color_code: str, community_id: str) -> Ta
 
     return tag
 
-def get_tag(db: Session, tag_id: str) -> Tag:
-    result_by_id = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
-    if result_by_id == None:
+def get_tags_all(db: Session, limit: int, offset_id: str) -> List[Tag]:
+    tag_orm = db.query(models.Tag)
+    if tag_orm is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Tags is not exist"
+        )
+    if offset_id:
+        limit_work = db.query(models.Tag).filter(models.Tag.id == offset_id).first()
+        if limit_work is None:
+            raise HTTPException(
+                status_code=400,
+                detail="offset_id is not exist"
+            )
+        limit_created_at = limit_work.created_at
+        tag_orm = tag_orm.filter(models.Tag.created_at > limit_created_at)
+    tag_orm = tag_orm.limit(limit)
+    tag_orm = tag_orm.all()
+    tag_list = list(map(Tag.from_orm, tag_orm))
+    
+    return tag_list
+
+def get_tags_by_community_id(db: Session, limit: int, offset_id: str, community_id: str) -> List[Tag]:
+    tag_orm = db.query(models.Tag).filter(models.Tag.community_id == community_id)
+    if offset_id:
+        limit_work = db.query(models.Tag).filter(models.Tag.id == offset_id).first()
+        if limit_work is None:
+            raise HTTPException(
+                status_code=400,
+                detail="offset_id is not exist"
+            )
+        limit_created_at = limit_work.created_at
+        tag_orm = tag_orm.filter(models.Tag.created_at > limit_created_at)
+    tag_orm = tag_orm.limit(limit)
+    tag_orm = tag_orm.all()
+    tag_list = list(map(Tag.from_orm, tag_orm))
+    
+    return tag_list
+
+def get_tag_by_id(db: Session, tag_id: str) -> Tag:
+    tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+    if tag_orm is None:
         raise HTTPException(
             status_code=400,
             detail="The tag specified by id is not exist"
         )
-    tag = Tag.from_orm(result_by_id)
+    tag = Tag.from_orm(tag_orm)
     return tag
