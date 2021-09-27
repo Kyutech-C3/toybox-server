@@ -1,4 +1,4 @@
-from cruds.communities import create_community, get_community_by_id, get_community_by_limit
+from cruds.communities import create_community, delete_community_by_id, get_community_by_id, get_community_by_limit, put_community_by_id
 from schemas.community import BaseCommunity, Community
 from fastapi import APIRouter
 from fastapi.params import Depends
@@ -23,3 +23,12 @@ async def get_communities(limit: int = 30, oldest_id: str = None, db: Session = 
 async def get_community(community_id: str, db: Session = Depends(get_db)):
     community = get_community_by_id(db, community_id)
     return community
+
+@community_router.put('/{community_id}', response_model=Community, dependencies=[Depends(GetCurrentUser())])
+async def put_community(payload: BaseCommunity, community_id: str, db: Session = Depends(get_db)):
+    community_put = put_community_by_id(db, payload.name, payload.description, community_id)
+    return community_put
+
+@community_router.delete('/{community_id}', response_model=Community, dependencies=[Depends(GetCurrentUser())])
+async def delete_community(community_id: str, db: Session = Depends(get_db)):
+    delete_community_by_id(db, community_id)
