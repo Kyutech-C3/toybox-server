@@ -1,5 +1,5 @@
 import pytest
-from .fixtures import client, use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, session_for_test, community_factory_for_test, community_factory_put_for_test
+from .fixtures import client, use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, session_for_test, community_factory_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestCommunity:
