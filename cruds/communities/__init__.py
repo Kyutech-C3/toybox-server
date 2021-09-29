@@ -5,6 +5,7 @@ from schemas.community import Community
 from sqlalchemy.orm.session import Session
 import markdown
 from fastapi import HTTPException
+from typing import List
 
 def create_community(db: Session, name: str, description: str) -> Community:
     if len(name) <= 0:
@@ -23,14 +24,14 @@ def create_community(db: Session, name: str, description: str) -> Community:
     community = Community.from_orm(community_orm)
     return community
 
-def get_community_by_limit(db: Session, limit: int, oldest_id: str):
+def get_community_list(db: Session, limit: int = 30, oldest_id: str = None) -> List[Community]: 
     community_list_orm = db.query(models.Community).order_by(models.Community.created_at)
     if oldest_id:
         limit_community = db.query(models.Community).filter(models.Community.id == oldest_id).first()
         if limit_community is None:
             raise HTTPException(status_code=400, detail="oldest_id is wrong")
-        limit_community_at = limit_community.created_at
-        community_list_orm = community_list_orm.filter(models.Community.created_at > limit_community_at)
+        limit_community_created_at = limit_community.created_at
+        community_list_orm = community_list_orm.filter(models.Community.created_at > limit_community_created_at)
     community_list_orm = community_list_orm.limit(limit)
     community_list_orm = community_list_orm.all()
     community_list = list(map(Community.from_orm, community_list_orm))

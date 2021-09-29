@@ -18,6 +18,7 @@ from datetime import timedelta
 from cruds.users import auth
 from cruds.works import create_work
 from cruds.communities import create_community
+from typing import Callable
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
@@ -72,7 +73,7 @@ def session_for_test():
 @pytest.fixture
 def user_factory_for_test(
   session_for_test: Session
-) -> UserSchema:
+) -> Callable[[Session, str, str, str],UserSchema]:
   """
   Create test user
   """
@@ -92,7 +93,7 @@ def user_factory_for_test(
 def user_token_factory_for_test(
   session_for_test: Session,
   user_factory_for_test: UserSchema,
-) -> TokenResponseSchema:
+) -> Callable[[timedelta, timedelta],TokenResponseSchema]:
   """
   Create test user's token
   """
@@ -119,7 +120,7 @@ def user_token_factory_for_test(
 @pytest.fixture
 def community_factory_for_test(
   session_for_test: Session
-  ) -> CommunitySchema:
+  ) -> Callable[[Session, str, str],CommunitySchema]:
   def community_for_test(
     session_for_test: Session = session_for_test,
     name: str = "test_community",
