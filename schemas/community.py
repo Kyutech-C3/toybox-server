@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class BaseCommunity(BaseModel):
     name: str
@@ -10,3 +11,5 @@ class BaseCommunity(BaseModel):
 class Community(BaseCommunity):
     id: str
     description_html: str
+    created_at: datetime
+    updated_at: datetime

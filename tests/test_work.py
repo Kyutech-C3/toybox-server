@@ -1,10 +1,11 @@
+from schemas.community import Community
 import pytest
-from .fixtures import client, community_for_test, user_factory_for_test, use_test_db_fixture, session_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private
+from .fixtures import client, community_factory_for_test, user_factory_for_test, use_test_db_fixture, session_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
 
-    def test_post_work(use_test_db_fixture, community_for_test, user_token_factory_for_test):
+    def test_post_work(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
         """
         Workを投稿する
         """
@@ -14,13 +15,14 @@ class TestWork:
         work_url: str = "https://rsa-qk.pigeons.house/"
         private: bool = False
         token = user_token_factory_for_test()
+        community = community_factory_for_test()
 
         res = client.post('/api/v1/works', headers={
             "Authorization": f"Bearer { token.access_token }"
         }, json={
             "title": title,
             "description": description,
-            "community_id": community_for_test.id,
+            "community_id": community.id,
             "github_url": github_url,
             "work_url": work_url,
             "private": private
@@ -33,7 +35,10 @@ class TestWork:
         assert res_json['description'] == description
         assert res_json['github_url'] == github_url
         assert res_json['work_url'] == work_url
-        assert res_json['community'] == community_for_test
+        dict_community = dict(community)
+        dict_community['created_at'] = dict_community['created_at'].isoformat(sep='T')
+        dict_community['updated_at'] = dict_community['updated_at'].isoformat(sep='T')
+        assert res_json['community'] == dict_community
         assert res_json['private'] == private
 
     def test_get_work(use_test_db_fixture, user_token_factory_for_test, work_for_test_public, work_for_test_private):
@@ -51,7 +56,10 @@ class TestWork:
         assert res_public_json['description_html'] == work_for_test_public.description_html
         assert res_public_json['github_url'] == work_for_test_public.github_url
         assert res_public_json['work_url'] == work_for_test_public.work_url
-        assert res_public_json['community'] == work_for_test_public.community
+        dict_work_for_test_public_community = dict(work_for_test_public.community)
+        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
+        assert res_public_json['community'] == dict_work_for_test_public_community
         assert res_public_json['private'] == work_for_test_public.private
         dict_work_for_test_public_user = dict(work_for_test_public.user)
         dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
@@ -76,7 +84,10 @@ class TestWork:
         assert res_public_json['description_html'] == work_for_test_public.description_html
         assert res_public_json['github_url'] == work_for_test_public.github_url
         assert res_public_json['work_url'] == work_for_test_public.work_url
-        assert res_public_json['community'] == work_for_test_public.community
+        dict_work_for_test_public_community = dict(work_for_test_public.community)
+        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
+        assert res_public_json['community'] == dict_work_for_test_public_community
         assert res_public_json['private'] == work_for_test_public.private
         dict_work_for_test_public_user = dict(work_for_test_public.user)
         dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
@@ -96,7 +107,10 @@ class TestWork:
         assert res_private_json['description_html'] == work_for_test_private.description_html
         assert res_private_json['github_url'] == work_for_test_private.github_url
         assert res_private_json['work_url'] == work_for_test_private.work_url
-        assert res_private_json['community'] == work_for_test_private.community
+        dict_work_for_test_private_community = dict(work_for_test_private.community)
+        dict_work_for_test_private_community['created_at'] = dict_work_for_test_private_community['created_at'].isoformat(sep='T')
+        dict_work_for_test_private_community['updated_at'] = dict_work_for_test_private_community['updated_at'].isoformat(sep='T')
+        assert res_private_json['community'] == dict_work_for_test_private_community
         assert res_private_json['private'] == work_for_test_private.private
         dict_work_for_test_private_user = dict(work_for_test_private.user)
         dict_work_for_test_private_user['created_at'] = dict_work_for_test_private_user['created_at'].isoformat(sep='T')
@@ -120,7 +134,10 @@ class TestWork:
         assert get_work['description_html'] == work_for_test_public.description_html
         assert get_work['github_url'] == work_for_test_public.github_url
         assert get_work['work_url'] == work_for_test_public.work_url
-        assert get_work['community'] == work_for_test_public.community
+        dict_work_for_test_public_community = dict(work_for_test_public.community)
+        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
+        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
+        assert get_work['community'] == dict_work_for_test_public_community
         assert get_work['private'] == work_for_test_public.private
         dict_work_for_test_public_user = dict(work_for_test_public.user)
         dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
