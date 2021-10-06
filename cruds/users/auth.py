@@ -15,7 +15,7 @@ from passlib.context import CryptContext
 from typing import Optional
 from datetime import datetime, timedelta
 from schemas.user import Token as TokenSchema
-from utils.discord import DiscordAccessTokenResponse, discord_fetch_user, discord_refresh_token
+from utils.discord import DiscordAccessTokenResponse, discord_fetch_user, discord_refresh_token, discord_verify_user_belongs_to_valid_guild
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -46,6 +46,8 @@ def authenticate_discord_user(discord_token: DiscordAccessTokenResponse, db: Ses
 	discord_user = discord_fetch_user(discord_token.access_token)
 
 	u = db.query(User).filter(User.email == discord_user.email).first()
+
+	discord_verify_user_belongs_to_valid_guild(access_token=discord_token.access_token)
 
 	if u == None:
 		# user's first login 
