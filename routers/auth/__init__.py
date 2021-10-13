@@ -52,7 +52,7 @@ async def refresh_token_exchange(token_request: RefreshTokenExchangeRequest, db:
 
 @auth_router.get("/discord")
 async def discord_login_redirect():
-	redirect_url = f'https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={HOST_URL}/api/v1/auth/discord/callback&response_type=code&scope=identify email'
+	redirect_url = f'https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&redirect_uri={HOST_URL}/api/v1/auth/discord/callback&response_type=code&scope=identify email guilds'
 	return RedirectResponse(url=redirect_url)
 
 @auth_router.get("/discord/callback", response_model=TokenResponse)

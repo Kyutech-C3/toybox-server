@@ -88,7 +88,7 @@ def discord_fetch_user(access_token: str) -> DiscordUser:
 
   r = requests.get(f'{API_ENDPOINT}/users/@me', headers=headers)
   if r.status_code != 200:
-    raise DiscordException(detail='Request to /users/@me failed')
+    raise DiscordException(discord_status_code=r.status_code, detail='Request to /users/@me failed')
   user = DiscordUser(**r.json())
   return user
 
@@ -99,7 +99,7 @@ def discord_fetch_user_guilds(access_token: str) -> List[DiscordGuild]:
 
   r = requests.get(f'{API_ENDPOINT}/users/@me/guilds', headers=headers)
   if r.status_code != 200:
-    raise DiscordException(detail='Request to /users/@me/guilds failed')
+    raise DiscordException(discord_status_code=r.status_code, detail='Request to /users/@me/guilds failed')
   guilds: List[DiscordGuild] = []
   for _guild in r.json():
     guilds.append(DiscordGuild(**_guild))
