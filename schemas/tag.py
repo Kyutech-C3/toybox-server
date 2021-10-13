@@ -1,12 +1,29 @@
 from .community import Community
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError, validator
+import re
 
 class BaseTag(BaseModel):
     name: str
-    community_id: str
     color: str
-class Tag(BaseTag):
-    id: str
+
+    @validator('color')
+    def color_code_must_match_format(cls, v):
+        if not re.match('[#0-9A-F]', v):
+            raise ValueError('not match format')
+        return v
+
+class PostTag(BaseTag):
+    community_id: str
 
     class Config:
         orm_mode = True
+
+class GetTag(BaseTag):
+    id: str
+    community: Community
+
+    class Config:
+        orm_mode = True
+
+class TagResponsStatus(BaseModel):
+    status: str

@@ -2,9 +2,9 @@ from typing import List
 from fastapi import HTTPException
 from db import models
 from sqlalchemy.orm.session import Session
-from schemas.tag import Tag
+from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus
 
-def create_tag(db: Session, name: str, color_code: str, community_id: str) -> Tag:
+def create_tag(db: Session, name: str, color_code: str, community_id: str) -> GetTag:
     if name == '':
         raise HTTPException(status_code=400, detail="Name is empty")
 
@@ -35,11 +35,11 @@ def create_tag(db: Session, name: str, color_code: str, community_id: str) -> Ta
     print(tag_orm.community_id)
     print(tag_orm.color)
 
-    tag = Tag.from_orm(tag_orm)
+    tag = GetTag.from_orm(tag_orm)
 
     return tag
 
-def get_tags(db: Session, limit: int, offset_id: str, community_id: str) -> List[Tag]:
+def get_tags(db: Session, limit: int = 30, offset_id: str = None, community_id: str = None) -> List[GetTag]:
     tag_orm = db.query(models.Tag)
     if tag_orm is None:
         raise HTTPException(
@@ -59,21 +59,21 @@ def get_tags(db: Session, limit: int, offset_id: str, community_id: str) -> List
         tag_orm = tag_orm.filter(models.Tag.created_at > limit_created_at)
     tag_orm = tag_orm.limit(limit)
     tag_orm = tag_orm.all()
-    tag_list = list(map(Tag.from_orm, tag_orm))
+    tag_list = list(map(GetTag.from_orm, tag_orm))
     
     return tag_list
 
-def get_tag_by_id(db: Session, tag_id: str) -> Tag:
+def get_tag_by_id(db: Session, tag_id: str) -> GetTag:
     tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
     if tag_orm is None:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail="The tag specified by id is not exist"
         )
-    tag = Tag.from_orm(tag_orm)
+    tag = GetTag.from_orm(tag_orm)
     return tag
 
-def change_tag_by_id(db: Session, name: str, community_id: str, color: str, tag_id: str) -> Tag:
+def change_tag_by_id(db: Session, name: str, community_id: str, color: str, tag_id: str) -> GetTag:
     tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
     if tag_orm is None:
         raise HTTPException(
@@ -93,10 +93,10 @@ def change_tag_by_id(db: Session, name: str, community_id: str, color: str, tag_
 
     db.commit()
     db.refresh(tag_orm)
-    tag = Tag.from_orm(tag_orm)
+    tag = GetTag.from_orm(tag_orm)
     return tag
 
-def delete_tag_by_id(db: Session, tag_id: str) -> str:
+def delete_tag_by_id(db: Session, tag_id: str) -> TagResponsStatus:
     tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
     if tag_orm == None:
         raise HTTPException(
@@ -107,4 +107,6 @@ def delete_tag_by_id(db: Session, tag_id: str) -> str:
     db.delete(tag_orm)
     db.commit()
 
-    return "OK"
+    result = TagResponsStatus(status="OK")
+
+    return result

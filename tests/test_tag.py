@@ -1,15 +1,16 @@
 import pytest
-from .fixtures import client, use_test_db_fixture, community_for_test, session_for_test, user_token_factory_for_test, user_factory_for_test, tag_for_test
+from .fixtures import client, use_test_db_fixture, community_factory_for_test, session_for_test, user_token_factory_for_test, user_factory_for_test, tag_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestTag:
 
-    def test_post_tag(use_test_db_fixture, community_for_test, user_token_factory_for_test):
+    def test_post_tag(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
         """
         タグを作成する
         """
+        community = community_factory_for_test()
         name: str = "hoge"
-        community_id: str = community_for_test.id
+        community_id: str = community.id
         color: str = "#FFFFFFFF"
         token = user_token_factory_for_test()
 
@@ -26,8 +27,28 @@ class TestTag:
         res_json = res.json()
         print(res_json)
         assert res_json['name'] == name
-        assert res_json['community_id'] == community_id
+        assert res_json['community']['id'] == community_id
         assert res_json['color'] == color
+
+    def test_post_tag(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
+        """
+        カラーコードを間違えたタグを作成する
+        """
+        community = community_factory_for_test()
+        name: str = "hoge"
+        community_id: str = community.id
+        color: str = "あいうえお"
+        token = user_token_factory_for_test()
+
+        res = client.post('/api/v1/tags', headers={
+            "Authorization": f"Bearer { token.access_token }"
+        }, json={
+            "name": name,
+            "community_id": community_id,
+            "color": color
+        })
+
+        assert res.status_code == 422, 'tagの作成に失敗する'
 
     def test_get_tags(use_test_db_fixture, tag_for_test, user_token_factory_for_test):
         """
@@ -35,7 +56,7 @@ class TestTag:
         """
         tag_id: str = tag_for_test.id
         name: str = tag_for_test.name
-        community_id: str = tag_for_test.community_id
+        community_id: str = tag_for_test.community.id
         color: str = tag_for_test.color
         token = user_token_factory_for_test()
 
@@ -49,7 +70,7 @@ class TestTag:
 
         assert res_json[0]['id'] == tag_id
         assert res_json[0]['name'] == name
-        assert res_json[0]['community_id'] == community_id
+        assert res_json[0]['community']['id'] == community_id
         assert res_json[0]['color'] == color
 
     def test_get_tags_by_community_id(use_test_db_fixture, tag_for_test, user_token_factory_for_test):
@@ -58,7 +79,7 @@ class TestTag:
         """
         tag_id: str = tag_for_test.id
         name: str = tag_for_test.name
-        community_id: str = tag_for_test.community_id
+        community_id: str = tag_for_test.community.id
         color: str = tag_for_test.color
         token = user_token_factory_for_test()
 
@@ -73,7 +94,7 @@ class TestTag:
         print(res_json)
         assert res_json[0]['id'] == tag_id
         assert res_json[0]['name'] == name
-        assert res_json[0]['community_id'] == community_id
+        assert res_json[0]['community']['id'] == community_id
         assert res_json[0]['color'] == color
 
     def test_get_tag_by_tag_id(use_test_db_fixture, tag_for_test, user_token_factory_for_test):
@@ -82,7 +103,7 @@ class TestTag:
         """
         tag_id: str = tag_for_test.id
         name: str = tag_for_test.name
-        community_id: str = tag_for_test.community_id
+        community_id: str = tag_for_test.community.id
         color: str = tag_for_test.color
         token = user_token_factory_for_test()
 
@@ -97,7 +118,7 @@ class TestTag:
         print(res_json)
         assert res_json['id'] == tag_id
         assert res_json['name'] == name
-        assert res_json['community_id'] == community_id
+        assert res_json['community']['id'] == community_id
         assert res_json['color'] == color
 
 
@@ -107,7 +128,7 @@ class TestTag:
         """
         tag_id: str = tag_for_test.id
         name: str = "hogehoge"
-        community_id: str = tag_for_test.community_id
+        community_id: str = tag_for_test.community.id
         color: str = "#00000000"
         token = user_token_factory_for_test()
 
@@ -125,7 +146,7 @@ class TestTag:
         print(res_json)
         assert res_json['id'] == tag_id
         assert res_json['name'] == name
-        assert res_json['community_id'] == community_id
+        assert res_json['community']['id'] == community_id
         assert res_json['color'] == color
 
     def test_put_tag(use_test_db_fixture, tag_for_test, user_token_factory_for_test):
@@ -134,7 +155,7 @@ class TestTag:
         """
         tag_id: str = tag_for_test.id
         name: str = "hogehoge"
-        community_id: str = tag_for_test.community_id
+        community_id: str = tag_for_test.community.id
         color: str = "#00000000"
         token = user_token_factory_for_test()
 
@@ -146,4 +167,4 @@ class TestTag:
 
         res_json = res.json()
         print(res_json)
-        assert res_json == "OK"
+        assert res_json == {'status': 'OK'}

@@ -11,7 +11,7 @@ from db.models import User, Community
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
 from schemas.work import Work as WorkSchema
 from schemas.community import Community as CommunitySchema
-from schemas.tag import Tag as TagSchema
+from schemas.tag import GetTag as TagSchema
 from db import Base, get_db
 from main import app
 import os
@@ -171,7 +171,7 @@ def work_for_test_private(
 
 @pytest.fixture
 def tag_for_test(
-  community_for_test: CommunitySchema,
+  community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
   session_for_test: Session,
   name: str = "test_tag",
   color: str = "#FFFFFFFF"
@@ -179,5 +179,6 @@ def tag_for_test(
   """
   Create test tag
   """
-  c = create_tag(session_for_test, name, color, community_for_test.id)
+  community = community_factory_for_test()
+  c = create_tag(session_for_test, name, color, community.id)
   return c
