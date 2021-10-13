@@ -1,5 +1,5 @@
 from typing import List
-from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus
+from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus, PutTag
 from schemas.user import User
 from fastapi import APIRouter, HTTPException
 from db import get_db
@@ -26,7 +26,7 @@ async def tag_by_id(tag_id: str, db: Session = Depends(get_db), user: User = Dep
     return tag
 
 @tag_router.put('/{tag_id}', response_model=GetTag)
-async def tag_by_id(tag_id: str, payload: PostTag, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+async def tag_by_id(tag_id: str, payload: PutTag, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
     tag = change_tag_by_id(db, payload.name, payload.community_id, payload.color, tag_id)
     return tag
 

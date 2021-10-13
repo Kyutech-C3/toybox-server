@@ -1,3 +1,4 @@
+from typing import Optional
 from .community import Community
 from pydantic import BaseModel, ValidationError, validator
 import re
@@ -8,7 +9,7 @@ class BaseTag(BaseModel):
 
     @validator('color')
     def color_code_must_match_format(cls, v):
-        if not re.match('[#0-9A-F]', v):
+        if not re.match('#[0-9A-F]{8}', v):
             raise ValueError('not match format')
         return v
 
@@ -17,6 +18,11 @@ class PostTag(BaseTag):
 
     class Config:
         orm_mode = True
+
+class PutTag(PostTag):
+    name: Optional[str]
+    color: Optional[str]
+    community_id: Optional[str]
 
 class GetTag(BaseTag):
     id: str
