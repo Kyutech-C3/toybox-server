@@ -55,12 +55,9 @@ class Tagging(Base):
 
     __tablename__ = 'taggings'
 
-    id = Column(String(length=255), primary_key=True, default=generate_uuid)
     work_id = Column(String(length=255), ForeignKey('works.id'), primary_key=True)
     tag_id = Column(String(length=255), ForeignKey('tags.id'), primary_key=True)
 
-    tag = relationship('Tag')
-    work = relationship('Work')
 class Work(Base):
 
     __tablename__ = 'works'
@@ -84,11 +81,8 @@ class Work(Base):
     tags = relationship(
         'Tag',
         secondary=Tagging.__tablename__,
-        back_populates='works',
-        overlaps="tag,work"
+        back_populates='works'
     )
-
-    tagging = relationship('Tagging', overlaps="tags,work")
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -114,11 +108,8 @@ class Tag(Base):
     works = relationship(
         'Work',
         secondary=Tagging.__tablename__,
-        back_populates="tags",
-        overlaps="tagging,work,tag"
+        back_populates="tags"
     )
-
-    tagging = relationship('Tagging', overlaps="tag,tags,works")
 
     community = relationship('Community', back_populates='tags')
 
