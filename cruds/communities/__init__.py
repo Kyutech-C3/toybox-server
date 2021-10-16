@@ -39,6 +39,8 @@ def get_community_list(db: Session, limit: int = 30, oldest_id: str = None) -> L
 
 def get_community_by_id(db: Session, community_id: str) -> Community:
     community_orm = db.query(models.Community).get(community_id)
+    if community_orm is None:
+        raise HTTPException(status_code=404, detail="community isn't found")
     community = Community.from_orm(community_orm)
     return community
 

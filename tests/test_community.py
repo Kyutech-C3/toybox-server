@@ -76,6 +76,13 @@ class TestCommunity:
         assert len(res_json) == 1
         assert res_json[0]['name'] == test2_name
         assert res_json[0]['description'] == test2_description
+
+        res = client.get('/api/v1/communities?limit=1&oldest_id=kitunemimiwosukore114')
+
+        assert res.status_code == 400, 'Community_idの不一致'
+
+        res_json = res.json()
+        assert res_json['detail'] == "oldest_id is wrong"
     
     def test_get_community_id(use_test_db_fixture, community_factory_for_test):
         test_name: str = "maho"
@@ -103,6 +110,13 @@ class TestCommunity:
         res_json = res.json()
         assert res_json['name'] == test2_name
         assert res_json['description'] == test2_description
+
+        res = client.get('/api/v1/communities/hogehugaid0000')
+
+        assert res.status_code == 404, 'Community_idの不一致'
+
+        res_json = res.json()
+        assert res_json['detail'] == "community isn't found"
 
     def test_put_community_by_id(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
         token = user_token_factory_for_test()
@@ -155,6 +169,18 @@ class TestCommunity:
         assert res_json[1]['name'] == change2_name
         assert res_json[1]['description'] == change2_description
 
+        res = client.put('/api/v1/communities/kemomimimohumohukawaii999',headers={
+            "Authorization": f"Bearer { token.access_token }"
+        }, json={
+            "name": change2_name,
+            "description": change2_description,
+        })
+
+        assert res.status_code == 400, 'Community_idの不一致'
+
+        res_json = res.json()
+        assert res_json['detail'] == "community_id is wrong"
+
     def test_delete_community(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
         token = user_token_factory_for_test()
         test_name: str = "maho"
@@ -181,6 +207,14 @@ class TestCommunity:
         assert len(res_json) == 1
         assert res_json[0]['name'] == test_name
         assert res_json[0]['description'] == test_description
+        res = client.delete(f'/api/v1/communities/mahohimekawaii999',headers={
+            "Authorization": f"Bearer { token.access_token }"
+        })
+
+        assert res.status_code == 400, 'Community_idの不一致'
+
+        res_json = res.json()
+        assert res_json['detail'] == "community_id is wrong"
 
 
 
