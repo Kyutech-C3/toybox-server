@@ -11,6 +11,7 @@ from db.models import User, Community
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
 from schemas.work import Work as WorkSchema
 from schemas.community import Community as CommunitySchema
+from schemas.tag import GetTag as TagSchema
 from db import Base, get_db
 from main import app
 import os
@@ -19,6 +20,7 @@ from cruds.users import auth
 from cruds.works import create_work
 from cruds.communities import create_community
 from typing import Callable
+from cruds.tags.tag import create_tag
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
@@ -166,3 +168,17 @@ def work_for_test_private(
   creating_user_for_test = user_factory_for_test(email='privatework@test.co.jp', name='icreateprivatework', display_name='I create private work')
   w = create_work(session_for_test, title, description, None, None, creating_user_for_test.id, community.id, True)
   return w
+
+@pytest.fixture
+def tag_for_test(
+  community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
+  session_for_test: Session,
+  name: str = "test_tag",
+  color: str = "#FFFFFFFF"
+) -> TagSchema:
+  """
+  Create test tag
+  """
+  community = community_factory_for_test()
+  c = create_tag(session_for_test, name, color, community.id)
+  return c

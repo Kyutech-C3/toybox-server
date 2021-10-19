@@ -51,7 +51,17 @@ class Token(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     user = relationship('User', back_populates='tokens')
 
+class Tagging(Base):
+
+    __tablename__ = 'taggings'
+
+    work_id = Column(String(length=255), ForeignKey('works.id'), primary_key=True)
+    tag_id = Column(String(length=255), ForeignKey('tags.id'), primary_key=True)
+
 class Work(Base):
+
+    __tablename__ = 'works'
+
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     title = Column(String(length=100))
     description = Column(String)
@@ -59,7 +69,7 @@ class Work(Base):
     user_id = Column(String(length=255), ForeignKey('user.id'))
     github_url = Column(String, nullable=True)
     work_url = Column(String, nullable=True)
-    community_id = Column(String(length=255), ForeignKey('community.id'))
+    community_id = Column(String(length=255), ForeignKey('communities.id'))
     assets = relationship('Asset', foreign_keys='Asset.work_id')
     private = Column(Boolean, default=False)
     created_at = Column(DateTime, default=func.now())
@@ -68,9 +78,15 @@ class Work(Base):
     user = relationship('User', back_populates='works')
     community = relationship('Community', back_populates='works')
 
+    tags = relationship(
+        'Tag',
+        secondary=Tagging.__tablename__,
+        back_populates='works'
+    )
+
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    work_id = Column(String(length=255), ForeignKey('work.id'))
+    work_id = Column(String(length=255), ForeignKey('works.id'))
     asset_type = Column(Enum(AssetType))
     thumb_url = Column(String, nullable=True)
     url = Column(String, nullable=True)
@@ -78,28 +94,36 @@ class Asset(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-
 class Tag(Base):
+
+    __tablename__='tags'
+
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
-    community_id = Column(String(length=255), ForeignKey('community.id'), nullable=True)
+    community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
     color = Column(String)  
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    
+    works = relationship(
+        'Work',
+        secondary=Tagging.__tablename__,
+        back_populates="tags"
+    )
 
-class Tagging(Base):
-    id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    work_id = Column(String(length=255), ForeignKey('work.id'))
-    tag_id = Column(String(length=255), ForeignKey('tag.id'))
+    community = relationship('Community', back_populates='tags')
 
 class Community(Base):
+
+    __tablename__='communities'
+
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     description = Column(String)
     description_html = Column(String)
-    works = relationship('Work', foreign_keys='Work.community_id')
-    tags = relationship('Tag', foreign_keys='Tag.community_id')
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     works = relationship('Work', back_populates='community')
+
+    tags = relationship('Tag', back_populates='community')
