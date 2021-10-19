@@ -16,12 +16,12 @@ async def post_tag(payload: PostTag, db: Session = Depends(get_db), user: User =
     return tag
 
 @tag_router.get('', response_model=List[GetTag])
-async def tags_all(community_id: str = None, limit: int = 30, offset_id: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+async def tags_all(community_id: str = None, limit: int = 30, offset_id: str = None, db: Session = Depends(get_db)):
     tag_list = get_tags(db, limit, offset_id, community_id)
     return tag_list
 
 @tag_router.get('/{tag_id}', response_model=GetTag)
-async def tag_by_id(tag_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+async def tag_by_id(tag_id: str, db: Session = Depends(get_db)):
     tag = get_tag_by_id(db, tag_id)
     return tag
 
