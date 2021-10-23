@@ -49,7 +49,7 @@ def put_community_by_id(db: Session, name: str, description: str, community_id: 
         raise HTTPException(status_code=400, detail="Community name is empty")
     put_community_orm = db.query(models.Community).filter(models.Community.id == community_id).first()
     if put_community_orm is None:
-        raise HTTPException(status_code=400, detail="community_id is wrong")
+        raise HTTPException(status_code=404, detail="community_id is wrong")
     put_community_orm.name = name
     put_community_orm.description = description
     db.commit()
@@ -60,7 +60,7 @@ def put_community_by_id(db: Session, name: str, description: str, community_id: 
 def delete_community_by_id(db: Session, community_id: str):
     delete_community = db.query(models.Community).filter(models.Community.id==community_id).first()
     if delete_community is None:
-        raise HTTPException(status_code=400, detail="community_id is wrong")
+        raise HTTPException(status_code=404, detail="community_id is wrong")
     db.delete(delete_community)
     db.commit()
 

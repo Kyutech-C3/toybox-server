@@ -176,7 +176,7 @@ class TestCommunity:
             "description": change2_description,
         })
 
-        assert res.status_code == 400, 'Community_idの不一致'
+        assert res.status_code == 404, 'Community_idの不一致'
 
         res_json = res.json()
         assert res_json['detail'] == "community_id is wrong"
@@ -211,7 +211,7 @@ class TestCommunity:
             "Authorization": f"Bearer { token.access_token }"
         })
 
-        assert res.status_code == 400, 'Community_idの不一致'
+        assert res.status_code == 404, 'Community_idの不一致'
 
         res_json = res.json()
         assert res_json['detail'] == "community_id is wrong"
