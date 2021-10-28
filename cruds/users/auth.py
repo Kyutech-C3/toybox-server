@@ -58,7 +58,7 @@ def authenticate_discord_user(discord_token: DiscordAccessTokenResponse, db: Ses
 			discord_token=discord_token.access_token,
 			discord_refresh_token=discord_token.refresh_token,
 			discord_user_id=discord_user.id,
-			avatar_url=discord_user.avatar
+			avatar_url="https://cdn.discordapp.com/avatars/{user_id}/{avatar_id}.png".format(user_id = discord_user.id, avatar_id = discord_user.avatar)
 		)
 		db.add(u)
 		db.commit()
@@ -98,7 +98,6 @@ def create_refresh_token(
 		t.expired_at = datetime.now() + expired_delta
 	db.add(t)
 	db.commit()
-
 	token = TokenSchema.from_orm(t)
 	return token
 
