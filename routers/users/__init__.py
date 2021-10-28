@@ -10,16 +10,17 @@ user_router = APIRouter()
 
 @user_router.get('/@me')
 async def get_me(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+  user = get_user_by_id(db, user.id)
   return user
 
 @user_router.get('/{user_id}')
-async def get_user(user_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+async def get_user(user_id: str, db: Session = Depends(get_db)):
   user = get_user_by_id(db, user_id)
   return user
 
 @user_router.get('')
-async def get_user_list(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-  users = get_users(db)
+async def get_user_list(limit: int = 30, offset_id: str = None, db: Session = Depends(get_db)):
+  users = get_users(db, limit, offset_id)
   return users
 
 @user_router.put('/@me')

@@ -19,11 +19,8 @@ class User(BaseModel):
     name: str
     email: str
     display_name: str
-    avatar_url: Optional[str]
+    avatar_url: Optional[HttpUrl]
     profile: Optional[str]
-    discord_token: Optional[str]
-    discord_refresh_token: Optional[str]
-    discord_user_id: Optional[str]
     created_at: datetime
     updated_at: datetime
 
