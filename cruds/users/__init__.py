@@ -20,7 +20,7 @@ def get_user_by_id(db: Session, user_id: str) -> UserSchema:
 	user = UserSchema.from_orm(user_orm)
 	return user
 
-def get_users(db: Session, limit: int, offset_id: str) -> list[UserSchema]:
+def get_users(db: Session, limit: int = 30, offset_id: str = None) -> list[UserSchema]:
 	user_list = []
 	users = db.query(models.User)
 
@@ -54,7 +54,7 @@ def create_user(db: Session, user: UserSchema):
 
 	return get_user(db, user.email)
 
-def change_usre_info(db: Session, user_id, display_name, profile, avatar_url) -> UserSchema:
+def change_user_info(db: Session, user_id, display_name, profile, avatar_url) -> UserSchema:
 	user_orm = db.query(models.User).filter(models.User.id == user_id).first()
 	if user_orm is None:
 		raise HTTPException(status_code=404, detail="The user specified by id is not exist")

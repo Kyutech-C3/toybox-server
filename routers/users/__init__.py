@@ -1,7 +1,7 @@
 from sqlalchemy.orm.session import Session
 from db import get_db
 from cruds.users.auth import GetCurrentUser
-from cruds.users import get_user_by_id, get_users, change_usre_info
+from cruds.users import get_user_by_id, get_users, change_user_info
 from fastapi import APIRouter
 from fastapi.params import Depends
 from schemas.user import User, UserInfoChangeRequest
@@ -25,5 +25,5 @@ async def get_user_list(limit: int = 30, offset_id: str = None, db: Session = De
 
 @user_router.put('/@me')
 async def put_user_info(payload: UserInfoChangeRequest, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-  user = change_usre_info(db, user.id, payload.display_name, payload.profile, payload.avatar_url)
+  user = change_user_info(db, user.id, payload.display_name, payload.profile, payload.avatar_url)
   return user
