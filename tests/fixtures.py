@@ -22,6 +22,8 @@ from cruds.communities import create_community
 from typing import Callable
 from cruds.tags.tag import create_tag
 
+import json
+
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
 PASSWORD = os.environ.get('POSTGRES_PASSWORD')
@@ -90,6 +92,29 @@ def user_factory_for_test(
     session_for_test.commit()
     return UserSchema.from_orm(u)
   return user_for_test
+
+@pytest.fixture
+def users_factory_for_test(
+  session_for_test: Session
+) -> Callable[[Session, str, str, str],UserSchema]:
+  """
+  Create test user
+  """
+  def users_for_test(
+    session_for_test: Session = session_for_test
+  ) -> UserSchema:
+    user_list = []
+    with open('./tests/test_data/test_user.json') as f:
+      test_users = json.load(f)
+      for test_user in test_users:
+        user = User(email=test_users[test_user]['email'], name=test_users[test_user]['name'], display_name=test_users[test_user]['display_name'])
+        session_for_test.add(user)
+        session_for_test.commit()
+        session_for_test.refresh(user)
+        user = UserSchema.from_orm(user)
+        user_list.append(user)
+    return user_list
+  return users_for_test
 
 @pytest.fixture
 def user_token_factory_for_test(

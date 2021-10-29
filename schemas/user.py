@@ -9,16 +9,18 @@ class UserCreateRequest(BaseModel):
     display_name: str
     avatar_url: Optional[HttpUrl]
 
+class UserInfoChangeRequest(BaseModel):
+    display_name: Optional[str]
+    avatar_url: Optional[HttpUrl]
+    profile: Optional[str]
 
 class User(BaseModel):
     id: str
     name: str
     email: str
     display_name: str
-    discord_token: Optional[str]
-    discord_refresh_token: Optional[str]
-    discord_user_id: Optional[str]
-    avatar_url: Optional[str]
+    avatar_url: Optional[HttpUrl]
+    profile: Optional[str]
     created_at: datetime
     updated_at: datetime
 
