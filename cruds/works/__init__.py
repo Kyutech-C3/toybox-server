@@ -7,19 +7,10 @@ from schemas.url_info import BaseUrlInfo
 from schemas.work import Work
 import markdown
 
-def start_create_work(db: Session) -> str:
-    work_orm = models.Work(
-        title = '',
-        description = '',
-        description_html = '',
-        visibillity = 'draft',
-    )
-    db.add(work_orm)
-    db.commit()
-    db.refresh(work_orm)
-    return work_orm.id
-
-def set_work(db: Session, title: str, description: str, user_id: str, community_id: str, visibillity: str, thumbnail_asset_id: str, assets_id: List[str], urls: List[BaseUrlInfo]) -> Work:
+def set_work(db: Session, title: str, description: str, user_id: str, 
+    community_id: str, visibillity: str, thumbnail_asset_id: str, assets_id: List[str], 
+    urls: List[BaseUrlInfo]) -> Work:
+    
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
 
