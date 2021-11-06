@@ -9,41 +9,41 @@ class TestWork:
         """
         認証無しでAssetを投稿する
         """
-        # image = open('tests/test_data/test_image.png', 'rb')
-        # asset_type = 'image'
+        image = open('tests/test_data/test_image.png', 'rb')
+        asset_type = 'image'
 
-        # res = client.post('/api/v1/assets', files={
-        #     "file": ("test_image.png", image, 'image/png'),
-        # })
+        res = client.post('/api/v1/assets', files={
+            "file": ("test_image.png", image, 'image/png')
+        }, data={
+            "asset_type": asset_type
+        })
 
-        # print(res.request)
+        print(res.request)
 
-        # assert res.status_code == 403, 'Assetの投稿に失敗する'
+        assert res.status_code == 403, 'Assetの投稿に失敗する'
 
     def test_post_correct_image_asset(use_test_db_fixture, user_token_factory_for_test):
         """
         画像のAssetを投稿する
         """
-        # token = user_token_factory_for_test()
-        # image = open('tests/test_data/test_image.png', 'rb')
-        # asset_type = "image"
+        token = user_token_factory_for_test()
+        image = open('tests/test_data/test_image.png', 'rb')
+        asset_type = "image"
 
-        # res = client.post(
-        #     '/api/v1/assets', 
-        #     headers={
-        #         "Authorization": f"Bearer { token.access_token }"
-        #     }, 
-        #     files={
-        #         "file": ("test_image.png", image, 'image/png')
-        #     }, 
-        #     params={
-        #         "payload": {"asset_type": asset_type}
-        #     }
-        # )
+        res = client.post(
+            '/api/v1/assets', 
+            headers={
+                "Authorization": f"Bearer { token.access_token }"
+            }, 
+            files={
+                "file": ("test_image.png", image, 'image/png')
+            }, 
+            data={
+                "asset_type": asset_type
+            }
+        )
 
-        # print(res.request.prepare().body.decode('utf8'))
-
-        # assert res.status_code == 200, 'Assetの投稿に成功する'
+        assert res.status_code == 200, 'Assetの投稿に成功する'
 
     def test_post_incorrect_image_asset(use_test_db_fixture):
         """
