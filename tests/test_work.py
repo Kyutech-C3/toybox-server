@@ -9,7 +9,7 @@ class TestWork:
         Workを認証なしで投稿する
         """
 
-    def test_post_work_about_visibillity(use_test_db_fixture):
+    def test_post_work_about_visibility(use_test_db_fixture):
         """
         公開設定のそれぞれを投稿する
         """

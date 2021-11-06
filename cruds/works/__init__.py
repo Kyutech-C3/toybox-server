@@ -8,7 +8,7 @@ from schemas.work import Work
 import markdown
 
 def set_work(db: Session, title: str, description: str, user_id: str, 
-    community_id: str, visibillity: str, thumbnail_asset_id: str, assets_id: List[str], 
+    community_id: str, visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
     urls: List[BaseUrlInfo]) -> Work:
     
     if title == '':
@@ -21,7 +21,7 @@ def set_work(db: Session, title: str, description: str, user_id: str,
         description_html = md.convert(description),
         user_id = user_id,
         community_id = community_id,
-        visibillity = visibillity,
+        visibility = visibility,
     )
     db.add(work_orm)
     db.commit()
@@ -60,13 +60,13 @@ def get_work_by_id(db: Session, work_id: str) -> Work:
     return Work.from_orm(work_orm)
 
 def get_works_by_limit(db: Session, limit: int, oldest_id: str, auth: bool = False) -> List[Work]:
-    works_orm = db.query(models.Work).order_by(models.Work.created_at).filter(models.Work.visibillity != models.Visibillity.draft)
+    works_orm = db.query(models.Work).order_by(models.Work.created_at).filter(models.Work.visibility != models.Visibility.draft)
     if oldest_id:
         limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
         limit_created_at = limit_work.created_at
         works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
     if not auth:
-        works_orm = works_orm.filter(models.Work.visibillity == models.Visibillity.public)
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     works_orm = works_orm.limit(limit)
     works_orm = works_orm.all()
     works = list(map(Work.from_orm, works_orm))
@@ -74,9 +74,9 @@ def get_works_by_limit(db: Session, limit: int, oldest_id: str, auth: bool = Fal
 
 def get_work_by_id(db: Session, work_id: str, auth: bool = False) -> Work:
     work_orm = db.query(models.Work).get(work_id)
-    if work_orm.visibillity == models.Visibillity.draft:
+    if work_orm.visibility == models.Visibility.draft:
         raise HTTPException(status_code=400, detail="This work is a draft work.")
     work = Work.from_orm(work_orm)
-    if work.visibillity == models.Visibillity.private and not auth:
+    if work.visibility == models.Visibility.private and not auth:
         raise HTTPException(status_code=403, detail="This work is a private work. You need to sign in.")
     return work

@@ -22,7 +22,7 @@ class Base:
     def __tablename__(self) -> str:
         return self.__name__.lower()
 
-class Visibillity(str, enum.Enum):
+class Visibility(str, enum.Enum):
     public = 'public'
     private = 'private'
     draft = 'draft'
@@ -90,7 +90,7 @@ class Work(Base):
     description_html = Column(String)
     user_id = Column(String(length=255), ForeignKey('user.id'), nullable=True)
     community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
-    visibillity = Column(Enum(Visibillity))
+    visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 

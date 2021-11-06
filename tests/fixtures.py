@@ -177,7 +177,7 @@ def work_factory_for_test(
     session_for_test: Session = session_for_test,
     title: str = 'WorkTitleForTest',
     description: str = 'this work is test',
-    visibillity: str = 'public',
+    visibility: str = 'public',
     exist_thumbnail: bool = False,
     asset_types: List[str] = ['image'],
     urls: List[BaseUrlInfo] = [],
@@ -205,7 +205,7 @@ def work_factory_for_test(
       assets_id.append(asset.id)
 
     w = set_work(
-      session_for_test, title, description, user.id, community.id, visibillity, 
+      session_for_test, title, description, user.id, community.id, visibility, 
       thumbnail_id, assets_id, urls
     )
     return w

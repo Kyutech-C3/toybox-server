@@ -13,7 +13,7 @@ work_router = APIRouter()
 @work_router.post('', response_model=Work)
 async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
     work = set_work(db, payload.title, payload.description, user.id, payload.community_id, 
-        payload.visibillity, payload.thumbnail_asset_id, payload.assets_id, payload.urls)
+        payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls)
     return work
 
 @work_router.get('', response_model=List[Work])
