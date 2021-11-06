@@ -1,30 +1,40 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
+from pydantic.class_validators import validator
+from db.models import Visibility
+from schemas.url_info import BaseUrlInfo, UrlInfo
 from .community import Community
 from .user import User
+from .asset import Asset
 from pydantic import BaseModel
 
 class PostWork(BaseModel):
     title: str
     description: str
     community_id: str
-    github_url: Optional[str]
-    work_url: Optional[str]
-    private: bool
+    visibility: str
+    thumbnail_asset_id: Optional[str]
+    assets_id: List[str]
+    urls: List[BaseUrlInfo]
 
-    class Config:
-        orm_mode = True
+    @validator('visibility')
+    def value_of(cls, v):
+        for e in Visibility:
+            if e.value == v:
+                return e
+        raise ValueError('{} is invalid visibility type.'.format(v))
 
 class Work(BaseModel):
     id: str
     title: str
     description: str
     description_html: str
-    github_url: Optional[str]
-    work_url: Optional[str]
     user: User
     community: Community
-    private: bool
+    assets: List[Asset]
+    urls: List[UrlInfo]
+    visibility: str
+    thumbnail: Optional[Asset]
     created_at: datetime
     updated_at: datetime
 

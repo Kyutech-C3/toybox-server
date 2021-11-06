@@ -1,16 +1,17 @@
 from datetime import datetime
 import json
-from typing import Optional
+from pydantic import BaseModel
+from pydantic.class_validators import validator
+from db.models import UrlType
 from .user import User
-from pydantic import BaseModel, validator
-from db.models import AssetType, Work
 
-class BaseAsset(BaseModel):
-    asset_type: str
+class BaseUrlInfo(BaseModel):
+    url: str
+    url_type: str
 
-    @validator('asset_type')
+    @validator('url_type')
     def value_of(cls, v):
-        for e in AssetType:
+        for e in UrlType:
             if e.value == v:
                 return e
         raise ValueError('{} is invalid asset type.'.format(v))
@@ -25,7 +26,7 @@ class BaseAsset(BaseModel):
             return cls(**json.loads(value))
         return value
 
-class Asset(BaseAsset):
+class UrlInfo(BaseUrlInfo):
     id: str
     user: User
     created_at: datetime
