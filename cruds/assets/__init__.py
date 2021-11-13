@@ -19,7 +19,7 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     if filename == '':
         raise HTTPException(status_code=400, detail='this file is invalid')
     file_extention = filename[filename.rfind('.')+1:]
-    if not file_extention.lower() in ALLOW_EXTENTIONS[asset_type]:
+    if not file_extention.lower() in ALLOW_EXTENTIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail='this file extention is invalid')
 
     asset_orm = models.Asset(
