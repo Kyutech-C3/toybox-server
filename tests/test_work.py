@@ -1,11 +1,11 @@
 import json
 import pytest
-from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, community_factory_for_test, user_for_test
+from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, community_factory_for_test, user_for_test, tag_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
 
-    def test_post_work_without_auth(use_test_db_fixture, community_factory_for_test, asset_factory_for_test):
+    def test_post_work_without_auth(use_test_db_fixture, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         Workを認証なしで投稿する
         """
@@ -31,13 +31,14 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
 
         assert res.status_code == 403, "認証に失敗する"
 
-    def test_post_work_about_visibility(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test):
+    def test_post_work_about_visibility(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         公開設定のそれぞれを投稿する
         """
@@ -66,6 +67,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -88,6 +90,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -110,6 +113,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -120,7 +124,7 @@ class TestWork:
         assert res_json['description'] == description
         assert res_json['visibility'] == visibility
 
-    def test_post_work_about_thumbnail(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test):
+    def test_post_work_about_thumbnail(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         サムネイルのあるものないものをそれぞれ投稿する
         """
@@ -147,6 +151,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -169,6 +174,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -179,7 +185,7 @@ class TestWork:
         assert res_json['description'] == description
         assert res_json['thumbnail']['id'] == thumbnail.id
 
-    def test_post_work_about_assets(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test):
+    def test_post_work_about_assets(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         アセットのあるものないものをそれぞれ投稿する
         """
@@ -205,6 +211,7 @@ class TestWork:
                 "visibility": visibility,
                 "thumbnail_asset_id": thumbnail.id,
                 "assets_id": [],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -227,6 +234,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -237,7 +245,7 @@ class TestWork:
         assert res_json['description'] == description
         assert res_json['assets'][0]['id'] == asset.id
 
-    def test_post_work_about_url(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test):
+    def test_post_work_about_url(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         関連URLのあるものないものをそれぞれ投稿する
         """
@@ -260,6 +268,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": []
             }
         )
@@ -289,6 +298,7 @@ class TestWork:
                 "assets_id": [
                     asset.id
                 ],
+                "tags_id": [tag_for_test.id],
                 "urls": urls
             }
         )
@@ -320,7 +330,7 @@ class TestWork:
         存在しないコミュニティのIDを指定して投稿する
         """
 
-    def test_post_work_incorrect_visibbility(use_test_db_fixture):
+    def test_post_work_incorrect_visibility(use_test_db_fixture):
         """
         間違った公開設定を指定して投稿する
         """
