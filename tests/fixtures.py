@@ -122,15 +122,26 @@ def users_factory_for_test(
   return users_for_test
 
 @pytest.fixture
+def user_for_test(
+  session_for_test: Session,
+  email: str = 'test@test.com',
+  name: str = 'iamtestuser',
+  display_name: str ='I am Test User'
+) -> UserSchema:
+  u = User(email=email, name=name, display_name=display_name)
+  session_for_test.add(u)
+  session_for_test.commit()
+  return UserSchema.from_orm(u)
+
+@pytest.fixture
 def user_token_factory_for_test(
   session_for_test: Session,
-  user_factory_for_test: UserSchema,
+  user_for_test: UserSchema,
 ) -> Callable[[timedelta, timedelta],TokenResponseSchema]:
   """
   Create test user's token
   """
-  test_user = user_factory_for_test()
-  user = session_for_test.query(User).filter(User.id == test_user.id).first()
+  user = session_for_test.query(User).filter(User.id == user_for_test.id).first()
   def factory(
     access_token_expires_delta: timedelta = timedelta(minutes=15),
     refresh_token_expires_delta: timedelta = timedelta(days=14)
@@ -214,7 +225,7 @@ def work_factory_for_test(
 @pytest.fixture
 def asset_factory_for_test(
   session_for_test: Session,
-  user_factory_for_test: Callable[[Session, str, str, str],UserSchema],
+  user_for_test: UserSchema,
   ) -> Callable[[Session, str, UploadFile], AssetSchema]:
   def asset_for_test(
     session_for_test: Session = session_for_test,
@@ -224,8 +235,7 @@ def asset_factory_for_test(
     """
     Create test asset
     """
-    user = user_factory_for_test()
-    a = create_asset(session_for_test, user.id, asset_type, file)
+    a = create_asset(session_for_test, user_for_test.id, asset_type, file)
     return a
   return asset_for_test
 
