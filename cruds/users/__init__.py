@@ -54,7 +54,7 @@ def create_user(db: Session, user: UserSchema):
 
 	return get_user(db, user.email)
 
-def change_user_info(db: Session, user_id, display_name, profile, avatar_url) -> UserSchema:
+def change_user_info(db: Session, user_id: str, display_name: str, profile: str, avatar_url: str, twitter_id: str, github_id: str) -> UserSchema:
 	user_orm = db.query(models.User).filter(models.User.id == user_id).first()
 	if user_orm is None:
 		raise HTTPException(status_code=404, detail="The user specified by id is not exist")
@@ -62,6 +62,8 @@ def change_user_info(db: Session, user_id, display_name, profile, avatar_url) ->
 	user_orm.display_name = user_orm.display_name if display_name is None else display_name
 	user_orm.profile = user_orm.profile if profile is None else profile
 	user_orm.avatar_url = user_orm.avatar_url if avatar_url is None else avatar_url
+	user_orm.twitter_id = user_orm.twitter_id if twitter_id is None else twitter_id
+	user_orm.github_id = user_orm.github_id if github_id is None else github_id
 
 	db.commit()
 	db.refresh(user_orm)

@@ -3,7 +3,6 @@ from datetime import timedelta
 from starlette.routing import Mount
 import pytest
 from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, users_factory_for_test
-from cruds.users.auth import GetCurrentUser
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestUser:
@@ -153,6 +152,8 @@ class TestUser:
 		new_display_name: str = "new_display_name"
 		new_avatar_url: str = "https://newavatar.png"
 		new_profile: str = "new_profile"
+		new_twitter_id:str = "new_twitter_id"
+		new_github_id:str = "new_github_id"
 		
 		print('Token', token)
 		res = client.put('/api/v1/users/@me', headers={
@@ -160,13 +161,17 @@ class TestUser:
 		}, json={
             "display_name": new_display_name,
             "avatar_url": new_avatar_url,
-            "profile": new_profile
+            "profile": new_profile,
+			"twitter_id": new_twitter_id,
+			"github_id": new_github_id
         })
 
 		assert res.status_code == 200, 'ユーザーのすべての情報の編集に成功する'
 		assert res.json()['display_name'] == new_display_name
 		assert res.json()['avatar_url'] == new_avatar_url
 		assert res.json()['profile'] == new_profile
+		assert res.json()['twitter_id'] == new_twitter_id
+		assert res.json()['github_id'] == new_github_id
 		assert res.json()['display_name'] != display_name
 		assert res.json()['avatar_url'] != avatar_url
 		assert res.json()['profile'] != profile

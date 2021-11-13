@@ -25,5 +25,5 @@ async def get_user_list(limit: int = 30, offset_id: str = None, db: Session = De
 
 @user_router.put('/@me', response_model=User)
 async def put_user_info(payload: UserInfoChangeRequest, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-  user = change_user_info(db, user.id, payload.display_name, payload.profile, payload.avatar_url)
+  user = change_user_info(db, user.id, payload.display_name, payload.profile, payload.avatar_url, payload.twitter_id, payload.github_id)
   return user
