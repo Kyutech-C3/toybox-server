@@ -53,6 +53,8 @@ class User(Base):
     discord_user_id = Column(String(length=18), nullable=True)
     profile = Column(String(length=500), nullable=True)
     avatar_url = Column(String, nullable=True)
+    twitter_id = Column(String, nullable=True)
+    github_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     works = relationship('Work', foreign_keys='Work.user_id', back_populates='user')
