@@ -9,7 +9,7 @@ import markdown
 
 def set_work(db: Session, title: str, description: str, user_id: str, 
     community_id: str, visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
-    urls: List[BaseUrlInfo]) -> Work:
+    urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
     
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
@@ -34,22 +34,36 @@ def set_work(db: Session, title: str, description: str, user_id: str,
         asset_orm.work_id = work_orm.id
 
     for url in urls:
-        create_url_info(db, url.get('url'), url.get('type', 'other'), work_orm.id, user_id)
+        create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_orm.id, user_id)
 
-    thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
-    if thumbnail is None:
-        raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
-    thumbnail_orm = models.Thumbnail(
-        work_id = work_orm.id,
-        asset_id = thumbnail.id
-    )
+    for tag_id in tags_id:
+        tagging_orm = models.Tagging(
+            work_id=work_orm.id,
+            tag_id=tag_id
+        )
+        db.add(tagging_orm)
+        db.commit()
 
-    db.add(thumbnail_orm)
+    if thumbnail_asset_id:
+        thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
+        if thumbnail is None:
+            raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
+        thumbnail_orm = models.Thumbnail(
+            work_id = work_orm.id,
+            asset_id = thumbnail.id
+        )
 
-    db.commit()
+        db.add(thumbnail_orm)
+        db.commit()
+
     db.refresh(work_orm)
 
     work = Work.from_orm(work_orm)
+
+    if work.thumbnail:
+        work.thumbnail = work.thumbnail[0]
+    else:
+        work.thumbnail = None
 
     return work
 

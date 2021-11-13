@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic.class_validators import validator
 from db.models import Visibility
+from schemas.tag import GetTag
 from schemas.url_info import BaseUrlInfo, UrlInfo
 from .community import Community
 from .user import User
@@ -16,6 +17,7 @@ class PostWork(BaseModel):
     thumbnail_asset_id: Optional[str]
     assets_id: List[str]
     urls: List[BaseUrlInfo]
+    tags_id: List[str]
 
     @validator('visibility')
     def value_of(cls, v):
@@ -34,6 +36,7 @@ class Work(BaseModel):
     assets: List[Asset]
     urls: List[UrlInfo]
     visibility: str
+    tags: List[GetTag]
     thumbnail: Optional[Asset]
     created_at: datetime
     updated_at: datetime
