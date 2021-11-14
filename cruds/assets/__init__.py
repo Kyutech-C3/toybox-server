@@ -4,6 +4,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from db import models
 from schemas.asset import Asset
+from schemas.tag import TagResponsStatus
 from schemas.user import User
 
 ALLOW_EXTENTIONS = {
@@ -38,3 +39,20 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
 
     asset = Asset.from_orm(asset_orm)
     return asset
+
+def delete_asset_by_id(db: Session, asset_id: str, auto_error=True) -> TagResponsStatus:
+    asset_orm = db.query(models.Asset).get(asset_id)
+    if asset_orm is None:
+        if auto_error:
+            raise HTTPException(status_code=400, detail='this asset is not exist')
+        else:
+            return
+
+    upload_folder = os.environ.get('UPLOAD_FOLDER')
+    upload_folder = f'{upload_folder}/{asset_orm.asset_type}/{asset_orm.id}'
+    shutil.rmtree(upload_folder)
+
+    db.delete(asset_orm)
+    db.commit()
+
+    return {'status': 'OK'}

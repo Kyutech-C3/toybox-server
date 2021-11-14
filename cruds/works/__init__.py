@@ -1,10 +1,13 @@
 from typing import List
 from fastapi import HTTPException
-from cruds.url_infos import create_url_info
+from cruds.assets import delete_asset_by_id
+from cruds.tags.tag import delete_tag_by_id
+from cruds.url_infos import create_url_info, delete_url_info
 from db import models
 from sqlalchemy.orm.session import Session
+from schemas.tag import TagResponsStatus
 from schemas.url_info import BaseUrlInfo
-from schemas.work import Work
+from schemas.work import PostWork, Work
 import markdown
 
 def set_work(db: Session, title: str, description: str, user_id: str, 
@@ -52,6 +55,7 @@ def set_work(db: Session, title: str, description: str, user_id: str,
             work_id = work_orm.id,
             asset_id = thumbnail.id
         )
+        thumbnail.work_id = work_orm.id
 
         db.add(thumbnail_orm)
         db.commit()
@@ -94,3 +98,115 @@ def get_work_by_id(db: Session, work_id: str, auth: bool = False) -> Work:
     if work.visibility == models.Visibility.private and not auth:
         raise HTTPException(status_code=403, detail="This work is a private work. You need to sign in.")
     return work
+
+def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str, 
+    community_id: str, visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
+    urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
+    work_orm = db.query(models.Work).get(work_id)
+
+    if work_orm.user_id != user_id:
+        raise HTTPException(status_code=401, detail='this work\'s author isn\'t you')
+
+    urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
+    for url_orm in urls_orm:
+        delete_url_info(db, url_orm.id)
+    
+    assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
+    for asset_orm in assets_orm:
+        asset_orm.work_id = None
+        db.commit()
+        db.refresh(asset_orm)
+    
+    old_asset_ids = [asset_orm.id for asset_orm in assets_orm]
+    old_thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
+    if old_thumbnail_orm:
+        old_asset_ids.append(old_thumbnail_orm.asset_id)
+    new_asset_ids = assets_id[:]
+    if thumbnail_asset_id:
+        new_asset_ids.append(thumbnail_asset_id)
+    delete_asset_ids = set(old_asset_ids) - set(new_asset_ids)
+    for delete_asset_id in delete_asset_ids:
+        delete_asset_by_id(db, delete_asset_id)
+    
+    taggings_orm = db.query(models.Tagging).filter(models.Tagging.work_id == work_id).all()
+    for tagging in taggings_orm:
+        db.delete(tagging)
+    db.commit()
+
+    if title == '':
+        raise HTTPException(status_code=400, detail="Title is empty")
+
+    md = markdown.Markdown(extensions=['tables'])
+    work_orm.title = title
+    work_orm.description = description
+    work_orm.description_html = md.convert(description)
+    work_orm.community_id = community_id
+    work_orm.visibility = visibility
+    db.add(work_orm)
+    db.commit()
+    db.refresh(work_orm)
+
+    for asset_id in assets_id:
+        asset_orm = db.query(models.Asset).get(asset_id)
+        if asset_orm is None:
+            raise HTTPException(status_code=400, detail='This asset id is invalid.')
+        asset_orm.work_id = work_orm.id
+
+    for url in urls:
+        create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_orm.id, user_id)
+
+    for tag_id in tags_id:
+        tagging_orm = models.Tagging(
+            work_id=work_orm.id,
+            tag_id=tag_id
+        )
+        db.add(tagging_orm)
+        db.commit()
+
+    if thumbnail_asset_id:
+        if old_thumbnail_orm:
+            db.delete(old_thumbnail_orm)
+            db.commit()
+        thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
+        if thumbnail is None:
+            raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
+        new_thumbnail_orm = models.Thumbnail(
+            work_id = work_id,
+            asset_id = thumbnail_asset_id
+        )
+
+        db.add(new_thumbnail_orm)
+        db.commit()
+
+    db.refresh(work_orm)
+
+    work = Work.from_orm(work_orm)
+
+    if work.thumbnail:
+        work.thumbnail = work.thumbnail[0]
+    else:
+        work.thumbnail = None
+
+    return work
+
+
+
+def delete_work_by_id(db: Session, work_id: str) -> TagResponsStatus:
+    work_orm = db.query(models.Work).get(work_id)
+
+    assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
+    for asset_orm in assets_orm:
+        delete_asset_by_id(db, asset_orm.id)
+
+    urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
+    for url_orm in urls_orm:
+        delete_url_info(db, url_orm.id)
+
+    thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
+    if thumbnail_orm is not None:
+        delete_asset_by_id(db, thumbnail_orm.asset_id, auto_error=False)
+
+    db.delete(work_orm)
+    db.commit()
+
+    return {'status': 'OK'}
