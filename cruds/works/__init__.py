@@ -55,7 +55,6 @@ def set_work(db: Session, title: str, description: str, user_id: str,
             work_id = work_orm.id,
             asset_id = thumbnail.id
         )
-        thumbnail.work_id = work_orm.id
 
         db.add(thumbnail_orm)
         db.commit()
