@@ -1,10 +1,23 @@
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from db import models
+import re
 
-from schemas.url_info import UrlInfo
+url_type_pattern = {
+    'youtube': '^https://(www\.youtube\.com/watch\?v=|youtu\.be/)[\S]{11}$',
+    'soundcloud': '^https://soundcloud\.com/[^/]+/[^/]+$',
+    'github': '^https://github\.com/[^/]+/[^/]+$',
+    'sketchfab': '^https://sketchfab\.com/3d-models/[\w]+-[\da-z]{32}$',
+    'unityroom': '^https://unityroom\.com/games/[\S]+$',
+    'other': '^https?://[\w/:%#\$&\?\(\)~\.=\+-]+$',
+    'default': '^.'
+}
 
 def create_url_info(db: Session, url: str, url_type: str, work_id: str, user_id: str):
+    pattern = url_type_pattern.get(url_type, '')
+    print(pattern)
+    if not re.match(pattern, url):
+        raise HTTPException(status_code=400, detail='url pattern is invalid')
     url_info_orm = models.UrlInfo(
         work_id = work_id,
         url = url,
