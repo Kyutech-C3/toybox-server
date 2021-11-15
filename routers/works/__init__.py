@@ -1,4 +1,4 @@
-from schemas.tag import TagResponsStatus
+from schemas.common import DeleteStatus
 from schemas.work import PostWork, Work
 from schemas.user import User
 from fastapi import APIRouter
@@ -36,7 +36,7 @@ async def put_work(work_id: str, payload: PostWork, db: Session = Depends(get_db
                         payload.tags_id)
     return work
 
-@work_router.delete('/{work_id}', response_model=TagResponsStatus, dependencies=[Depends(GetCurrentUser())])
+@work_router.delete('/{work_id}', response_model=DeleteStatus, dependencies=[Depends(GetCurrentUser())])
 async def delete_work(work_id: str, db: Session = Depends(get_db)):
     result = delete_work_by_id(db, work_id)
     return result

@@ -4,8 +4,7 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 from db import models
 from schemas.asset import Asset
-from schemas.tag import TagResponsStatus
-from schemas.user import User
+from schemas.common import DeleteStatus
 
 ALLOW_EXTENTIONS = {
     'image': ['png', 'jpg', 'jpeg', 'bmp'],
@@ -40,7 +39,7 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     asset = Asset.from_orm(asset_orm)
     return asset
 
-def delete_asset_by_id(db: Session, asset_id: str, auto_error=True) -> TagResponsStatus:
+def delete_asset_by_id(db: Session, asset_id: str, auto_error=True) -> DeleteStatus:
     asset_orm = db.query(models.Asset).get(asset_id)
     if asset_orm is None:
         if auto_error:
