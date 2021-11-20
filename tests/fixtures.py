@@ -255,7 +255,7 @@ def tag_for_test(
   community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
   session_for_test: Session,
   name: str = "test_tag",
-  color: str = "#FFFFFFFF"
+  color: str = "#FFFFFF"
 ) -> TagSchema:
   """
   Create test tag
