@@ -9,7 +9,7 @@ class BaseTag(BaseModel):
 
     @validator('color')
     def color_code_must_match_format(cls, v):
-        if not re.match('#[0-9A-F]{6}', v):
+        if not re.match('#[0-9a-fA-F]{6}$', v):
             raise ValueError('not match format')
         return v
 
