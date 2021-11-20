@@ -18,6 +18,7 @@ pydantic = {extras = ["email"], version = "*"}
 sqlalchemy-utils = "*"
 markdown = "*"
 alembic = "*"
+aiofiles = "*"
 
 [dev-packages]
 
