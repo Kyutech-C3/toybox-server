@@ -236,7 +236,7 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
 def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
-        raise HTTPException(status_code=400, detail='this user is not exist')
+        raise HTTPException(status_code=404, detail='this user is not exist')
     
     works_orm = db.query(models.Work).filter(models.Work.user_id == user_id)
 

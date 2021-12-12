@@ -42,7 +42,7 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
 def delete_asset_by_id(db: Session, asset_id: str) -> DeleteStatus:
     asset_orm = db.query(models.Asset).get(asset_id)
     if asset_orm is None:
-        raise HTTPException(status_code=400, detail='this asset is not exist')
+        raise HTTPException(status_code=404, detail='this asset is not exist')
 
     upload_folder = os.environ.get('UPLOAD_FOLDER')
     upload_folder = f'{upload_folder}/{asset_orm.asset_type}/{asset_orm.id}'

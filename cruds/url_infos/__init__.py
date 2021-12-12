@@ -26,7 +26,6 @@ def create_url_info(db: Session, url: str, url_type: str, work_id: str, user_id:
 
     db.add(url_info_orm)
     db.commit()
-    db.refresh(url_info_orm)
 
 def delete_url_info(db: Session, url_info_id: str):
     url_info_orm = db.query(models.UrlInfo).get(url_info_id)
