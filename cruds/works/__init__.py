@@ -9,6 +9,8 @@ from schemas.url_info import BaseUrlInfo
 from schemas.work import Work
 import markdown
 
+# TODO: CASCADEを導入する
+
 def set_work(db: Session, title: str, description: str, user_id: str, 
              community_id: str, visibility: str, thumbnail_asset_id: str,
              assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
