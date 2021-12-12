@@ -416,7 +416,7 @@ class TestWork:
         """
         res = client.get('/api/v1/users/@me/works')
 
-        assert res.status_code == 403
+        assert res.status_code == 403, '作品の取得に失敗する'
         
     def test_get_his_works(use_test_db_fixture, user_token_factory_for_test, work_factory_for_test, user_factory_for_test):
         """
@@ -443,4 +443,4 @@ class TestWork:
             "Authorization": f"Bearer { token.access_token }"
         })
 
-        assert res.status_code == 400
+        assert res.status_code == 404, '作品の取得に失敗する'
