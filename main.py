@@ -6,6 +6,7 @@ from db import engine
 from db.models import Base
 from fastapi.staticfiles import StaticFiles
 import os
+from utils.limit_upload_size import LimitUploadSize
 
 Base.metadata.create_all(engine)
 app = FastAPI(
@@ -15,6 +16,7 @@ app = FastAPI(
 upload_folder = os.environ.get('UPLOAD_FOLDER')
 
 app.mount("/static", StaticFiles(directory=upload_folder), name="static")
+app.add_middleware(LimitUploadSize, max_upload_size=50_000_000)
 
 origins = [
     "http://localhost:8080"
