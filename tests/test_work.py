@@ -1,6 +1,6 @@
 import json
 import pytest
-from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, community_factory_for_test, user_for_test, tag_for_test
+from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, community_factory_for_test, user_for_test, tag_for_test, work_factory_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
@@ -310,87 +310,137 @@ class TestWork:
         assert res_json['urls'][0]['url'] == url
         assert res_json['urls'][0]['url_type'] == url_type
 
-    def test_post_work_about_tag(use_test_db_fixture):
-        """
-        タグのあるものないものをそれぞれ投稿する
-        """
+    # def test_post_work_about_tag(use_test_db_fixture):
+    #     """
+    #     タグのあるものないものをそれぞれ投稿する
+    #     """
 
-    def test_post_work_without_title(use_test_db_fixture):
-        """
-        Workのタイトル無しで投稿する
-        """
+    # def test_post_work_without_title(use_test_db_fixture):
+    #     """
+    #     Workのタイトル無しで投稿する
+    #     """
 
-    def test_post_work_without_description(use_test_db_fixture):
-        """
-        Workの説明文なしで投稿する
-        """
+    # def test_post_work_without_description(use_test_db_fixture):
+    #     """
+    #     Workの説明文なしで投稿する
+    #     """
 
-    def test_post_work_incorrect_community(use_test_db_fixture):
-        """
-        存在しないコミュニティのIDを指定して投稿する
-        """
+    # def test_post_work_incorrect_community(use_test_db_fixture):
+    #     """
+    #     存在しないコミュニティのIDを指定して投稿する
+    #     """
 
-    def test_post_work_incorrect_visibility(use_test_db_fixture):
-        """
-        間違った公開設定を指定して投稿する
-        """
+    # def test_post_work_incorrect_visibility(use_test_db_fixture):
+    #     """
+    #     間違った公開設定を指定して投稿する
+    #     """
 
-    def test_post_work_incorrect_asset(use_test_db_fixture):
-        """
-        存在しないアセットのIDを指定して投稿する
-        """
+    # def test_post_work_incorrect_asset(use_test_db_fixture):
+    #     """
+    #     存在しないアセットのIDを指定して投稿する
+    #     """
 
-    def test_post_work_incorrect_thumbnail_asset(use_test_db_fixture):
-        """
-        存在しないアセットのIDをサムネイルに指定して投稿する
-        """
+    # def test_post_work_incorrect_thumbnail_asset(use_test_db_fixture):
+    #     """
+    #     存在しないアセットのIDをサムネイルに指定して投稿する
+    #     """
 
-    def test_post_work_incorrect_url(use_test_db_fixture):
-        """
-        間違ったURLを指定して投稿する
-        """
+    # def test_post_work_incorrect_url(use_test_db_fixture):
+    #     """
+    #     間違ったURLを指定して投稿する
+    #     """
 
-    def test_post_work_incorrect_tag(use_test_db_fixture):
-        """
-        存在しないタグのIDを指定して投稿する
-        """
+    # def test_post_work_incorrect_tag(use_test_db_fixture):
+    #     """
+    #     存在しないタグのIDを指定して投稿する
+    #     """
 
-    def test_post_work_another_asset(use_test_db_fixture):
-        """
-        別人のAssetでWorkを投稿する
-        """
+    # def test_post_work_another_asset(use_test_db_fixture):
+    #     """
+    #     別人のAssetでWorkを投稿する
+    #     """
 
-    def test_get_work_by_correct_id(use_test_db_fixture):
-        """
-        IDを指定してWorkを取得する
-        """
+    # def test_get_work_by_correct_id(use_test_db_fixture):
+    #     """
+    #     IDを指定してWorkを取得する
+    #     """
 
-    def test_get_work_by_incorrect_id(use_test_db_fixture):
-        """
-        存在しないIDを指定してWorkを取得する
-        """
+    # def test_get_work_by_incorrect_id(use_test_db_fixture):
+    #     """
+    #     存在しないIDを指定してWorkを取得する
+    #     """
 
-    def test_get_works(use_test_db_fixture):
-        """
-        複数のWorkを取得する
-        """
+    # def test_get_works(use_test_db_fixture):
+    #     """
+    #     複数のWorkを取得する
+    #     """
 
-    def test_get_works_pagenation(use_test_db_fixture):
-        """
-        Work取得のページネーションを確認する
-        """
+    # def test_get_works_pagenation(use_test_db_fixture):
+    #     """
+    #     Work取得のページネーションを確認する
+    #     """
 
-    def test_put_work(use_test_db_fixture):
-        """
-        Workの情報を変更する
-        """
+    # def test_put_work(use_test_db_fixture):
+    #     """
+    #     Workの情報を変更する
+    #     """
 
-    def test_delete_correct_work(use_test_db_fixture):
-        """
-        Workを削除する
-        """
+    # def test_delete_correct_work(use_test_db_fixture):
+    #     """
+    #     Workを削除する
+    #     """
 
-    def test_delete_incorrect_work(use_test_db_fixture):
+    # def test_delete_incorrect_work(use_test_db_fixture):
+    #     """
+    #     存在しないWorkを削除する
+    #     """
+
+    def test_get_my_works(use_test_db_fixture, user_token_factory_for_test, work_factory_for_test):
         """
-        存在しないWorkを削除する
+        自分の作品を取得する
         """
+        work = work_factory_for_test()
+        token = user_token_factory_for_test()
+        res = client.get('/api/v1/users/@me/works', headers={
+            "Authorization": f"Bearer { token.access_token }"
+        })
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0]['id'] == work.id
+
+    def test_get_my_works_without_auth(use_test_db_fixture):
+        """
+        自分の作品を認証無しで取得する
+        """
+        res = client.get('/api/v1/users/@me/works')
+
+        assert res.status_code == 403, '作品の取得に失敗する'
+        
+    def test_get_his_works(use_test_db_fixture, user_token_factory_for_test, work_factory_for_test, user_factory_for_test):
+        """
+        指定したユーザーの作品を取得する
+        """
+        target_user = user_factory_for_test(email='hoge@test.jp')
+        work = work_factory_for_test(user_id=target_user.id)
+        my_token = user_token_factory_for_test()
+        res = client.get(f'/api/v1/users/{ target_user.id }/works', headers={
+            "Authorization": f"Bearer { my_token.access_token }"
+        })
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0]['id'] == work.id
+
+    def test_get_not_exist_user_works(use_test_db_fixture, user_token_factory_for_test):
+        """
+        存在しないユーザーの作品を取得する
+        """
+        token = user_token_factory_for_test()
+        res = client.get(f'/api/v1/users/hogehogeuserid/works', headers={
+            "Authorization": f"Bearer { token.access_token }"
+        })
+
+        assert res.status_code == 404, '作品の取得に失敗する'
