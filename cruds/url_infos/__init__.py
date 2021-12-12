@@ -9,8 +9,7 @@ url_type_pattern = {
     'github': '^https://github\.com/[^/]+/[^/]+$',
     'sketchfab': '^https://sketchfab\.com/3d-models/[\w]+-[\da-z]{32}$',
     'unityroom': '^https://unityroom\.com/games/[\S]+$',
-    'other': '^https?://[\w/:%#\$&\?\(\)~\.=\+-]+$',
-    'default': '^.'
+    'other': '^https?://[\w/:%#\$&\?\(\)~\.=\+-]+$'
 }
 
 def create_url_info(db: Session, url: str, url_type: str, work_id: str, user_id: str):
