@@ -40,11 +40,11 @@ def set_work(db: Session, title: str, description: str, user_id: str,
             raise HTTPException(status_code=400, detail='This asset id is invalid.')
         asset_orm.work_id = work_orm.id
 
-    # url_infoテーブルの作成
+    # url_infoテーブルへのインスタンスの作成
     for url in urls:
         create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_orm.id, user_id)
 
-    # tagの中間テーブルの作成
+    # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
         tagging_orm = models.Tagging(
             work_id=work_orm.id,
@@ -53,7 +53,7 @@ def set_work(db: Session, title: str, description: str, user_id: str,
         db.add(tagging_orm)
         db.commit()
 
-    # Thumbnailの中間テーブルの作成
+    # Thumbnailの中間テーブルへのインスタンスの作成
     if thumbnail_asset_id:
         thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
         if thumbnail is None:
@@ -69,7 +69,7 @@ def set_work(db: Session, title: str, description: str, user_id: str,
     db.refresh(work_orm)
     work = Work.from_orm(work_orm)
 
-    # 中間テーブルを使って実装したため配列になっているので手直し(要修正？)
+    # 中間テーブルを使ってサムネイルを実装したため配列になっているので手直し(要修正？)
     if work.thumbnail:
         work.thumbnail = work.thumbnail[0]
     else:
@@ -163,17 +163,17 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     for url_orm in urls_orm:
         delete_url_info(db, url_orm.id)
     
-    # url_infoテーブルの作成
+    # url_infoテーブルへのインスタンスの作成
     for url in urls:
         create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_id, user_id)
 
-    # tagの中間テーブルの削除
+    # tagの中間テーブルのインスタンスの削除
     taggings_orm = db.query(models.Tagging).filter(models.Tagging.work_id == work_id).all()
     for tagging in taggings_orm:
         db.delete(tagging)
     db.commit()
 
-    # tagの中間テーブルの作成
+    # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
         tagging_orm = models.Tagging(
             work_id=work_id,
@@ -182,7 +182,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         db.add(tagging_orm)
         db.commit()
 
-    # Thumbnailの中間テーブルの作成
+    # Thumbnailの中間テーブルへのインスタンスの作成
     if thumbnail_asset_id:
         if old_thumbnail_orm:
             db.delete(old_thumbnail_orm)
@@ -201,7 +201,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     db.refresh(work_orm)
     work = Work.from_orm(work_orm)
 
-    # 中間テーブルを使って実装したため配列になっているので手直し(要修正？)
+    # 中間テーブルを使ってサムネイルを実装したため配列になっているので手直し(要修正？)
     if work.thumbnail:
         work.thumbnail = work.thumbnail[0]
     else:
