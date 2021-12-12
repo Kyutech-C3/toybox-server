@@ -230,13 +230,19 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, auth: bool) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=400, detail='this user is not exist')
-    works_orm = db.query(models.Work).filter(models.Work.user_id == user_id).filter(models.Work.visibility != 'draft')
-    if not auth:
-        works_orm = works_orm.filter(models.Work.visibility == 'public')
-    works_orm = works_orm.all()
+    
+    works_orm = db.query(models.Work).filter(models.Work.user_id == user_id)
+
+    if at_me:
+        works_orm = works_orm.all()
+    elif auth:
+        works_orm = works_orm.filter(models.Work.visibility != 'draft').all()
+    else:
+        works_orm = works_orm.filter(models.Work.visibility == 'public').all()
+
     works = list(map(Work.from_orm, works_orm))
     return works

@@ -33,10 +33,10 @@ async def put_user_info(payload: UserInfoChangeRequest, db: Session = Depends(ge
 
 @user_router.get('/@me/works', response_model=List[Work])
 async def get_my_works(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-  my_works = get_works_by_user_id(db, user.id, True)
+  my_works = get_works_by_user_id(db, user.id, at_me=True)
   return my_works
 
 @user_router.get('/{user_id}/works', response_model=List[Work])
 async def get_users_works(user_id: str, db: Session = Depends(get_db), auth: User = Depends(GetCurrentUser(False))):
-  works = get_works_by_user_id(db, user_id, not not auth)
+  works = get_works_by_user_id(db, user_id, auth=bool(auth))
   return works
