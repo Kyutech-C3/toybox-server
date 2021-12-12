@@ -214,16 +214,19 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
     work_orm = db.query(models.Work).get(work_id)
 
     assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
+    urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
+    thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
+
     for asset_orm in assets_orm:
         delete_asset_by_id(db, asset_orm.id)
+        if asset_orm.id == thumbnail_orm.id:
+            thumbnail_orm = None
 
-    urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
     for url_orm in urls_orm:
         delete_url_info(db, url_orm.id)
 
-    thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
     if thumbnail_orm is not None:
-        delete_asset_by_id(db, thumbnail_orm.asset_id, auto_error=False)
+        delete_asset_by_id(db, thumbnail_orm.asset_id)
 
     db.delete(work_orm)
     db.commit()
