@@ -229,3 +229,11 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
     db.commit()
 
     return {'status': 'OK'}
+
+def get_works_by_user_id(db: Session, user_id: str, auth: bool) -> List[Work]:
+    works_orm = db.query(models.Work).filter(models.Work.user_id == user_id).filter(models.Work.visibility != 'draft')
+    if not auth:
+        works_orm = works_orm.filter(models.Work.visibility == 'public')
+    works_orm = works_orm.all()
+    works = list(map(Work.from_orm, works_orm))
+    return works
