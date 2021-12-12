@@ -24,7 +24,7 @@ from cruds.users import auth
 # from cruds.works import create_work
 from cruds.assets import create_asset
 from cruds.communities import create_community
-from typing import Callable, List
+from typing import Callable, List, Optional
 from cruds.tags.tag import create_tag
 
 import json
@@ -180,7 +180,7 @@ def community_factory_for_test(
 @pytest.fixture
 def work_factory_for_test(
   session_for_test: Session,
-  user_factory_for_test: Callable[[Session, str, str, str],UserSchema],
+  user_for_test: UserSchema,
   asset_factory_for_test: Callable[[Session, str, UploadFile],AssetSchema],
   community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
   ) -> Callable[[Session, str, str],WorkSchema]:
@@ -193,11 +193,12 @@ def work_factory_for_test(
     exist_thumbnail: bool = False,
     asset_types: List[str] = ['image'],
     urls: List[BaseUrlInfo] = [],
+    tags_id: List[str] = [],
+    user_id: Optional[str] = None
   ) -> WorkSchema:
     """
     Create test work
     """
-    user = user_factory_for_test()
     community = community_factory_for_test()
     image_asset_for_test = asset_factory_for_test()
     thumbnail_id = image_asset_for_test.id if exist_thumbnail else None
@@ -216,9 +217,11 @@ def work_factory_for_test(
         asset = asset_factory_for_test(session_for_test, 'model', UploadFile(f'tests/test_data/test_model.gltf'))
       assets_id.append(asset.id)
 
+    user_id_for_work = user_id if user_id else user_for_test.id
+
     w = set_work(
-      session_for_test, title, description, user.id, community.id, visibility, 
-      thumbnail_id, assets_id, urls
+      session_for_test, title, description, user_id_for_work, community.id, visibility, 
+      thumbnail_id, assets_id, urls, tags_id
     )
     return w
   return work_for_test
