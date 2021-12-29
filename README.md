@@ -46,7 +46,7 @@ alembicを使用
 Dockerが起動している状態で以下の作業を行う。
 
 1. Dockerのコンテナに入る  
-> `docker container exec -it toybox-server-api-1 /bin/sh`
+> `docker container exec -it toybox-server_api_1 /bin/sh`
 
 2. DB更新のPythonファイルの生成  
 > `alembic revision --autogenerate -m "<コメントを書く>"`
