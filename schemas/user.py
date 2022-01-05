@@ -13,6 +13,8 @@ class UserInfoChangeRequest(BaseModel):
     display_name: Optional[str]
     avatar_url: Optional[HttpUrl]
     profile: Optional[str]
+    twitter_id: Optional[str]
+    github_id: Optional[str]
 
 class User(BaseModel):
     id: str
@@ -21,6 +23,8 @@ class User(BaseModel):
     display_name: str
     avatar_url: Optional[HttpUrl]
     profile: Optional[str]
+    twitter_id: Optional[str]
+    github_id: Optional[str]
     created_at: datetime
     updated_at: datetime
 

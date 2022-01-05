@@ -32,3 +32,48 @@ VSCodeを使っている場合は、devcontainerを用いた開発を推奨。
 ### 開発環境起動
 
 1. `uvicorn main:app --reload --host 0.0.0.0`
+
+
+## DBの更新
+alembicを使用
+
+### 初めて使う場合
+`pipenv install` を実行し、パッケージをインストールを行う。
+
+#### バックエンド開発する人
+バックエンドでカラムの変更を行ったら以下の作業を行い、DBの更新を行うPythonファイルの生成と実行を行う。
+
+Dockerが起動している状態で以下の作業を行う。
+
+1. Dockerのコンテナに入る  
+> `docker container exec -it toybox-server_api_1 /bin/sh`
+
+2. DB更新のPythonファイルの生成  
+> `alembic revision --autogenerate -m "<コメントを書く>"`
+
+3. 生成したファイルを実行し、DBを更新  
+> `alembic upgrade head`
+
+**現在のマイグレーションのバージョン確認**  
+> `alembic current`
+
+**マイグレーション履歴の確認**  
+> `alembic history --verbose`
+
+**前のバージョンに戻す**  
+
+数値指定で戻す  
+> `alembic downgrade -1`
+
+#### エラーの対応について
+
+1. FileNotFoundError: [Errno 2] No such file or directory: '/api/alembic/versions'  
+
+エラー  
+>`FileNotFoundError: [Errno 2] No such file or directory: '/api/alembic/versions'`
+
+対応法  
+> `/api/alembic'`のディレクトリ内に空の`versions`ディレクトリを作る
+
+#### フロントエンド開発の人
+`バックエンド開発する人`の説明の2番を飛ばし、1番と3番を行ってください。

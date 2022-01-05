@@ -22,10 +22,25 @@ class Base:
     def __tablename__(self) -> str:
         return self.__name__.lower()
 
+class Visibility(str, enum.Enum):
+    public = 'public'
+    private = 'private'
+    draft = 'draft'
+
+class UrlType(str, enum.Enum):
+    youtube = 'youtube'
+    soundcloud = 'soundcloud'
+    github = 'github'
+    sketchfab = 'sketchfab'
+    unityroom = 'unityroom'
+    other = 'other'
+
 class AssetType(str, enum.Enum):
+    zip = 'zip'
     image = 'image'
     video = 'video'
     music = 'music'
+    model = 'model'
 
 class User(Base):
     __tablename__ = 'user'
@@ -39,10 +54,13 @@ class User(Base):
     discord_user_id = Column(String(length=18), nullable=True)
     profile = Column(String(length=500), nullable=True)
     avatar_url = Column(String, nullable=True)
+    twitter_id = Column(String, nullable=True)
+    github_id = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     works = relationship('Work', foreign_keys='Work.user_id', back_populates='user')
     assets = relationship('Asset', foreign_keys='Asset.user_id')
+    urls = relationship('UrlInfo', foreign_keys='UrlInfo.user_id')
     tokens = relationship('Token', foreign_keys='Token.user_id')
     comments = relationship('Comment', back_populates="user")
 
@@ -61,6 +79,11 @@ class Tagging(Base):
     work_id = Column(String(length=255), ForeignKey('works.id'), primary_key=True)
     tag_id = Column(String(length=255), ForeignKey('tags.id'), primary_key=True)
 
+class Thumbnail(Base):
+    __tablename__ = 'thumbnails'
+    work_id = Column(String(length=255), ForeignKey('works.id'), primary_key=True)
+    asset_id = Column(String(length=255), ForeignKey('asset.id'), primary_key=True)
+
 class Work(Base):
 
     __tablename__ = 'works'
@@ -69,16 +92,15 @@ class Work(Base):
     title = Column(String(length=100))
     description = Column(String)
     description_html = Column(String)
-    user_id = Column(String(length=255), ForeignKey('user.id'))
-    github_url = Column(String, nullable=True)
-    work_url = Column(String, nullable=True)
-    community_id = Column(String(length=255), ForeignKey('communities.id'))
-    assets = relationship('Asset', foreign_keys='Asset.work_id')
-    private = Column(Boolean, default=False)
+    user_id = Column(String(length=255), ForeignKey('user.id'), nullable=True)
+    community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
+    visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     user = relationship('User', back_populates='works')
+    assets = relationship('Asset', foreign_keys='Asset.work_id', back_populates='work')
+    urls = relationship('UrlInfo', foreign_keys='UrlInfo.work_id', back_populates='work')
     community = relationship('Community', back_populates='works')
 
     tags = relationship(
@@ -88,16 +110,41 @@ class Work(Base):
     )
 
     comments = relationship('Comment', back_populates="work")
+    
+    thumbnail = relationship(
+        'Asset',
+        secondary=Thumbnail.__tablename__,
+        back_populates='work_for_thumbnail'
+    )
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    work_id = Column(String(length=255), ForeignKey('works.id'))
+    work_id = Column(String(length=255), ForeignKey('works.id'), nullable=True)
     asset_type = Column(Enum(AssetType))
-    thumb_url = Column(String, nullable=True)
-    url = Column(String, nullable=True)
     user_id = Column(String(length=255), ForeignKey('user.id'))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    user = relationship('User', back_populates='assets')
+    work = relationship('Work', foreign_keys=[work_id], back_populates='assets')
+
+    work_for_thumbnail = relationship(
+        'Work',
+        secondary=Thumbnail.__tablename__,
+        back_populates="thumbnail"
+    )
+
+class UrlInfo(Base):
+    id = Column(String(length=255), primary_key=True, default=generate_uuid)
+    work_id = Column(String(length=255), ForeignKey('works.id'), nullable=True)
+    url = Column(String(length=255))
+    url_type = Column(Enum(UrlType))
+    user_id = Column(String(length=255), ForeignKey('user.id'))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+
+    user = relationship('User', back_populates='urls')
+    work = relationship('Work', foreign_keys=[work_id], back_populates='urls')
 
 class Tag(Base):
 

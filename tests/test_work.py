@@ -1,155 +1,446 @@
-from schemas.community import Community
+import json
 import pytest
-from .fixtures import client, community_factory_for_test, user_factory_for_test, use_test_db_fixture, session_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private
+from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, community_factory_for_test, user_for_test, tag_for_test, work_factory_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
 
-    def test_post_work(use_test_db_fixture, community_factory_for_test, user_token_factory_for_test):
+    def test_post_work_without_auth(use_test_db_fixture, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
-        Workを投稿する
+        Workを認証なしで投稿する
         """
-        title: str = "test_work"
-        description: str = "this is test work"
-        github_url: str = "https://github.com"
-        work_url: str = "https://rsa-qk.pigeons.house/"
-        private: bool = False
-        token = user_token_factory_for_test()
+        title = 'testwork'
+        description = 'this work is test work!!'
         community = community_factory_for_test()
+        visibility = 'public'
+        asset = asset_factory_for_test()
+        thumbnail = asset_factory_for_test()
+        urls = [
+            {
+                "url": "https://github.com/PigeonsHouse/NicoCommeDon",
+                "url_type": "github"
+            }
+        ]
+
+        res = client.post('/api/v1/works', json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 403, "認証に失敗する"
+
+    def test_post_work_about_visibility(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
+        """
+        公開設定のそれぞれを投稿する
+        """
+        token = user_token_factory_for_test()
+        title = 'testwork'
+        description = 'this work is test work!!'
+        community = community_factory_for_test()
+        visibility = 'public'
+        asset = asset_factory_for_test()
+        thumbnail = asset_factory_for_test()
+        urls = [
+            {
+                "url": "https://github.com/PigeonsHouse/NicoCommeDon",
+                "url_type": "github"
+            }
+        ]
 
         res = client.post('/api/v1/works', headers={
-            "Authorization": f"Bearer { token.access_token }"
-        }, json={
-            "title": title,
-            "description": description,
-            "community_id": community.id,
-            "github_url": github_url,
-            "work_url": work_url,
-            "private": private
-        })
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
 
-        assert res.status_code == 200, 'Workの投稿に成功する'
-
+        assert res.status_code == 200, "Workの投稿に成功する"
         res_json = res.json()
         assert res_json['title'] == title
         assert res_json['description'] == description
-        assert res_json['github_url'] == github_url
-        assert res_json['work_url'] == work_url
-        dict_community = dict(community)
-        dict_community['created_at'] = dict_community['created_at'].isoformat(sep='T')
-        dict_community['updated_at'] = dict_community['updated_at'].isoformat(sep='T')
-        assert res_json['community'] == dict_community
-        assert res_json['private'] == private
+        assert res_json['visibility'] == visibility
 
-    def test_get_work(use_test_db_fixture, user_token_factory_for_test, work_for_test_public, work_for_test_private):
+        visibility = 'private'
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['visibility'] == visibility
+
+        visibility = 'draft'
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['visibility'] == visibility
+
+    def test_post_work_about_thumbnail(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
-        サインインの有り無しで他人のWorkを閲覧する
+        サムネイルのあるものないものをそれぞれ投稿する
         """
-        res_public = client.get(f'/api/v1/works/{work_for_test_public.id}')
-
-        assert res_public.status_code == 200, 'サインイン無しでpublicのWorkの取得に成功する'
-
-        res_public_json = res_public.json()
-        assert res_public_json['id'] == work_for_test_public.id
-        assert res_public_json['title'] == work_for_test_public.title
-        assert res_public_json['description'] == work_for_test_public.description
-        assert res_public_json['description_html'] == work_for_test_public.description_html
-        assert res_public_json['github_url'] == work_for_test_public.github_url
-        assert res_public_json['work_url'] == work_for_test_public.work_url
-        dict_work_for_test_public_community = dict(work_for_test_public.community)
-        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
-        assert res_public_json['community'] == dict_work_for_test_public_community
-        assert res_public_json['private'] == work_for_test_public.private
-        dict_work_for_test_public_user = dict(work_for_test_public.user)
-        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
-        assert res_public_json['user'] == dict_work_for_test_public_user
-
-        res_private = client.get(f'/api/v1/works/{work_for_test_private.id}')
-
-        assert res_private.status_code == 403, 'サインイン無しでprivateのWorkの取得に失敗する'
-
         token = user_token_factory_for_test()
-        res_public = client.get(f'/api/v1/works/{work_for_test_public.id}', headers={
-            "Authorization": f"Bearer { token.access_token }"
-        })
+        title = 'testwork'
+        description = 'this work is test work!!'
+        community = community_factory_for_test()
+        visibility = 'public'
+        asset = asset_factory_for_test()
+        urls = [
+            {
+                "url": "https://github.com/PigeonsHouse/NicoCommeDon",
+                "url_type": "github"
+            }
+        ]
 
-        assert res_public.status_code == 200, 'サインイン有りでpublicのWorkの取得に成功する'
-        
-        res_public_json = res_public.json()
-        assert res_public_json['id'] == work_for_test_public.id
-        assert res_public_json['title'] == work_for_test_public.title
-        assert res_public_json['description'] == work_for_test_public.description
-        assert res_public_json['description_html'] == work_for_test_public.description_html
-        assert res_public_json['github_url'] == work_for_test_public.github_url
-        assert res_public_json['work_url'] == work_for_test_public.work_url
-        dict_work_for_test_public_community = dict(work_for_test_public.community)
-        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
-        assert res_public_json['community'] == dict_work_for_test_public_community
-        assert res_public_json['private'] == work_for_test_public.private
-        dict_work_for_test_public_user = dict(work_for_test_public.user)
-        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
-        assert res_public_json['user'] == dict_work_for_test_public_user
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            }, json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
 
-        res_private = client.get(f'/api/v1/works/{work_for_test_private.id}', headers={
-            "Authorization": f"Bearer { token.access_token }"
-        })
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['thumbnail'] == None
 
-        assert res_private.status_code == 200, 'サインイン有りでprivateのWorkの取得に成功する'
-        
-        res_private_json = res_private.json()
-        assert res_private_json['id'] == work_for_test_private.id
-        assert res_private_json['title'] == work_for_test_private.title
-        assert res_private_json['description'] == work_for_test_private.description
-        assert res_private_json['description_html'] == work_for_test_private.description_html
-        assert res_private_json['github_url'] == work_for_test_private.github_url
-        assert res_private_json['work_url'] == work_for_test_private.work_url
-        dict_work_for_test_private_community = dict(work_for_test_private.community)
-        dict_work_for_test_private_community['created_at'] = dict_work_for_test_private_community['created_at'].isoformat(sep='T')
-        dict_work_for_test_private_community['updated_at'] = dict_work_for_test_private_community['updated_at'].isoformat(sep='T')
-        assert res_private_json['community'] == dict_work_for_test_private_community
-        assert res_private_json['private'] == work_for_test_private.private
-        dict_work_for_test_private_user = dict(work_for_test_private.user)
-        dict_work_for_test_private_user['created_at'] = dict_work_for_test_private_user['created_at'].isoformat(sep='T')
-        dict_work_for_test_private_user['updated_at'] = dict_work_for_test_private_user['updated_at'].isoformat(sep='T')
-        assert res_private_json['user'] == dict_work_for_test_private_user
+        thumbnail = asset_factory_for_test()
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
 
-    def test_get_works(use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, work_for_test_public, work_for_test_private):
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['thumbnail']['id'] == thumbnail.id
+
+    def test_post_work_about_assets(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
         """
-        サインインの有り無しでWork一覧を入手する
+        アセットのあるものないものをそれぞれ投稿する
         """
-        res_no_auth = client.get(f'/api/v1/works')
-
-        assert res_no_auth.status_code == 200, 'サインイン無しでpublicのみのWorkListの取得に成功する'
-
-        res_no_auth_json = res_no_auth.json()
-        assert len(res_no_auth_json)==1
-        get_work = res_no_auth_json[0]
-        assert get_work['id'] == work_for_test_public.id
-        assert get_work['title'] == work_for_test_public.title
-        assert get_work['description'] == work_for_test_public.description
-        assert get_work['description_html'] == work_for_test_public.description_html
-        assert get_work['github_url'] == work_for_test_public.github_url
-        assert get_work['work_url'] == work_for_test_public.work_url
-        dict_work_for_test_public_community = dict(work_for_test_public.community)
-        dict_work_for_test_public_community['created_at'] = dict_work_for_test_public_community['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_community['updated_at'] = dict_work_for_test_public_community['updated_at'].isoformat(sep='T')
-        assert get_work['community'] == dict_work_for_test_public_community
-        assert get_work['private'] == work_for_test_public.private
-        dict_work_for_test_public_user = dict(work_for_test_public.user)
-        dict_work_for_test_public_user['created_at'] = dict_work_for_test_public_user['created_at'].isoformat(sep='T')
-        dict_work_for_test_public_user['updated_at'] = dict_work_for_test_public_user['updated_at'].isoformat(sep='T')
-        assert get_work['user'] == dict_work_for_test_public_user
-
         token = user_token_factory_for_test()
-        res_with_auth = client.get(f'/api/v1/works', headers={
+        title = 'testwork'
+        description = 'this work is test work!!'
+        community = community_factory_for_test()
+        visibility = 'public'
+        thumbnail = asset_factory_for_test()
+        urls = [
+            {
+                "url": "https://github.com/PigeonsHouse/NicoCommeDon",
+                "url_type": "github"
+            }
+        ]
+
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['assets'] == []
+
+        asset = asset_factory_for_test()
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['assets'][0]['id'] == asset.id
+
+    def test_post_work_about_url(use_test_db_fixture, user_token_factory_for_test, community_factory_for_test, asset_factory_for_test, tag_for_test):
+        """
+        関連URLのあるものないものをそれぞれ投稿する
+        """
+        token = user_token_factory_for_test()
+        title = 'testwork'
+        description = 'this work is test work!!'
+        community = community_factory_for_test()
+        visibility = 'public'
+        asset = asset_factory_for_test()
+        thumbnail = asset_factory_for_test()
+
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": []
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['urls'] == []
+
+        url = "https://github.com/PigeonsHouse/NicoCommeDon"
+        url_type = "github"
+        urls = [
+            {
+                "url": url,
+                "url_type": url_type
+            }
+        ]
+        res = client.post('/api/v1/works', headers={
+                "Authorization": f"Bearer {token.access_token}"
+            },json={
+                "title": title,
+                "description": description,
+                "community_id": community.id,
+                "visibility": visibility,
+                "thumbnail_asset_id": thumbnail.id,
+                "assets_id": [
+                    asset.id
+                ],
+                "tags_id": [tag_for_test.id],
+                "urls": urls
+            }
+        )
+
+        assert res.status_code == 200, "Workの投稿に成功する"
+        res_json = res.json()
+        assert res_json['title'] == title
+        assert res_json['description'] == description
+        assert res_json['urls'][0]['url'] == url
+        assert res_json['urls'][0]['url_type'] == url_type
+
+    # def test_post_work_about_tag(use_test_db_fixture):
+    #     """
+    #     タグのあるものないものをそれぞれ投稿する
+    #     """
+
+    # def test_post_work_without_title(use_test_db_fixture):
+    #     """
+    #     Workのタイトル無しで投稿する
+    #     """
+
+    # def test_post_work_without_description(use_test_db_fixture):
+    #     """
+    #     Workの説明文なしで投稿する
+    #     """
+
+    # def test_post_work_incorrect_community(use_test_db_fixture):
+    #     """
+    #     存在しないコミュニティのIDを指定して投稿する
+    #     """
+
+    # def test_post_work_incorrect_visibility(use_test_db_fixture):
+    #     """
+    #     間違った公開設定を指定して投稿する
+    #     """
+
+    # def test_post_work_incorrect_asset(use_test_db_fixture):
+    #     """
+    #     存在しないアセットのIDを指定して投稿する
+    #     """
+
+    # def test_post_work_incorrect_thumbnail_asset(use_test_db_fixture):
+    #     """
+    #     存在しないアセットのIDをサムネイルに指定して投稿する
+    #     """
+
+    # def test_post_work_incorrect_url(use_test_db_fixture):
+    #     """
+    #     間違ったURLを指定して投稿する
+    #     """
+
+    # def test_post_work_incorrect_tag(use_test_db_fixture):
+    #     """
+    #     存在しないタグのIDを指定して投稿する
+    #     """
+
+    # def test_post_work_another_asset(use_test_db_fixture):
+    #     """
+    #     別人のAssetでWorkを投稿する
+    #     """
+
+    # def test_get_work_by_correct_id(use_test_db_fixture):
+    #     """
+    #     IDを指定してWorkを取得する
+    #     """
+
+    # def test_get_work_by_incorrect_id(use_test_db_fixture):
+    #     """
+    #     存在しないIDを指定してWorkを取得する
+    #     """
+
+    # def test_get_works(use_test_db_fixture):
+    #     """
+    #     複数のWorkを取得する
+    #     """
+
+    # def test_get_works_pagenation(use_test_db_fixture):
+    #     """
+    #     Work取得のページネーションを確認する
+    #     """
+
+    # def test_put_work(use_test_db_fixture):
+    #     """
+    #     Workの情報を変更する
+    #     """
+
+    # def test_delete_correct_work(use_test_db_fixture):
+    #     """
+    #     Workを削除する
+    #     """
+
+    # def test_delete_incorrect_work(use_test_db_fixture):
+    #     """
+    #     存在しないWorkを削除する
+    #     """
+
+    def test_get_my_works(use_test_db_fixture, user_token_factory_for_test, work_factory_for_test):
+        """
+        自分の作品を取得する
+        """
+        work = work_factory_for_test()
+        token = user_token_factory_for_test()
+        res = client.get('/api/v1/users/@me/works', headers={
             "Authorization": f"Bearer { token.access_token }"
         })
 
-        assert res_with_auth.status_code == 200, 'サインイン有りでWorkListの取得に成功する'
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0]['id'] == work.id
+
+    def test_get_my_works_without_auth(use_test_db_fixture):
+        """
+        自分の作品を認証無しで取得する
+        """
+        res = client.get('/api/v1/users/@me/works')
+
+        assert res.status_code == 403, '作品の取得に失敗する'
         
-        res_with_auth_json = res_with_auth.json()
-        assert len(res_with_auth_json) == 2
+    def test_get_his_works(use_test_db_fixture, user_token_factory_for_test, work_factory_for_test, user_factory_for_test):
+        """
+        指定したユーザーの作品を取得する
+        """
+        target_user = user_factory_for_test(email='hoge@test.jp')
+        work = work_factory_for_test(user_id=target_user.id)
+        my_token = user_token_factory_for_test()
+        res = client.get(f'/api/v1/users/{ target_user.id }/works', headers={
+            "Authorization": f"Bearer { my_token.access_token }"
+        })
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0]['id'] == work.id
+
+    def test_get_not_exist_user_works(use_test_db_fixture, user_token_factory_for_test):
+        """
+        存在しないユーザーの作品を取得する
+        """
+        token = user_token_factory_for_test()
+        res = client.get(f'/api/v1/users/hogehogeuserid/works', headers={
+            "Authorization": f"Bearer { token.access_token }"
+        })
+
+        assert res.status_code == 404, '作品の取得に失敗する'

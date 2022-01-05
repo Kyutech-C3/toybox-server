@@ -2,7 +2,7 @@ from schemas.user import Token as TokenSchema, User as UserSchema
 import pytest
 from db.models import User
 from fastapi.param_functions import Form
-from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test
+from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, user_for_test
 from cruds.users.auth import create_refresh_token, get_user
 from datetime import timedelta
 
