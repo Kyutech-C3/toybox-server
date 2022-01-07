@@ -1,0 +1,33 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy:
+    name: deploy_to_takowasa
+    runs-on: ubuntu-latest
+    steps:
+      - name: create .env file
+        run: |
+          sed -i -e /HOST_URL=/d .env
+          echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
+          echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env
+      - name: create ssh config file
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_takowasa
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          config: |
+            Host takowasa
+              HostName kodomobeya.compositecomputer.club
+              User root
+              Port 13724
+              IdentityFile ~/.ssh/id_takowasa
+      - name: deploy
+        run: |
+          rsync -av ./ sasami:/opt/toybox-server
+          ssh takowasa "cd /opt/toybox-server; docker-compose build; docker-compose down; docker-compose up -d"
