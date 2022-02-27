@@ -1,3 +1,4 @@
+from distutils import extension
 import os, shutil
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
@@ -7,7 +8,7 @@ from schemas.asset import Asset
 from schemas.common import DeleteStatus
 
 ALLOW_EXTENTIONS = {
-    'image': ['png', 'jpg', 'jpeg', 'bmp'],
+    'image': ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
     'video': ['mp4', 'mov', 'avi', 'flv'],
     'music': ['mp3', 'wav', 'm4a'],
     'zip': ['zip'],
@@ -18,13 +19,14 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     filename = file.filename
     if filename == '':
         raise HTTPException(status_code=400, detail='this file is invalid')
-    file_extention = filename[filename.rfind('.')+1:]
-    if not file_extention.lower() in ALLOW_EXTENTIONS.get(asset_type, []):
+    file_extention = filename[filename.rfind('.')+1:].lower()
+    if not file_extention in ALLOW_EXTENTIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail='this file extention is invalid')
 
     asset_orm = models.Asset(
         asset_type = asset_type,
         user_id = user_id,
+        extention = file_extention
     )
     db.add(asset_orm)
     db.commit()

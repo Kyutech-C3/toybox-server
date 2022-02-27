@@ -1,6 +1,5 @@
 from datetime import datetime
 import json
-from typing import Optional
 from .user import User
 from pydantic import BaseModel, validator
 from db.models import AssetType, Work
@@ -28,6 +27,7 @@ class BaseAsset(BaseModel):
 class Asset(BaseAsset):
     id: str
     user: User
+    extention: str
     created_at: datetime
     updated_at: datetime
 
