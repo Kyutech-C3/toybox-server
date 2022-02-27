@@ -118,6 +118,7 @@ class Asset(Base):
     work_id = Column(String(length=255), ForeignKey('works.id'), nullable=True)
     asset_type = Column(Enum(AssetType))
     user_id = Column(String(length=255), ForeignKey('user.id'))
+    extention = Column(String(length=255))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
