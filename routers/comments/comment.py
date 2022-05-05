@@ -5,7 +5,7 @@ from db import get_db
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.comments.comment import creat_comment, get_comments_by_work_id, get_reply_comments_by_comment_id, delete_by_comment_id
+from cruds.comments.comment import create_comment, get_comments_by_work_id, get_reply_comments_by_comment_id, delete_by_comment_id
 
 comment_router = APIRouter()
 
@@ -14,7 +14,7 @@ async def post_comment(payload: PostComment, work_id: str, db: Session = Depends
   user_id = None
   if user:
     user_id = user.id
-  comment = creat_comment(db, payload.content, work_id, user_id, reply_at, scope)
+  comment = create_comment(db, payload.content, work_id, user_id, reply_at, scope)
   return comment
 
 @comment_router.get('/{work_id}', response_model=list[ResponseComment])

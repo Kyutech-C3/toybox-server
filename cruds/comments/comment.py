@@ -3,7 +3,7 @@ from db import models
 from sqlalchemy.orm.session import Session
 from schemas.comment import ResponseComment
 
-def creat_comment(db: Session, content: str, work_id: str, user_id: str = None, reply_at: str = None, scope: str = None) -> ResponseComment:
+def create_comment(db: Session, content: str, work_id: str, user_id: str = None, reply_at: str = None, scope: str = None) -> ResponseComment:
     if reply_at:
         comment_orm = db.query(models.Comment).filter(models.Comment.id == reply_at).first()
         if comment_orm is None:
