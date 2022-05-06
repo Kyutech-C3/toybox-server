@@ -41,7 +41,7 @@ class DiscordGuild(BaseModel):
   permissions: Optional[str]
 
 class DiscordException(HTTPException):
-  def __init__(self, discord_status_code: int, status_code: int = 500, detail: str = 'An error occured'):
+  def __init__(self, discord_status_code: int, status_code: int = 500, detail: str = 'An error occurred'):
     super().__init__(status_code=status_code, detail=f'[Discord: {discord_status_code}] {detail}')
 
 def discord_exchange_code(code: str) -> DiscordAccessTokenResponse:

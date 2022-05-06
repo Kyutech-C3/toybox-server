@@ -50,7 +50,7 @@ class TestCommunity:
         assert res_json[1]['name'] == test2_name
         assert res_json[1]['description'] == test2_description
 
-    def test_get_community_oldestid(use_test_db_fixture, community_factory_for_test):
+    def test_get_community_oldest_id(use_test_db_fixture, community_factory_for_test):
         test_name: str = "maho"
         test_description: str = "kururinnpa"
         community_factory_for_test(name=test_name, description=test_description)
@@ -215,20 +215,3 @@ class TestCommunity:
 
         res_json = res.json()
         assert res_json['detail'] == "community_id is wrong"
-
-
-
-        
-
-
-
-
-
-
-
-
-        
-
-        
-        
-
