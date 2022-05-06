@@ -63,5 +63,3 @@ def delete_community_by_id(db: Session, community_id: str):
         raise HTTPException(status_code=404, detail="community_id is wrong")
     db.delete(delete_community)
     db.commit()
-
-    

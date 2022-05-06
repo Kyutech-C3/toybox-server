@@ -170,5 +170,3 @@ class GetCurrentUser:
 			)
 		else:
 			return None
-			
-
