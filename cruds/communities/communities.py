@@ -1,5 +1,5 @@
 from sqlalchemy.sql.functions import mode
-from routers import communities
+from routers.communities import communities
 from db import models
 from schemas.community import Community
 from sqlalchemy.orm.session import Session

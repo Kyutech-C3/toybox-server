@@ -3,9 +3,9 @@ from fastapi import APIRouter, HTTPException
 from fastapi.datastructures import UploadFile
 from fastapi.param_functions import Depends, File, Form
 from sqlalchemy.orm.session import Session
-from cruds.assets import create_asset, delete_asset_by_id
+from cruds.assets.assets import create_asset, delete_asset_by_id
 from cruds.users.auth import GetCurrentUser
-from db import get_db
+from db.main import get_db
 from schemas.asset import Asset
 from schemas.user import User
 from schemas.common import DeleteStatus

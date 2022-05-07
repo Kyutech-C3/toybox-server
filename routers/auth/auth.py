@@ -3,12 +3,12 @@ import os
 from starlette.responses import RedirectResponse
 from cruds.users.auth import authenticate_discord_user, get_password_hash, renew_token
 from fastapi.exceptions import HTTPException
-from cruds.users import create_user, get_user
+from cruds.users.users import create_user, get_user
 from schemas.user import RefreshTokenExchangeRequest, TokenResponse, UserCreateRequest
 from fastapi.params import Depends
 from db.models import User as UserModel
 from schemas.user import User
-from db import get_db
+from db.main import get_db
 from sqlalchemy.orm import Session
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordBearer

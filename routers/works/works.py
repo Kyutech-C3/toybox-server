@@ -2,11 +2,11 @@ from schemas.common import DeleteStatus
 from schemas.work import PostWork, Work
 from schemas.user import User
 from fastapi import APIRouter
-from db import get_db
+from db.main import get_db
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, set_work
+from cruds.works.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, set_work
 from typing import List
 
 work_router = APIRouter()

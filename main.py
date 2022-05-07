@@ -1,8 +1,8 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import router
-from db import engine
+from routers.main import router
+from db.main import engine
 from db.models import Base
 from fastapi.staticfiles import StaticFiles
 import os

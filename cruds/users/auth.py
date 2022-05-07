@@ -2,13 +2,13 @@ from fastapi.params import Security
 from fastapi.security import HTTPBearer
 from fastapi.security.http import HTTPAuthorizationCredentials
 from db.models import Token, User
-from db import get_db
+from db.main import get_db
 from os import stat, environ
 from schemas.user import TokenData, TokenResponse
 from fastapi.exceptions import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, status
-from cruds.users import get_user
+from cruds.users.users import get_user
 from sqlalchemy.orm.session import Session
 from jose import JWTError, jwt
 from passlib.context import CryptContext

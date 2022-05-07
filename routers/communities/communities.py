@@ -1,10 +1,10 @@
-from cruds.communities import create_community, delete_community_by_id, get_community_by_id, get_community_list, put_community_by_id
+from cruds.communities.communities import create_community, delete_community_by_id, get_community_by_id, get_community_list, put_community_by_id
 from schemas.community import BaseCommunity, Community
 from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from db import get_db
+from db.main import get_db
 from typing import List
 
 community_router = APIRouter()

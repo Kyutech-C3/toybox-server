@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 from pytest import fixture
 from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.view import refresh_materialized_view
-from cruds.works import set_work
+from cruds.works.works import set_work
 
 from db.models import User, Community
 from schemas.url_info import BaseUrlInfo
@@ -16,16 +16,16 @@ from schemas.work import Work as WorkSchema
 from schemas.asset import Asset as AssetSchema
 from schemas.community import Community as CommunitySchema
 from schemas.tag import GetTag as TagSchema
-from db import Base, get_db
+from db.main import Base, get_db
 from main import app
 import os
 from datetime import timedelta
 from cruds.users import auth
 # from cruds.works import create_work
-from cruds.assets import create_asset
-from cruds.communities import create_community
+from cruds.assets.assets import create_asset
+from cruds.communities.communities import create_community
 from typing import Callable, List, Optional
-from cruds.tags.tag import create_tag
+from cruds.tags.tags import create_tag
 
 import json
 

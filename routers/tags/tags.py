@@ -2,11 +2,11 @@ from typing import List
 from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus, PutTag
 from schemas.user import User
 from fastapi import APIRouter, HTTPException
-from db import get_db
+from db.main import get_db
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.tags.tag import create_tag, get_tag_by_id, get_tags, change_tag_by_id, delete_tag_by_id
+from cruds.tags.tags import create_tag, get_tag_by_id, get_tags, change_tag_by_id, delete_tag_by_id
 
 tag_router = APIRouter()
 

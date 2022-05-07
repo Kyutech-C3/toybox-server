@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import HTTPException
-from cruds.assets import delete_asset_by_id
-from cruds.url_infos import create_url_info, delete_url_info
+from cruds.assets.assets import delete_asset_by_id
+from cruds.url_infos.url_infos import create_url_info, delete_url_info
 from db import models
 from sqlalchemy.orm.session import Session
 from schemas.common import DeleteStatus

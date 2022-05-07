@@ -1,9 +1,9 @@
 from typing import List
 from sqlalchemy.orm.session import Session
-from cruds.works import get_works_by_user_id
-from db import get_db
+from cruds.works.works import get_works_by_user_id
+from db.main import get_db
 from cruds.users.auth import GetCurrentUser
-from cruds.users import get_user_by_id, get_users, change_user_info
+from cruds.users.users import get_user_by_id, get_users, change_user_info
 from fastapi import APIRouter
 from fastapi.params import Depends
 from schemas.work import Work

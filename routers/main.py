@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from .users import user_router
-from .works import work_router
-from .tags.tag import tag_router
-from .assets import asset_router
-from .auth import auth_router
-from .communities import community_router
+from .users.users import user_router
+from .works.works import work_router
+from .tags.tags import tag_router
+from .assets.assets import asset_router
+from .auth.auth import auth_router
+from .communities.communities import community_router
 
 router = APIRouter()
 
