@@ -1,5 +1,5 @@
-from distutils import extension
-import os, shutil
+import os
+import shutil
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
@@ -19,14 +19,14 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     filename = file.filename
     if filename == '':
         raise HTTPException(status_code=400, detail='this file is invalid')
-    file_extention = filename[filename.rfind('.')+1:].lower()
-    if not file_extention in ALLOW_EXTENTIONS.get(asset_type, []):
+    file_extention = filename[filename.rfind('.') + 1:].lower()
+    if file_extention not in ALLOW_EXTENTIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail='this file extention is invalid')
 
     asset_orm = models.Asset(
-        asset_type = asset_type,
-        user_id = user_id,
-        extention = file_extention
+        asset_type=asset_type,
+        user_id=user_id,
+        extention=file_extention
     )
     db.add(asset_orm)
     db.commit()
@@ -35,7 +35,7 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     upload_folder = os.environ.get('UPLOAD_FOLDER')
     upload_folder = f'{upload_folder}/{asset_type}/{asset_orm.id}'
     os.makedirs(upload_folder)
-    with open(os.path.join(upload_folder, f'origin.{file_extention}'),'wb+') as upload_path:
+    with open(os.path.join(upload_folder, f'origin.{file_extention}'), 'wb+') as upload_path:
         shutil.copyfileobj(file.file, upload_path)
 
     asset = Asset.from_orm(asset_orm)

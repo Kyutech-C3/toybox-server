@@ -1,5 +1,5 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
@@ -45,7 +45,7 @@ class AssetType(str, enum.Enum):
 class User(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
-    email = Column(String(length=255),unique=True)
+    email = Column(String(length=255), unique=True)
     password_hash = Column(String, nullable=True)
     display_name = Column(String(length=32))
     discord_token = Column(String, nullable=True)
@@ -145,15 +145,15 @@ class UrlInfo(Base):
 
 class Tag(Base):
 
-    __tablename__='tags'
+    __tablename__ = 'tags'
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
-    color = Column(String)  
+    color = Column(String)
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    
+
     works = relationship(
         'Work',
         secondary=Tagging.__tablename__,
@@ -164,7 +164,7 @@ class Tag(Base):
 
 class Community(Base):
 
-    __tablename__='communities'
+    __tablename__ = 'communities'
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))

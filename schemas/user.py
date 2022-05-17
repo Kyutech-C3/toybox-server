@@ -32,7 +32,7 @@ class User(BaseModel):
         orm_mode = True
 
 class Token(BaseModel):
-    refresh_token: str 
+    refresh_token: str
     user: User
     expired_at: datetime
     created_at: datetime
@@ -40,7 +40,7 @@ class Token(BaseModel):
 
     class Config:
         orm_mode = True
-    
+
     def has_expired(self):
         return self.expired_at < datetime.now()
 

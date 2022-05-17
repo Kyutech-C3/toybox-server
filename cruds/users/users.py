@@ -1,72 +1,71 @@
 from fastapi import HTTPException
-from sqlalchemy.sql.functions import user
 from db import models
 from sqlalchemy.orm.session import Session
 from schemas.user import User as UserSchema
 
 
 def get_user(db: Session, email: str) -> UserSchema:
-	user_orm = db.query(models.User).filter(models.User.email == email).first()
-	user = UserSchema.from_orm(user_orm)
-	return user
+    user_orm = db.query(models.User).filter(models.User.email == email).first()
+    user = UserSchema.from_orm(user_orm)
+    return user
 
 def get_user_by_id(db: Session, user_id: str) -> UserSchema:
-	user_orm = db.query(models.User).filter(models.User.id == user_id).first()
-	if user_orm is None:
-		raise HTTPException(
+    user_orm = db.query(models.User).filter(models.User.id == user_id).first()
+    if user_orm is None:
+        raise HTTPException(
             status_code=404,
             detail="The tag is not exist"
         )
-	user = UserSchema.from_orm(user_orm)
-	return user
+    user = UserSchema.from_orm(user_orm)
+    return user
 
 def get_users(db: Session, limit: int = 30, offset_id: str = None) -> list[UserSchema]:
-	user_list = []
-	users = db.query(models.User)
+    user_list = []
+    users = db.query(models.User)
 
-	if users is None:
-		raise HTTPException(
+    if users is None:
+        raise HTTPException(
             status_code=404,
             detail="User is not exist"
         )
-	
-	if offset_id is not None:
-		limit_users = db.query(models.User).filter(models.User.id == offset_id).first()
-		if limit_users is None:
-			raise HTTPException(
-				status_code=404,
-				detail="Users are not exist"
-			)
-		limit_created_at = limit_users.created_at
-		users = users.filter(models.User.created_at > limit_created_at)
-	users = users.limit(limit)
-	users = users.all()
-	
-	for user_orm in users:
-		user = UserSchema.from_orm(user_orm)
-		user_list.append(user)
 
-	return user_list
+    if offset_id is not None:
+        limit_users = db.query(models.User).filter(models.User.id == offset_id).first()
+        if limit_users is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Users are not exist"
+            )
+        limit_created_at = limit_users.created_at
+        users = users.filter(models.User.created_at > limit_created_at)
+    users = users.limit(limit)
+    users = users.all()
+
+    for user_orm in users:
+        user = UserSchema.from_orm(user_orm)
+        user_list.append(user)
+
+    return user_list
 
 def create_user(db: Session, user: UserSchema):
-	db.add(user)
-	db.commit()
+    db.add(user)
+    db.commit()
 
-	return get_user(db, user.email)
+    return get_user(db, user.email)
 
 def change_user_info(db: Session, user_id: str, display_name: str, profile: str, avatar_url: str, twitter_id: str, github_id: str) -> UserSchema:
-	user_orm = db.query(models.User).filter(models.User.id == user_id).first()
-	if user_orm is None:
-		raise HTTPException(status_code=404, detail="The user specified by id is not exist")
+    user_orm = db.query(models.User).filter(models.User.id == user_id).first()
+    if user_orm is None:
+        raise HTTPException(status_code=404, detail="The user specified by id is not exist")
 
-	user_orm.display_name = user_orm.display_name if display_name is None else display_name
-	user_orm.profile = user_orm.profile if profile is None else profile
-	user_orm.avatar_url = user_orm.avatar_url if avatar_url is None else avatar_url
-	user_orm.twitter_id = user_orm.twitter_id if twitter_id is None else twitter_id
-	user_orm.github_id = user_orm.github_id if github_id is None else github_id
+    user_orm.display_name = user_orm.display_name if display_name is None else display_name
+    user_orm.profile = user_orm.profile if profile is None else profile
+    user_orm.avatar_url = user_orm.avatar_url if avatar_url is None else avatar_url
+    user_orm.twitter_id = user_orm.twitter_id if twitter_id is None else twitter_id
+    user_orm.github_id = user_orm.github_id if github_id is None else github_id
 
-	db.commit()
-	db.refresh(user_orm)
-	user = UserSchema.from_orm(user_orm)
+    db.commit()
+    db.refresh(user_orm)
+    user = UserSchema.from_orm(user_orm)
 
-	return user
+    return user

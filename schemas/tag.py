@@ -1,6 +1,6 @@
 from typing import Optional
 from .community import Community
-from pydantic import BaseModel, ValidationError, validator
+from pydantic import BaseModel, validator
 import re
 
 class BaseTag(BaseModel):

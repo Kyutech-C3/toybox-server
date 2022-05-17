@@ -1,5 +1,3 @@
-from sqlalchemy.sql.functions import mode
-from routers.communities import communities
 from db import models
 from schemas.community import Community
 from sqlalchemy.orm.session import Session
@@ -24,7 +22,7 @@ def create_community(db: Session, name: str, description: str) -> Community:
     community = Community.from_orm(community_orm)
     return community
 
-def get_community_list(db: Session, limit: int = 30, oldest_id: str = None) -> List[Community]: 
+def get_community_list(db: Session, limit: int = 30, oldest_id: str = None) -> List[Community]:
     community_list_orm = db.query(models.Community).order_by(models.Community.created_at)
     if oldest_id:
         limit_community = db.query(models.Community).filter(models.Community.id == oldest_id).first()
@@ -58,7 +56,7 @@ def put_community_by_id(db: Session, name: str, description: str, community_id: 
     return community_put
 
 def delete_community_by_id(db: Session, community_id: str):
-    delete_community = db.query(models.Community).filter(models.Community.id==community_id).first()
+    delete_community = db.query(models.Community).filter(models.Community.id == community_id).first()
     if delete_community is None:
         raise HTTPException(status_code=404, detail="community_id is wrong")
     db.delete(delete_community)

@@ -2,7 +2,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from .models import *
+from .models import Base
 import os
 
 DATABASE = 'postgresql'

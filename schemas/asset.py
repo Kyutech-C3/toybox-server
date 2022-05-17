@@ -2,7 +2,7 @@ from datetime import datetime
 import json
 from .user import User
 from pydantic import BaseModel, validator
-from db.models import AssetType, Work
+from db.models import AssetType
 
 class BaseAsset(BaseModel):
     asset_type: str

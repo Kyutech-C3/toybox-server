@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, HTTPException
 from fastapi.datastructures import UploadFile
 from fastapi.param_functions import Depends, File, Form

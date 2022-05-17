@@ -2,19 +2,19 @@ from typing import List
 from fastapi import HTTPException
 from db import models
 from sqlalchemy.orm.session import Session
-from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus
+from schemas.tag import GetTag, TagResponsStatus
 
 def create_tag(db: Session, name: str, color_code: str, community_id: str) -> GetTag:
     if name == '':
         raise HTTPException(status_code=400, detail="Name is empty")
 
     result_by_name_and_community_id = db.query(models.Tag).filter(models.Tag.community_id == community_id, models.Tag.name == name).first()
-    if result_by_name_and_community_id != None:
+    if result_by_name_and_community_id is not None:
         raise HTTPException(
             status_code=400,
             detail="The tag is exist"
         )
-    
+
     result_by_community_id = db.query(models.Community).filter(models.Community.id == community_id).first()
     if result_by_community_id is None:
         raise HTTPException(
@@ -60,7 +60,7 @@ def get_tags(db: Session, limit: int = 30, offset_id: str = None, community_id: 
     tag_orm = tag_orm.limit(limit)
     tag_orm = tag_orm.all()
     tag_list = list(map(GetTag.from_orm, tag_orm))
-    
+
     return tag_list
 
 def get_tag_by_id(db: Session, tag_id: str) -> GetTag:
@@ -81,7 +81,7 @@ def change_tag_by_id(db: Session, name: str, community_id: str, color: str, tag_
             detail="The tag specified by id is not exist"
         )
     tag_orm.name = tag_orm.name if name is None else name
-    if community_id != None:
+    if community_id is not None:
         result_by_community_id = db.query(models.Community).filter(models.Community.id == community_id).first()
         if result_by_community_id is None:
             raise HTTPException(
@@ -98,12 +98,12 @@ def change_tag_by_id(db: Session, name: str, community_id: str, color: str, tag_
 
 def delete_tag_by_id(db: Session, tag_id: str) -> TagResponsStatus:
     tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
-    if tag_orm == None:
+    if tag_orm is None:
         raise HTTPException(
             status_code=400,
             detail="The tag is not exist"
         )
-    
+
     db.delete(tag_orm)
     db.commit()
 
