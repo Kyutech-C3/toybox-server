@@ -42,4 +42,4 @@ jobs:
           ssh takowasa "cd /opt/toybox-server; docker-compose build; docker-compose down; docker-compose up -d"
       - name: migrate
         run: |
-          ssh takowasa "cd /opt/toybox-server; docker-compose exec api pipenv run alembic upgrade head"
+          ssh takowasa "cd /opt/toybox-server; docker-compose exec -T api pipenv run alembic upgrade head"
