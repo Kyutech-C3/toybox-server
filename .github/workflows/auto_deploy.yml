@@ -32,7 +32,7 @@ jobs:
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
           config: |
             Host takowasa
-              HostName kodomobeya.compositecomputer.club
+              HostName 160.251.82.37
               User root
               Port 13724
               IdentityFile ~/.ssh/id_takowasa
