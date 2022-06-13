@@ -9,10 +9,10 @@ from .comments.comment import comment_router
 
 router = APIRouter()
 
+work_router.include_router(comment_router)
 router.include_router(auth_router, prefix='/auth', tags=['auth'])
 router.include_router(user_router, prefix='/users', tags=['users'])
 router.include_router(tag_router, prefix='/tags', tags=['tags'])
 router.include_router(work_router, prefix='/works', tags=['works'])
 router.include_router(asset_router, prefix='/assets', tags=['assets'])
 router.include_router(community_router, prefix='/communities', tags=['communities'])
-router.include_router(comment_router, prefix='/comments', tags=['comments'])

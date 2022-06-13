@@ -188,7 +188,6 @@ class Comment(Base):
     content = Column(String, nullable=False)
     work_id = Column(String, ForeignKey('works.id'))
     user_id = Column(String, ForeignKey('user.id'), nullable=True)
-    number_of_reply = Column(Integer)
     reply_at = Column(String, nullable=True)
     scope = Column(String, nullable=True)
     created_at = Column(DateTime, default=func.now())
