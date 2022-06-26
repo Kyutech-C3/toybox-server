@@ -12,14 +12,12 @@ import markdown
 # TODO: CASCADEを導入する
 
 def set_work(db: Session, title: str, description: str, user_id: str, 
-             community_id: str, visibility: str, thumbnail_asset_id: str,
+             visibility: str, thumbnail_asset_id: str,
              assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
     
-    # title, community_idのvalidator
+
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
-    if db.query(models.Community).get(community_id) is None:
-        raise HTTPException(status_code=400, detail='this community id is invalid')
 
     # DB書き込み
     md = markdown.Markdown(extensions=['tables'])
@@ -28,7 +26,6 @@ def set_work(db: Session, title: str, description: str, user_id: str,
         description = description,
         description_html = md.convert(description),
         user_id = user_id,
-        community_id = community_id,
         visibility = visibility,
     )
     db.add(work_orm)
@@ -108,7 +105,7 @@ def get_work_by_id(db: Session, work_id: str, auth: bool = False) -> Work:
     return work
 
 def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str, 
-                 community_id: str, visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
+                visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
                  urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
     
     work_orm = db.query(models.Work).get(work_id)
@@ -117,18 +114,15 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     if work_orm.user_id != user_id:
         raise HTTPException(status_code=401, detail='this work\'s author isn\'t you')
 
-    # title, community_idのvalidator
+    # titleのvalidator
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
-    if db.query(models.Community).get(community_id) is None:
-        raise HTTPException(status_code=400, detail='this community id is invalid')
 
     # DB更新
     md = markdown.Markdown(extensions=['tables'])
     work_orm.title = title
     work_orm.description = description
     work_orm.description_html = md.convert(description)
-    work_orm.community_id = community_id
     work_orm.visibility = visibility
     db.add(work_orm)
     db.commit()

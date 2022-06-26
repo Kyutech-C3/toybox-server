@@ -91,7 +91,6 @@ class Work(Base):
     description = Column(String)
     description_html = Column(String)
     user_id = Column(String(length=255), ForeignKey('user.id'), nullable=True)
-    community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -99,7 +98,6 @@ class Work(Base):
     user = relationship('User', back_populates='works')
     assets = relationship('Asset', foreign_keys='Asset.work_id', back_populates='work')
     urls = relationship('UrlInfo', foreign_keys='UrlInfo.work_id', back_populates='work')
-    community = relationship('Community', back_populates='works')
 
     tags = relationship(
         'Tag',
@@ -149,7 +147,6 @@ class Tag(Base):
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
-    community_id = Column(String(length=255), ForeignKey('communities.id'), nullable=True)
     color = Column(String)  
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -159,20 +156,3 @@ class Tag(Base):
         secondary=Tagging.__tablename__,
         back_populates="tags"
     )
-
-    community = relationship('Community', back_populates='tags')
-
-class Community(Base):
-
-    __tablename__='communities'
-
-    id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    name = Column(String(length=32))
-    description = Column(String)
-    description_html = Column(String)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-
-    works = relationship('Work', back_populates='community')
-
-    tags = relationship('Tag', back_populates='community')
