@@ -33,6 +33,10 @@ VSCodeを使っている場合は、devcontainerを用いた開発を推奨。
 
 1. `uvicorn main:app --reload --host 0.0.0.0`
 
+## DBへの初期データ挿入について
+1. コンテナを立てる
+2. `./db_init.sh`を実行
+
 
 ## DBの更新
 alembicを使用
