@@ -246,7 +246,7 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
     works = list(map(Work.from_orm, works_orm))
     return works
 
-def search_work_by_option(db: Session, tags: list[str], auth: bool = False) -> list[Work]:
+def search_work_by_option(db: Session, limit: int, oldest_id: str, tags: list[str], auth: bool = False) -> list[Work]:
     works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tags)).group_by(models.Work.id)
 
     if auth:
@@ -254,7 +254,13 @@ def search_work_by_option(db: Session, tags: list[str], auth: bool = False) -> l
     else:
         works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
 
-    works_orm = works_orm.all()
+    if oldest_id:
+        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
+        if oldest_work is None:
+            raise HTTPException(status_code=400, detail='this oldest_id is invalid')
+        works_orm = works_orm.filter(models.Work.created_at < oldest_work.created_at)
+
+    works_orm = works_orm.limit(limit).all()
 
     works = list(map(Work.from_orm, works_orm))
 

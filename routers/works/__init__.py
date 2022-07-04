@@ -42,7 +42,7 @@ async def delete_work(work_id: str, db: Session = Depends(get_db)):
     return result
 
 @work_router.get('/search', response_model=list[Work])
-async def search_work(payload: SearchOption, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
+async def search_work(payload: SearchOption, limit: int = 30, oldest_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
     auth = user is not None
-    works = search_work_by_option(db, payload.tags, auth)
+    works = search_work_by_option(db, limit, oldest_id, payload.tags, auth)
     return works
