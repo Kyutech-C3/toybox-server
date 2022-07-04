@@ -1,12 +1,12 @@
 from schemas.common import DeleteStatus
-from schemas.work import PostWork, Work
+from schemas.work import PostWork, SearchOption, Work
 from schemas.user import User
 from fastapi import APIRouter
 from db import get_db
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, set_work
+from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, search_work_by_option, set_work
 from typing import List
 
 work_router = APIRouter()
@@ -40,3 +40,9 @@ async def put_work(work_id: str, payload: PostWork, db: Session = Depends(get_db
 async def delete_work(work_id: str, db: Session = Depends(get_db)):
     result = delete_work_by_id(db, work_id)
     return result
+
+@work_router.get('/search', response_model=list[Work])
+async def search_work(payload: SearchOption, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
+    auth = user is not None
+    works = search_work_by_option(db, payload.tags, auth)
+    return works

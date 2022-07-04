@@ -233,7 +233,7 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
-    
+
     works_orm = db.query(models.Work).filter(models.Work.user_id == user_id)
 
     if at_me:
@@ -244,4 +244,18 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
         works_orm = works_orm.filter(models.Work.visibility == 'public').all()
 
     works = list(map(Work.from_orm, works_orm))
+    return works
+
+def search_work_by_option(db: Session, tags: list[str], auth: bool = False) -> list[Work]:
+    works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tags)).group_by(models.Work.id)
+
+    if auth:
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+    else:
+        works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
+
+    works_orm = works_orm.all()
+
+    works = list(map(Work.from_orm, works_orm))
+
     return works

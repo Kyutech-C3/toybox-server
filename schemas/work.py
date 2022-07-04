@@ -40,3 +40,6 @@ class Work(BaseModel):
 
     class Config:
         orm_mode = True
+
+class SearchOption(BaseModel):
+    tags: list[str]
