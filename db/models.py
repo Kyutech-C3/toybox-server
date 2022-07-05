@@ -170,7 +170,7 @@ class Comment(Base):
     work_id = Column(String, ForeignKey('works.id'))
     user_id = Column(String, ForeignKey('user.id'), nullable=True)
     reply_at = Column(String, nullable=True)
-    scope = Column(String, nullable=True)
+    visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     user = relationship("User", back_populates="comments")

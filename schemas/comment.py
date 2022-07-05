@@ -13,7 +13,7 @@ class ResponseReplyComment(PostComment):
     id: str
     user: Optional[User]
     work_id: str
-    scope: Optional[str]
+    visibility: Optional[str]
     reply_at: Optional[str]
     created_at: datetime
     updated_at: datetime
@@ -25,7 +25,7 @@ class ResponseComment(ResponseReplyComment):
     id: str
     user: Optional[User]
     work_id: str
-    scope: Optional[str]
+    visibility: Optional[str]
     number_of_reply: int
     reply_at: Optional[str]
     created_at: datetime
@@ -33,3 +33,4 @@ class ResponseComment(ResponseReplyComment):
 
     class Config:
         orm_mode = True
+        

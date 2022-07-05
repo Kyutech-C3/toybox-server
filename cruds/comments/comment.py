@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 from schemas.comment import ResponseComment, ResponseReplyComment
 from schemas.common import DeleteStatus
 
-def create_comment(db: Session, content: str, work_id: str, user_id: str = None, reply_at: str = None, scope: str = None) -> ResponseComment:
+def create_comment(db: Session, content: str, work_id: str, user_id: str = None, reply_at: str = None, visibility: models.Visibility = 'public') -> ResponseComment:
     if reply_at:
         comment_orm = db.query(models.Comment).filter(models.Comment.id == reply_at).first()
         if comment_orm is None:
@@ -18,19 +18,13 @@ def create_comment(db: Session, content: str, work_id: str, user_id: str = None,
                 status_code=400,
                 detail="Can't reply to this reply_at"
             )
-
-    scope_volume: str = None
-    
-    if scope:
-        scope_volume = user_id
-
     
     comment_orm = models.Comment(
         content = content,
         work_id = work_id,
         user_id = user_id,
         reply_at = reply_at,
-        scope = scope_volume
+        visibility = visibility
     )
 
     db.add(comment_orm)
@@ -51,19 +45,9 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
         )
     
     comments_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == None)
-    if comments_orm is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Comments is not exist"
-        )
     
     if not auth:
-        comments_orm = comments_orm.filter(models.Comment.scope == None)
-        if comments_orm is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Public comments is not exist"
-            )
+        comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
     if offset_id:
         offset = db.query(models.Comment).filter(models.Comment.id == offset_id).first()
@@ -80,12 +64,7 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
     for item in comments_orm:
         reply_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == item.id)
         if not auth:
-            reply_orm = reply_orm.filter(models.Comment.scope == None)
-            if reply_orm is None:
-                raise HTTPException(
-                    status_code=404,
-                    detail="Public comments is not exist"
-                )
+            reply_orm = reply_orm.filter(models.Comment.visibility == models.Visibility.public)
         item.number_of_reply = len(reply_orm.all())
 
     comments = list(map(ResponseComment.from_orm, comments_orm))
@@ -108,19 +87,9 @@ def get_reply_comments_by_comment_id(db: Session, comment_id: str, work_id: str,
         )
     
     comments_orm = db.query(models.Comment).filter(models.Comment.reply_at == comment_id)
-    if comments_orm is None:
-        raise HTTPException(
-            status_code=404,
-            detail="Comments is not exist"
-        )
 
     if not auth:
-        comments_orm = comments_orm.filter(models.Comment.scope == None)
-        if comments_orm is None:
-            raise HTTPException(
-                status_code=404,
-                detail="Public comments is not exist"
-            )
+        comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
     if offset_id:
         offset = db.query(models.Comment).filter(models.Comment.id == offset_id).first()
@@ -151,13 +120,15 @@ def delete_by_comment_id(db: Session, comment_id: str = None, work_id: str = Non
             status_code=404,
             detail="user_id is invalid"
         )
+    
+    if comment.reply_at is None:
+        db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == comment_id).delete()
 
     db.delete(comment)
-
-    db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == comment_id).delete()
-
     db.commit()
 
-    result = "OK"
+    print("ok")
+
+    result = {"status": "OK"}
 
     return result
