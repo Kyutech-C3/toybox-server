@@ -110,7 +110,6 @@ def discord_verify_user_belongs_to_valid_guild(access_token: str) -> bool:
   guilds = discord_fetch_user_guilds(access_token=access_token)
   valid_guild_id = os.environ.get('DISCORD_GUILD_ID')
   for guild in guilds:
-    print(guild.id, '==', valid_guild_id)
     if guild.id == valid_guild_id:
       return True
 

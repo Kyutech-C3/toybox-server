@@ -22,7 +22,6 @@ class TestTag:
         assert res.status_code == 200, 'tagの作成に成功する'
 
         res_json = res.json()
-        print(res_json)
         assert res_json['name'] == name
         assert res_json['color'] == color
 
@@ -81,7 +80,6 @@ class TestTag:
 
         res_json = res.json()
 
-        print(res_json)
         assert res_json['id'] == tag_id
         assert res_json['name'] == name
         assert res_json['color'] == color
@@ -106,7 +104,6 @@ class TestTag:
         assert res.status_code == 200, 'タグの編集に成功する'
 
         res_json = res.json()
-        print(res_json)
         assert res_json['id'] == tag_id
         assert res_json['name'] == name
         assert res_json['color'] == color
@@ -127,5 +124,4 @@ class TestTag:
         assert res.status_code == 200, 'タグの削除に成功する'
 
         res_json = res.json()
-        print(res_json)
         assert res_json == {'status': 'OK'}
