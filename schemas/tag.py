@@ -1,5 +1,4 @@
 from typing import Optional
-from .community import Community
 from pydantic import BaseModel, ValidationError, validator
 import re
 
@@ -14,7 +13,6 @@ class BaseTag(BaseModel):
         return v
 
 class PostTag(BaseTag):
-    community_id: str
 
     class Config:
         orm_mode = True
@@ -22,11 +20,9 @@ class PostTag(BaseTag):
 class PutTag(PostTag):
     name: Optional[str]
     color: Optional[str]
-    community_id: Optional[str]
 
 class GetTag(BaseTag):
     id: str
-    community: Community
 
     class Config:
         orm_mode = True

@@ -4,7 +4,6 @@ from pydantic.class_validators import validator
 from db.models import Visibility
 from schemas.tag import GetTag
 from schemas.url_info import BaseUrlInfo, UrlInfo
-from .community import Community
 from .user import User
 from .asset import Asset
 from pydantic import BaseModel
@@ -12,7 +11,6 @@ from pydantic import BaseModel
 class PostWork(BaseModel):
     title: str
     description: str
-    community_id: str
     visibility: str
     thumbnail_asset_id: Optional[str]
     assets_id: List[str]
@@ -32,7 +30,6 @@ class Work(BaseModel):
     description: str
     description_html: str
     user: User
-    community: Community
     assets: List[Asset]
     urls: List[UrlInfo]
     visibility: str

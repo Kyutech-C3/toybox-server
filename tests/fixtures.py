@@ -9,12 +9,11 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.view import refresh_materialized_view
 from cruds.works import set_work
 
-from db.models import User, Community
+from db.models import User
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
 from schemas.work import Work as WorkSchema
 from schemas.asset import Asset as AssetSchema
-from schemas.community import Community as CommunitySchema
 from schemas.tag import GetTag as TagSchema
 from db import Base, get_db
 from main import app
@@ -23,7 +22,6 @@ from datetime import timedelta
 from cruds.users import auth
 # from cruds.works import create_work
 from cruds.assets import create_asset
-from cruds.communities import create_community
 from typing import Callable, List, Optional
 from cruds.tags.tag import create_tag
 
@@ -162,27 +160,10 @@ def user_token_factory_for_test(
   return factory
     
 @pytest.fixture
-def community_factory_for_test(
-  session_for_test: Session
-  ) -> Callable[[Session, str, str],CommunitySchema]:
-  def community_for_test(
-    session_for_test: Session = session_for_test,
-    name: str = "test_community",
-    description: str = "this is test community"
-  ) -> CommunitySchema:
-    """
-    Create test community
-    """
-    c = create_community(session_for_test, name, description)
-    return c
-  return community_for_test
-
-@pytest.fixture
 def work_factory_for_test(
   session_for_test: Session,
   user_for_test: UserSchema,
   asset_factory_for_test: Callable[[Session, str, UploadFile],AssetSchema],
-  community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
   ) -> Callable[[Session, str, str],WorkSchema]:
 
   def work_for_test(
@@ -199,7 +180,6 @@ def work_factory_for_test(
     """
     Create test work
     """
-    community = community_factory_for_test()
     image_asset_for_test = asset_factory_for_test()
     thumbnail_id = image_asset_for_test.id if exist_thumbnail else None
     assets_id = []
@@ -220,7 +200,7 @@ def work_factory_for_test(
     user_id_for_work = user_id if user_id else user_for_test.id
 
     w = set_work(
-      session_for_test, title, description, user_id_for_work, community.id, visibility, 
+      session_for_test, title, description, user_id_for_work,visibility, 
       thumbnail_id, assets_id, urls, tags_id
     )
     return w
@@ -256,7 +236,6 @@ def image_asset_for_test(
 
 @pytest.fixture
 def tag_for_test(
-  community_factory_for_test: Callable[[Session, str, str],CommunitySchema],
   session_for_test: Session,
   name: str = "test_tag",
   color: str = "#FFFFFF"
@@ -264,6 +243,5 @@ def tag_for_test(
   """
   Create test tag
   """
-  community = community_factory_for_test()
-  c = create_tag(session_for_test, name, color, community.id)
+  c = create_tag(session_for_test, name, color)
   return c

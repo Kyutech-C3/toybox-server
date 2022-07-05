@@ -1,0 +1,45 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  deploy:
+    name: deploy_to_takowasa
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: create asset folder
+        run: mkdir assets
+      - name: create .env file
+        run: |
+          cp .env.sample .env
+          sed -i -e /=$/d .env
+          sed -i -e /HOST_URL=/d .env
+          echo "DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}" >> .env
+          echo "DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}" >> .env
+          echo "DISCORD_GUILD_ID=${{ secrets.DISCORD_GUILD_ID }}" >> .env
+          echo "TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}" >> .env
+          echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
+          echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env
+      - name: create ssh config file
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_takowasa
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+          config: |
+            Host takowasa
+              HostName 160.251.82.37
+              User root
+              Port 13724
+              IdentityFile ~/.ssh/id_takowasa
+      - name: deploy
+        run: |
+          rsync -av ./ takowasa:/opt/toybox-server
+          ssh takowasa "cd /opt/toybox-server; docker-compose build; docker-compose down; docker-compose up -d"
+      - name: migrate
+        run: |
+          ssh takowasa "cd /opt/toybox-server; docker-compose exec -T api pipenv run alembic upgrade head"

@@ -62,6 +62,9 @@ def authenticate_discord_user(discord_token: DiscordAccessTokenResponse, db: Ses
 		)
 		db.add(u)
 		db.commit()
+	else:
+		u.avatar_url="https://cdn.discordapp.com/avatars/{user_id}/{avatar_id}.png".format(user_id = discord_user.id, avatar_id = discord_user.avatar)
+		db.commit()
 
 	token_response = create_tokens(u, db)
 	return token_response
