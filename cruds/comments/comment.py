@@ -127,8 +127,6 @@ def delete_by_comment_id(db: Session, comment_id: str = None, work_id: str = Non
     db.delete(comment)
     db.commit()
 
-    print("ok")
-
     result = {"status": "OK"}
 
     return result
