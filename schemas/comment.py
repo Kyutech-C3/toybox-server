@@ -33,4 +33,3 @@ class ResponseComment(ResponseReplyComment):
 
     class Config:
         orm_mode = True
-        
