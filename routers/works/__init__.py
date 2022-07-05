@@ -23,6 +23,12 @@ async def get_works(limit: int = 30, oldest_id: str = None, db: Session = Depend
     works = get_works_by_limit(db, limit, oldest_id, auth=auth)
     return works
 
+@work_router.get('/search', response_model=list[Work])
+async def search_work(payload: SearchOption, limit: int = 30, oldest_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
+    auth = user is not None
+    works = search_work_by_option(db, limit, oldest_id, payload.tags, auth)
+    return works
+
 @work_router.get('/{work_id}', response_model=Work)
 async def get_work(work_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
     auth = user is not None
@@ -40,9 +46,3 @@ async def put_work(work_id: str, payload: PostWork, db: Session = Depends(get_db
 async def delete_work(work_id: str, db: Session = Depends(get_db)):
     result = delete_work_by_id(db, work_id)
     return result
-
-@work_router.get('/search', response_model=list[Work])
-async def search_work(payload: SearchOption, limit: int = 30, oldest_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
-    auth = user is not None
-    works = search_work_by_option(db, limit, oldest_id, payload.tags, auth)
-    return works

@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import HTTPException
+from sqlalchemy import desc, func
 from cruds.assets import delete_asset_by_id
 from cruds.url_infos import create_url_info, delete_url_info
 from db import models
@@ -240,12 +241,13 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
     return works
 
 def search_work_by_option(db: Session, limit: int, oldest_id: str, tags: list[str], auth: bool = False) -> list[Work]:
-    works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tags)).group_by(models.Work.id)
+    works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tags))
+    works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tags))
 
     if auth:
-        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
-    else:
         works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
+    else:
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
 
     if oldest_id:
         oldest_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
@@ -253,7 +255,7 @@ def search_work_by_option(db: Session, limit: int, oldest_id: str, tags: list[st
             raise HTTPException(status_code=400, detail='this oldest_id is invalid')
         works_orm = works_orm.filter(models.Work.created_at < oldest_work.created_at)
 
-    works_orm = works_orm.limit(limit).all()
+    works_orm = works_orm.order_by(desc(models.Work.created_at)).limit(limit).all()
 
     works = list(map(Work.from_orm, works_orm))
 

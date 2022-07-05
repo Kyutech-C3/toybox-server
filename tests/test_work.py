@@ -1,6 +1,8 @@
 import json
 import pytest
-from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, user_for_test, tag_for_test, work_factory_for_test
+
+from db.models import Visibility
+from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, user_for_test, tag_for_test, work_factory_for_test, tag_factory_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:
@@ -360,7 +362,7 @@ class TestWork:
     #     複数のWorkを取得する
     #     """
 
-    # def test_get_works_pagenation(use_test_db_fixture):
+    # def test_get_works_pagination(use_test_db_fixture):
     #     """
     #     Work取得のページネーションを確認する
     #     """
@@ -429,3 +431,139 @@ class TestWork:
         })
 
         assert res.status_code == 404, '作品の取得に失敗する'
+
+    def test_search_works_by_tag(use_test_db_fixture, user_token_factory_for_test, tag_factory_for_test, work_factory_for_test):
+        """
+        タグから作品を絞り込んで検索する
+        """
+        token = user_token_factory_for_test()
+
+        test_tag1 = tag_factory_for_test(name='testtag1', color='#ff3030')
+        test_tag2 = tag_factory_for_test(name='testtag2', color='#30ff30')
+        test_tag3 = tag_factory_for_test(name='testtag3', color='#3030ff')
+        test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
+        test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
+
+        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+
+        res = client.get('/api/v1/works/search', headers={
+            'Authorization': f'Bearer { token.access_token }'
+            }, json={
+                'tags': [
+                    test_tag1.id
+                ]
+            }
+        )
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 2
+        assert res_json[0].get('title') == work3.title
+        assert res_json[1].get('title') == work1.title
+
+        res = client.get('/api/v1/works/search', headers={
+            'Authorization': f'Bearer { token.access_token }'
+            }, json={
+                'tags': [
+                    test_tag5.id
+                ]
+            }
+        )
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 3
+        assert res_json[0].get('title') == work3.title
+        assert res_json[1].get('title') == work2.title
+        assert res_json[2].get('title') == work1.title
+
+    def test_search_works_by_some_tag(use_test_db_fixture, user_token_factory_for_test, tag_factory_for_test, work_factory_for_test):
+        """
+        複数のタグから作品を絞り込んで検索する
+        """
+        token = user_token_factory_for_test()
+
+        test_tag1 = tag_factory_for_test(name='testtag1', color='#ff3030')
+        test_tag2 = tag_factory_for_test(name='testtag2', color='#30ff30')
+        test_tag3 = tag_factory_for_test(name='testtag3', color='#3030ff')
+        test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
+        test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
+
+        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+
+        res = client.get('/api/v1/works/search', headers={
+            'Authorization': f'Bearer { token.access_token }'
+            }, json={
+                'tags': [
+                    test_tag1.id,
+                    test_tag4.id
+                ]
+            }
+        )
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0].get('title') == work3.title
+
+    def test_search_works_by_tag_without_auth(use_test_db_fixture, tag_factory_for_test, work_factory_for_test):
+        """
+        認証無しでタグから作品を絞り込んで検索する
+        """
+        test_tag1 = tag_factory_for_test(name='testtag1', color='#ff3030')
+        test_tag2 = tag_factory_for_test(name='testtag2', color='#30ff30')
+        test_tag3 = tag_factory_for_test(name='testtag3', color='#3030ff')
+        test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
+        test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
+
+        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+
+        res = client.get('/api/v1/works/search', json={
+                'tags': [
+                    test_tag1.id
+                ]
+            }
+        )
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 1
+        assert res_json[0].get('title') == work1.title
+
+    def test_search_works_by_strict_tag(use_test_db_fixture, user_token_factory_for_test, tag_factory_for_test, work_factory_for_test):
+        """
+        存在しない条件でタグから作品を絞り込んで検索する
+        """
+        token = user_token_factory_for_test()
+
+        test_tag1 = tag_factory_for_test(name='testtag1', color='#ff3030')
+        test_tag2 = tag_factory_for_test(name='testtag2', color='#30ff30')
+        test_tag3 = tag_factory_for_test(name='testtag3', color='#3030ff')
+        test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
+        test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
+
+        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+
+        res = client.get('/api/v1/works/search', headers={
+            'Authorization': f'Bearer { token.access_token }'
+            }, json={
+                'tags': [
+                    test_tag1.id,
+                    test_tag2.id,
+                    test_tag4.id
+                ]
+            }
+        )
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json) == 0
+        assert res_json == []

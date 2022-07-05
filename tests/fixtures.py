@@ -1,31 +1,26 @@
-from fastapi.datastructures import UploadFile
+import os
+import json
 import sqlalchemy
-import pytest
-from sqlalchemy.orm import sessionmaker
 import sqlalchemy_utils
+import pytest
+from datetime import timedelta
+from typing import Callable, List, Optional
 from fastapi.testclient import TestClient
-from pytest import fixture
+from fastapi.datastructures import UploadFile
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
-from sqlalchemy_utils.view import refresh_materialized_view
+from main import app
+from db import Base, get_db
+from db.models import User, Visibility
+from cruds.assets import create_asset
+from cruds.tags.tag import create_tag
+from cruds.users import auth
 from cruds.works import set_work
-
-from db.models import User
-from schemas.url_info import BaseUrlInfo
-from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
-from schemas.work import Work as WorkSchema
 from schemas.asset import Asset as AssetSchema
 from schemas.tag import GetTag as TagSchema
-from db import Base, get_db
-from main import app
-import os
-from datetime import timedelta
-from cruds.users import auth
-# from cruds.works import create_work
-from cruds.assets import create_asset
-from typing import Callable, List, Optional
-from cruds.tags.tag import create_tag
-
-import json
+from schemas.url_info import BaseUrlInfo
+from schemas.user import User as UserSchema, TokenResponse as TokenResponseSchema
+from schemas.work import Work as WorkSchema
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')
@@ -51,7 +46,6 @@ def use_test_db_fixture():
   get_db関数をテストDBで上書きする
   """
   if not sqlalchemy_utils.database_exists(DATABASE_URL):
-    print('[INFO] CREATE DATABASE')
     sqlalchemy_utils.create_database(DATABASE_URL)
 
   # Reset test tables
@@ -170,7 +164,7 @@ def work_factory_for_test(
     session_for_test: Session = session_for_test,
     title: str = 'WorkTitleForTest',
     description: str = 'this work is test',
-    visibility: str = 'public',
+    visibility: str = Visibility.public,
     exist_thumbnail: bool = False,
     asset_types: List[str] = ['image'],
     urls: List[BaseUrlInfo] = [],
@@ -245,3 +239,18 @@ def tag_for_test(
   """
   c = create_tag(session_for_test, name, color)
   return c
+
+@pytest.fixture
+def tag_factory_for_test(
+  session_for_test: Session,
+) -> Callable[[str, str], TagSchema]:
+  def tag_for_test(
+    name: str = "test_tag",
+    color: str = "#FFFFFF"
+  ) -> TagSchema:
+    """
+    Create test tag
+    """
+    c = create_tag(session_for_test, name, color)
+    return c
+  return tag_for_test
