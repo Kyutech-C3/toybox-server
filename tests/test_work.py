@@ -1,8 +1,7 @@
 import json
 import pytest
-
-from db.models import Visibility
 from .fixtures import client, use_test_db_fixture, session_for_test, user_factory_for_test, user_token_factory_for_test, asset_factory_for_test, user_for_test, tag_for_test, work_factory_for_test, tag_factory_for_test
+from db.models import Visibility
 
 @pytest.mark.usefixtures('use_test_db_fixture')
 class TestWork:

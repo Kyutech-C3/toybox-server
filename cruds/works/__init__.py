@@ -12,9 +12,10 @@ import markdown
 
 # TODO: CASCADEを導入する
 
-def set_work(db: Session, title: str, description: str, user_id: str,
+def set_work(db: Session, title: str, description: str, user_id: str, 
              visibility: str, thumbnail_asset_id: str,
              assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
+    
 
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
@@ -22,11 +23,11 @@ def set_work(db: Session, title: str, description: str, user_id: str,
     # DB書き込み
     md = markdown.Markdown(extensions=['tables'])
     work_orm = models.Work(
-        title=title,
-        description=description,
-        description_html=md.convert(description),
-        user_id=user_id,
-        visibility=visibility,
+        title = title,
+        description = description,
+        description_html = md.convert(description),
+        user_id = user_id,
+        visibility = visibility,
     )
     db.add(work_orm)
     db.commit()
@@ -58,8 +59,8 @@ def set_work(db: Session, title: str, description: str, user_id: str,
         if thumbnail is None:
             raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
         thumbnail_orm = models.Thumbnail(
-            work_id=work_orm.id,
-            asset_id=thumbnail.id
+            work_id = work_orm.id,
+            asset_id = thumbnail.id
         )
         db.add(thumbnail_orm)
         db.commit()
@@ -98,10 +99,10 @@ def get_work_by_id(db: Session, work_id: str, auth: bool = False) -> Work:
         raise HTTPException(status_code=403, detail="This work is a private work. You need to sign in.")
     return work
 
-def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str,
-                 visibility: str, thumbnail_asset_id: str, assets_id: List[str],
+def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str, 
+                visibility: str, thumbnail_asset_id: str, assets_id: List[str], 
                  urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
-
+    
     work_orm = db.query(models.Work).get(work_id)
 
     # 自分のWorkでなければ弾く
@@ -128,7 +129,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         asset_orm.work_id = None
         db.commit()
         db.refresh(asset_orm)
-
+    
     # 使われなくなったassetの削除
     old_asset_ids = [asset_orm.id for asset_orm in assets_orm]
     old_thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
@@ -140,7 +141,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     delete_asset_ids = set(old_asset_ids) - set(new_asset_ids)
     for delete_asset_id in delete_asset_ids:
         delete_asset_by_id(db, delete_asset_id)
-
+    
     # assetのwork_idの更新
     for asset_id in assets_id:
         asset_orm = db.query(models.Asset).get(asset_id)
@@ -152,7 +153,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
     for url_orm in urls_orm:
         delete_url_info(db, url_orm.id)
-
+    
     # url_infoテーブルへのインスタンスの作成
     for url in urls:
         create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_id, user_id)
@@ -181,8 +182,8 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         if thumbnail is None:
             raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
         new_thumbnail_orm = models.Thumbnail(
-            work_id=work_id,
-            asset_id=thumbnail_asset_id
+            work_id = work_id,
+            asset_id = thumbnail_asset_id
         )
         db.add(new_thumbnail_orm)
         db.commit()
@@ -227,7 +228,7 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
-
+    
     works_orm = db.query(models.Work).filter(models.Work.user_id == user_id)
 
     if at_me:

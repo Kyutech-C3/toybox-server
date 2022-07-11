@@ -1,26 +1,31 @@
-import os
-import json
-import sqlalchemy
-import sqlalchemy_utils
-import pytest
-from datetime import timedelta
-from typing import Callable, List, Optional
-from fastapi.testclient import TestClient
 from fastapi.datastructures import UploadFile
+import sqlalchemy
+import pytest
 from sqlalchemy.orm import sessionmaker
+import sqlalchemy_utils
+from fastapi.testclient import TestClient
+from pytest import fixture
 from sqlalchemy.orm.session import Session
-from main import app
-from db import Base, get_db
-from db.models import User, Visibility
-from cruds.assets import create_asset
-from cruds.tags.tag import create_tag
-from cruds.users import auth
+from sqlalchemy_utils.view import refresh_materialized_view
 from cruds.works import set_work
+
+from db.models import User, Visibility
+from schemas.url_info import BaseUrlInfo
+from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
+from schemas.work import Work as WorkSchema
 from schemas.asset import Asset as AssetSchema
 from schemas.tag import GetTag as TagSchema
-from schemas.url_info import BaseUrlInfo
-from schemas.user import User as UserSchema, TokenResponse as TokenResponseSchema
-from schemas.work import Work as WorkSchema
+from db import Base, get_db
+from main import app
+import os
+from datetime import timedelta
+from cruds.users import auth
+# from cruds.works import create_work
+from cruds.assets import create_asset
+from typing import Callable, List, Optional
+from cruds.tags.tag import create_tag
+
+import json
 
 DATABASE = 'postgresql'
 USER = os.environ.get('POSTGRES_USER')

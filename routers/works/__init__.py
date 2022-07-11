@@ -13,7 +13,7 @@ work_router = APIRouter()
 
 @work_router.post('', response_model=Work)
 async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-    work = set_work(db, payload.title, payload.description, user.id,
+    work = set_work(db, payload.title, payload.description, user.id, 
                     payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls, payload.tags_id)
     return work
 
@@ -37,8 +37,8 @@ async def get_work(work_id: str, db: Session = Depends(get_db), user: User = Dep
 
 @work_router.put('/{work_id}', response_model=Work)
 async def put_work(work_id: str, payload: PostWork, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-    work = replace_work(db, work_id, payload.title, payload.description, user.id,
-                        payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls,
+    work = replace_work(db, work_id, payload.title, payload.description, user.id, 
+                        payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls, 
                         payload.tags_id)
     return work
 
