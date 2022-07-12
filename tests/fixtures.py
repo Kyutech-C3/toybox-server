@@ -51,6 +51,7 @@ def use_test_db_fixture():
   get_db関数をテストDBで上書きする
   """
   if not sqlalchemy_utils.database_exists(DATABASE_URL):
+    print('[INFO] CREATE DATABASE')
     sqlalchemy_utils.create_database(DATABASE_URL)
 
   # Reset test tables

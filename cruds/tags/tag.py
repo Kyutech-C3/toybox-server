@@ -24,6 +24,9 @@ def create_tag(db: Session, name: str, color_code: str) -> GetTag:
     db.commit()
     db.refresh(tag_orm)
 
+    print(tag_orm.name)
+    print(tag_orm.color)
+
     tag = GetTag.from_orm(tag_orm)
 
     return tag
