@@ -46,7 +46,9 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
     
     comments_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == None)
     
-    if not auth:
+    if auth:
+        comments_orm = comments_orm.filter(models.Comment.visibility != models.Visibility.draft)
+    else:
         comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
     if offset_id:
@@ -63,7 +65,9 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
 
     for item in comments_orm:
         reply_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == item.id)
-        if not auth:
+        if auth:
+            reply_orm = reply_orm.filter(models.Comment.visibility != models.Visibility.draft)
+        else:
             reply_orm = reply_orm.filter(models.Comment.visibility == models.Visibility.public)
         item.number_of_reply = len(reply_orm.all())
 
@@ -88,7 +92,9 @@ def get_reply_comments_by_comment_id(db: Session, comment_id: str, work_id: str,
     
     comments_orm = db.query(models.Comment).filter(models.Comment.reply_at == comment_id)
 
-    if not auth:
+    if auth:
+        comments_orm = comments_orm.filter(models.Comment.visibility != models.Visibility.draft)
+    else:
         comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
     if offset_id:
