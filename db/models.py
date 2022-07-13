@@ -1,5 +1,5 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean
+from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean, Integer
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
@@ -43,6 +43,7 @@ class AssetType(str, enum.Enum):
     model = 'model'
 
 class User(Base):
+    __tablename__ = 'user'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     name = Column(String(length=32))
     email = Column(String(length=255),unique=True)
@@ -61,6 +62,7 @@ class User(Base):
     assets = relationship('Asset', foreign_keys='Asset.user_id')
     urls = relationship('UrlInfo', foreign_keys='UrlInfo.user_id')
     tokens = relationship('Token', foreign_keys='Token.user_id')
+    comments = relationship('Comment', back_populates="user")
 
 class Token(Base):
     refresh_token = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -105,6 +107,8 @@ class Work(Base):
         back_populates='works'
     )
 
+    comments = relationship('Comment', back_populates="work")
+    
     thumbnail = relationship(
         'Asset',
         secondary=Thumbnail.__tablename__,
@@ -156,3 +160,18 @@ class Tag(Base):
         secondary=Tagging.__tablename__,
         back_populates="tags"
     )
+
+class Comment(Base):
+
+    __tablename__='comment'
+
+    id = Column(String(length=255), primary_key=True, default=generate_uuid)
+    content = Column(String, nullable=False)
+    work_id = Column(String, ForeignKey('works.id'))
+    user_id = Column(String, ForeignKey('user.id'), nullable=True)
+    reply_at = Column(String, nullable=True)
+    visibility = Column(Enum(Visibility))
+    created_at = Column(DateTime, default=func.now())
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    user = relationship("User", back_populates="comments")
+    work = relationship("Work", back_populates="comments")
