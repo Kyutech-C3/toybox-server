@@ -77,10 +77,15 @@ def set_work(db: Session, title: str, description: str, user_id: str,
 
     return work
 
-def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, auth: bool = False) -> List[Work]:
-    works_orm = db.query(models.Work).order_by(models.Work.created_at).filter(models.Work.visibility != models.Visibility.draft)
+def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, tags: str, auth: bool = False) -> List[Work]:
+    tag_list = tags.split(',')
+    works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tag_list))
+    works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
+    works_orm = works_orm.order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
     if oldest_id:
         limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
+        if limit_work is None:
+            raise HTTPException(status_code=400, detail='this oldest_id is invalid')
         limit_created_at = limit_work.created_at
         works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
     if not auth:
@@ -242,25 +247,4 @@ def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: b
         works_orm = works_orm.filter(models.Work.visibility == 'public').all()
 
     works = list(map(Work.from_orm, works_orm))
-    return works
-
-def search_work_by_option(db: Session, limit: int, oldest_id: str, tags: list[str], auth: bool = False) -> list[Work]:
-    works_orm = db.query(models.Work).filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tags))
-    works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tags))
-
-    if auth:
-        works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
-    else:
-        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
-
-    if oldest_id:
-        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
-        if oldest_work is None:
-            raise HTTPException(status_code=400, detail='this oldest_id is invalid')
-        works_orm = works_orm.filter(models.Work.created_at < oldest_work.created_at)
-
-    works_orm = works_orm.order_by(desc(models.Work.created_at)).limit(limit).all()
-
-    works = list(map(Work.from_orm, works_orm))
-
     return works

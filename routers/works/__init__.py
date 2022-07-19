@@ -6,7 +6,7 @@ from db import get_db,models
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
-from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, search_work_by_option, set_work
+from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, set_work
 from typing import List
 
 work_router = APIRouter()
@@ -18,15 +18,9 @@ async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User
     return work
 
 @work_router.get('', response_model=List[Work])
-async def get_works(limit: int = 30, visibility: models.Visibility = None, oldest_id: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
+async def get_works(limit: int = 30, visibility: models.Visibility = None, oldest_id: str = None, tags: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
     auth = user is not None
-    works = get_works_by_limit(db, limit, visibility, oldest_id, auth=auth)
-    return works
-
-@work_router.get('/search', response_model=list[Work])
-async def search_work(payload: SearchOption, limit: int = 30, oldest_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False)), db: Session = Depends(get_db)):
-    auth = user is not None
-    works = search_work_by_option(db, limit, oldest_id, payload.tags, auth)
+    works = get_works_by_limit(db, limit, visibility, oldest_id, tags, auth=auth)
     return works
 
 @work_router.get('/{work_id}', response_model=Work)

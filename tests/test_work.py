@@ -447,12 +447,8 @@ class TestWork:
         work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
         work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
 
-        res = client.get('/api/v1/works/search', headers={
+        res = client.get(f'/api/v1/works?tags={test_tag1.id}', headers={
             'Authorization': f'Bearer { token.access_token }'
-            }, json={
-                'tags': [
-                    test_tag1.id
-                ]
             }
         )
 
@@ -462,12 +458,8 @@ class TestWork:
         assert res_json[0].get('title') == work3.title
         assert res_json[1].get('title') == work1.title
 
-        res = client.get('/api/v1/works/search', headers={
+        res = client.get(f'/api/v1/works?tags={test_tag5.id}', headers={
             'Authorization': f'Bearer { token.access_token }'
-            }, json={
-                'tags': [
-                    test_tag5.id
-                ]
             }
         )
 
@@ -490,17 +482,12 @@ class TestWork:
         test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
         test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
 
-        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
-        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
         work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
 
-        res = client.get('/api/v1/works/search', headers={
+        res = client.get(f'/api/v1/works?tags={test_tag1.id},{test_tag4.id}', headers={
             'Authorization': f'Bearer { token.access_token }'
-            }, json={
-                'tags': [
-                    test_tag1.id,
-                    test_tag4.id
-                ]
             }
         )
 
@@ -520,15 +507,10 @@ class TestWork:
         test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
 
         work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
-        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
-        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+        work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
 
-        res = client.get('/api/v1/works/search', json={
-                'tags': [
-                    test_tag1.id
-                ]
-            }
-        )
+        res = client.get(f'/api/v1/works?tags={test_tag1.id}')
 
         assert res.status_code == 200
         res_json = res.json()
@@ -547,20 +529,13 @@ class TestWork:
         test_tag4 = tag_factory_for_test(name='testtag4', color='#44e099')
         test_tag5 = tag_factory_for_test(name='testtag5', color='#30dda0')
 
-        work1 = work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
-        work2 = work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
-        work3 = work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
+        work_factory_for_test(title='testwork1', visibility=Visibility.public, tags_id=[test_tag1.id, test_tag2.id, test_tag5.id])
+        work_factory_for_test(title='testwork2', visibility=Visibility.public, tags_id=[test_tag2.id, test_tag3.id, test_tag5.id])
+        work_factory_for_test(title='testwork3', visibility=Visibility.private, tags_id=[test_tag1.id, test_tag4.id, test_tag5.id])
 
-        res = client.get('/api/v1/works/search', headers={
+        res = client.get(f'/api/v1/works?tags={test_tag1.id},{test_tag2.id},{test_tag4.id}', headers={
             'Authorization': f'Bearer { token.access_token }'
-            }, json={
-                'tags': [
-                    test_tag1.id,
-                    test_tag2.id,
-                    test_tag4.id
-                ]
-            }
-        )
+        })
 
         assert res.status_code == 200
         res_json = res.json()
