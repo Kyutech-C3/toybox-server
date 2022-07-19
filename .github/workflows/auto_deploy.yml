@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: create asset folder
-        run: mkdir assets
+        run: mkdir -p assets
       - name: create .env file
         run: |
           cp .env.sample .env
