@@ -81,7 +81,7 @@ def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, o
     works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
     if tags:
         tag_list = tags.split(',')
-        works_orm = works_orm.filter(models.Tagging.work_id == models.Work.id).filter(models.Tagging.tag_id == models.Tag.id).filter(models.Tag.id.in_(tag_list))
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(models.Tagging.work_id == models.Work.id)
         works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
     if oldest_id:
         limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
