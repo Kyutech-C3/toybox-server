@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import HTTPException
+from sqlalchemy import desc, func
 from cruds.assets import delete_asset_by_id
 from cruds.url_infos import create_url_info, delete_url_info
 from db import models
@@ -76,18 +77,16 @@ def set_work(db: Session, title: str, description: str, user_id: str,
 
     return work
 
-def get_work_by_id(db: Session, work_id: str) -> Work:
-    work_orm = db.query(models.Work).get(work_id)
-    if work_orm == None:
-        return None
-    return Work.from_orm(work_orm)
-
-
-def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, auth: bool = False) -> List[Work]:
-    works_orm = db.query(models.Work).order_by(models.Work.created_at).filter(
-        models.Work.visibility != models.Visibility.draft)
+def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, tags: str, auth: bool = False) -> List[Work]:
+    works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
+    if tags:
+        tag_list = tags.split(',')
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(models.Tagging.work_id == models.Work.id)
+        works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
     if oldest_id:
         limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
+        if limit_work is None:
+            raise HTTPException(status_code=400, detail='this oldest_id is invalid')
         limit_created_at = limit_work.created_at
         works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
     if not auth:

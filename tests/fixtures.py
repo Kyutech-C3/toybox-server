@@ -9,7 +9,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy_utils.view import refresh_materialized_view
 from cruds.works import set_work
 
-from db.models import User
+from db.models import User, Visibility
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User as UserSchema, Token as TokenSchema, TokenResponse as TokenResponseSchema
 from schemas.work import Work as WorkSchema
@@ -170,7 +170,7 @@ def work_factory_for_test(
     session_for_test: Session = session_for_test,
     title: str = 'WorkTitleForTest',
     description: str = 'this work is test',
-    visibility: str = 'public',
+    visibility: str = Visibility.public,
     exist_thumbnail: bool = False,
     asset_types: List[str] = ['image'],
     urls: List[BaseUrlInfo] = [],
@@ -245,3 +245,18 @@ def tag_for_test(
   """
   c = create_tag(session_for_test, name, color)
   return c
+
+@pytest.fixture
+def tag_factory_for_test(
+  session_for_test: Session,
+) -> Callable[[str, str], TagSchema]:
+  def tag_for_test(
+    name: str = "test_tag",
+    color: str = "#FFFFFF"
+  ) -> TagSchema:
+    """
+    Create test tag
+    """
+    c = create_tag(session_for_test, name, color)
+    return c
+  return tag_for_test

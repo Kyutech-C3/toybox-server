@@ -1,5 +1,5 @@
 from schemas.common import DeleteStatus
-from schemas.work import PostWork, Work
+from schemas.work import PostWork, SearchOption, Work
 from schemas.user import User
 from fastapi import APIRouter
 from db import get_db,models
@@ -18,9 +18,9 @@ async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User
     return work
 
 @work_router.get('', response_model=List[Work])
-async def get_works(limit: int = 30, visibility: models.Visibility = None, oldest_id: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
+async def get_works(limit: int = 30, visibility: models.Visibility = None, oldest_id: str = None, tags: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
     auth = user is not None
-    works = get_works_by_limit(db, limit, visibility, oldest_id, auth=auth)
+    works = get_works_by_limit(db, limit, visibility, oldest_id, tags, auth=auth)
     return works
 
 @work_router.get('/{work_id}', response_model=Work)
