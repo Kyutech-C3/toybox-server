@@ -15,7 +15,7 @@ app = FastAPI(
 
 upload_folder = os.environ.get('UPLOAD_FOLDER')
 
-app.mount("/static", StaticFiles(directory=upload_folder), name="static")
+app.mount("/static", StaticFiles(directory='assets', html=True), name="static")
 app.add_middleware(LimitUploadSize, max_upload_size=50_000_000)
 
 origins = [
