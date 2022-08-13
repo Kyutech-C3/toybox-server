@@ -1,3 +1,4 @@
+import array
 from fastapi.datastructures import UploadFile
 import sqlalchemy
 import pytest
@@ -238,12 +239,38 @@ def image_asset_for_test(
 def tag_for_test(
   session_for_test: Session,
   name: str = "test_tag",
-  color: str = "#FFFFFF"
+  color: str = "#ffffff"
 ) -> TagSchema:
   """
   Create test tag
   """
   c = create_tag(session_for_test, name, color)
+  return c
+
+@pytest.fixture
+def tags_for_test(
+  session_for_test: Session
+) -> list[TagSchema]:
+  """
+  Create test tags
+  """
+  tags = [
+    {'id': 'tag1', 'name': 'test1_tag1', 'color': '#fffffa'},
+    {'id': 'tag2', 'name': 'test1_tag2', 'color': '#fffffb'},
+    {'id': 'tag3', 'name': 'test1_tag3', 'color': '#fffffc'},
+    {'id': 'tag4', 'name': 'test1_tag4', 'color': '#fffffd'},
+    {'id': 'tag5', 'name': 'test2_tag5', 'color': '#fffffe'},
+    {'id': 'tag6', 'name': 'test2_tag6', 'color': '#ffffff'},
+    {'id': 'tag7', 'name': 'test2_tag7', 'color': '#fffffa'},
+    {'id': 'tag8', 'name': 'test1_tag8', 'color': '#fffffb'},
+    {'id': 'tag9', 'name': 'test1_tag9', 'color': '#fffffc'},
+  ]
+
+  c: list = []
+
+  for tag in tags:
+    c.append(create_tag(session_for_test, tag['name'], tag['color']))
+
   return c
 
 @pytest.fixture
