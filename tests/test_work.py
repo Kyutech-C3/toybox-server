@@ -135,26 +135,6 @@ class TestWork:
             }
         ]
 
-        res = client.post('/api/v1/works', headers={
-                "Authorization": f"Bearer {token.access_token}"
-            }, json={
-                "title": title,
-                "description": description,
-                "visibility": visibility,
-                "assets_id": [
-                    asset.id
-                ],
-                "tags_id": [tag_for_test.id],
-                "urls": urls
-            }
-        )
-
-        assert res.status_code == 200, "Workの投稿に成功する"
-        res_json = res.json()
-        assert res_json['title'] == title
-        assert res_json['description'] == description
-        assert res_json['thumbnail'] == None
-
         thumbnail = asset_factory_for_test()
         res = client.post('/api/v1/works', headers={
                 "Authorization": f"Bearer {token.access_token}"
