@@ -19,6 +19,7 @@ sqlalchemy-utils = "*"
 markdown = "*"
 alembic = "*"
 aiofiles = "*"
+certifi = "*"
 
 [dev-packages]
 
