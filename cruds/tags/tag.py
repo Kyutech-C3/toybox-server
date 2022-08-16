@@ -31,24 +31,28 @@ def create_tag(db: Session, name: str, color_code: str) -> GetTag:
 
     return tag
 
-def get_tags(db: Session, limit: int = 30, offset_id: str = None) -> List[GetTag]:
+def get_tags(db: Session, limit: int, offset_id: str, search_str: str) -> List[GetTag]:
     tag_orm = db.query(models.Tag)
-    if tag_orm is None:
+    if tag_orm.first() is None:
         raise HTTPException(
             status_code=400,
             detail="Tags is not exist"
         )
+
+    if search_str is not None:
+        tag_orm = tag_orm.filter(models.Tag.name.ilike(f'{search_str}%'))
+
     if offset_id:
-        limit_work = db.query(models.Tag).filter(models.Tag.id == offset_id).first()
-        if limit_work is None:
+        limit_tag = db.query(models.Tag).filter(models.Tag.id == offset_id).first()
+        if limit_tag is None:
             raise HTTPException(
                 status_code=400,
                 detail="offset_id is not exist"
             )
-        limit_created_at = limit_work.created_at
+        limit_created_at = limit_tag.created_at
         tag_orm = tag_orm.filter(models.Tag.created_at > limit_created_at)
-    tag_orm = tag_orm.limit(limit)
-    tag_orm = tag_orm.all()
+
+    tag_orm = tag_orm.limit(limit).all()
     tag_list = list(map(GetTag.from_orm, tag_orm))
     
     return tag_list
