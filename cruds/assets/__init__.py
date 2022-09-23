@@ -7,7 +7,7 @@ from db import models
 from schemas.asset import Asset
 from schemas.common import DeleteStatus
 
-ALLOW_EXTENTIONS = {
+ALLOW_EXTENSIONS = {
     'image': ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
     'video': ['mp4', 'mov', 'avi', 'flv'],
     'music': ['mp3', 'wav', 'm4a'],
@@ -19,14 +19,14 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     filename = file.filename
     if filename == '':
         raise HTTPException(status_code=400, detail='this file is invalid')
-    file_extention = filename[filename.rfind('.')+1:].lower()
-    if not file_extention in ALLOW_EXTENTIONS.get(asset_type, []):
-        raise HTTPException(status_code=400, detail='this file extention is invalid')
+    file_extension = filename[filename.rfind('.')+1:].lower()
+    if not file_extension in ALLOW_EXTENSIONS.get(asset_type, []):
+        raise HTTPException(status_code=400, detail='this file extension is invalid')
 
     asset_orm = models.Asset(
         asset_type = asset_type,
         user_id = user_id,
-        extention = file_extention
+        extension = file_extension
     )
     db.add(asset_orm)
     db.commit()
@@ -35,7 +35,7 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     upload_folder = os.environ.get('UPLOAD_FOLDER')
     upload_folder = f'{upload_folder}/{asset_type}/{asset_orm.id}'
     os.makedirs(upload_folder)
-    with open(os.path.join(upload_folder, f'origin.{file_extention}'),'wb+') as upload_path:
+    with open(os.path.join(upload_folder, f'origin.{file_extension}'),'wb+') as upload_path:
         shutil.copyfileobj(file.file, upload_path)
 
     asset = Asset.from_orm(asset_orm)
