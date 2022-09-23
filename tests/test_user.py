@@ -18,7 +18,6 @@ class TestUser:
 			"Authorization": f"Bearer { token.access_token }"
 		})
 		assert res.status_code == 200, '自分の情報の取得に成功する'
-		assert res.json()['email'] == 'test@test.com'
 
 	def test_get_me_unauthorized(user_factory_for_test, user_token_factory_for_test):
 		"""
@@ -53,14 +52,12 @@ class TestUser:
 			count+=1
 			print(f"===========================test_get_user_by_id: {count}==========================")
 			user_id: str = user_info.id
-			email: str = user_info.email
 			name: str = user_info.name
 			display_name: str = user_info.display_name
 
 			res = client.get(f'/api/v1/users/{user_id}')
 			assert res.status_code == 200, 'ユーザーの情報の取得に成功する'
 			assert res.json()['id'] == user_id
-			assert res.json()['email'] == email
 			assert res.json()['name'] == name
 			assert res.json()['display_name'] == display_name
 
