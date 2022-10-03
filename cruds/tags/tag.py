@@ -34,10 +34,7 @@ def create_tag(db: Session, name: str, color_code: str) -> GetTag:
 def get_tags(db: Session, limit: int, offset_id: str, search_str: str) -> List[GetTag]:
     tag_orm = db.query(models.Tag)
     if tag_orm.first() is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Tags is not exist"
-        )
+        return []
 
     if search_str is not None:
         tag_orm = tag_orm.filter(models.Tag.name.ilike(f'{search_str}%'))

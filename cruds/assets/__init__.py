@@ -1,4 +1,3 @@
-from distutils import extension
 import os, shutil
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
@@ -6,6 +5,7 @@ from sqlalchemy.orm.session import Session
 from db import models
 from schemas.asset import Asset
 from schemas.common import DeleteStatus
+import boto3
 
 ALLOW_EXTENTIONS = {
     'image': ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
@@ -26,17 +26,34 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     asset_orm = models.Asset(
         asset_type = asset_type,
         user_id = user_id,
-        extention = file_extention
+        extention = file_extention,
+        url = ''
     )
     db.add(asset_orm)
     db.commit()
     db.refresh(asset_orm)
 
-    upload_folder = os.environ.get('UPLOAD_FOLDER')
-    upload_folder = f'{upload_folder}/{asset_type}/{asset_orm.id}'
-    os.makedirs(upload_folder)
-    with open(os.path.join(upload_folder, f'origin.{file_extention}'),'wb+') as upload_path:
-        shutil.copyfileobj(file.file, upload_path)
+    s3_bucket = os.environ.get('S3_BUCKET')
+    s3_dir = os.environ.get('S3_DIR')
+    region_name = os.environ.get('REGION_NAME')
+    ACCESS_KEY = os.environ.get('ACCESS_KEY')
+    SECRET_ACCESS_KEY = os.environ.get('SECRET_ACCESS_KEY')
+
+    wasabi = boto3.client("s3", endpoint_url = f"https://s3.{region_name}.wasabisys.com", aws_access_key_id = ACCESS_KEY, aws_secret_access_key = SECRET_ACCESS_KEY)
+    response = wasabi.put_object(
+        Body = file.file,
+        Bucket = s3_bucket,
+        Key = f"{s3_dir}/{asset_type}/{asset_orm.id}/origin.{file_extention}"
+    )
+
+    file_url = "https://s3.%s.wasabisys.com/%s" % (region_name, f"{s3_bucket}/{s3_dir}/{asset_type}/{asset_orm.id}/origin.{file_extention}")
+    print(file_url)
+
+    print(response)
+
+    asset_orm.url = file_url
+    db.commit()
+    db.refresh(asset_orm)
 
     asset = Asset.from_orm(asset_orm)
     return asset
