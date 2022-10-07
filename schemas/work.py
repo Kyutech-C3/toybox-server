@@ -12,7 +12,7 @@ class PostWork(BaseModel):
     title: str
     description: str
     visibility: str
-    thumbnail_asset_id: str
+    thumbnail_asset_id: Optional[str]
     assets_id: List[str]
     urls: List[BaseUrlInfo]
     tags_id: List[str]
@@ -34,7 +34,7 @@ class Work(BaseModel):
     urls: List[UrlInfo]
     visibility: str
     tags: List[GetTag]
-    thumbnail: Asset
+    thumbnail: Optional[Asset]
     created_at: datetime
     updated_at: datetime
 

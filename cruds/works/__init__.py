@@ -69,12 +69,6 @@ def set_work(db: Session, title: str, description: str, user_id: str,
     db.refresh(work_orm)
     work = Work.from_orm(work_orm)
 
-    # 中間テーブルを使ってサムネイルを実装したため配列になっているので手直し(要修正？)
-    if work.thumbnail:
-        work.thumbnail = work.thumbnail[0]
-    else:
-        work.thumbnail = None
-
     return work
 
 def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, tags: str, auth: bool = False) -> List[Work]:
@@ -200,12 +194,6 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     # schemaに変換
     db.refresh(work_orm)
     work = Work.from_orm(work_orm)
-
-    # 中間テーブルを使ってサムネイルを実装したため配列になっているので手直し(要修正？)
-    if work.thumbnail:
-        work.thumbnail = work.thumbnail[0]
-    else:
-        work.thumbnail = None
 
     return work
 
