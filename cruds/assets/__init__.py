@@ -15,6 +15,14 @@ ALLOW_EXTENTIONS = {
     'model': ['gltf', 'fbx']
 }
 
+S3_BUCKET = os.environ.get('S3_BUCKET')
+S3_DIR = os.environ.get('S3_DIR')
+REGION_NAME = os.environ.get('REGION_NAME')
+ACCESS_KEY = os.environ.get('ACCESS_KEY')
+SECRET_ACCESS_KEY = os.environ.get('SECRET_ACCESS_KEY')
+
+wasabi = boto3.client("s3", endpoint_url = f"https://s3.{REGION_NAME}.wasabisys.com", aws_access_key_id = ACCESS_KEY, aws_secret_access_key = SECRET_ACCESS_KEY)
+
 def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -> Asset:
     filename = file.filename
     if filename == '':
@@ -33,20 +41,13 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     db.commit()
     db.refresh(asset_orm)
 
-    s3_bucket = os.environ.get('S3_BUCKET')
-    s3_dir = os.environ.get('S3_DIR')
-    region_name = os.environ.get('REGION_NAME')
-    ACCESS_KEY = os.environ.get('ACCESS_KEY')
-    SECRET_ACCESS_KEY = os.environ.get('SECRET_ACCESS_KEY')
-
-    wasabi = boto3.client("s3", endpoint_url = f"https://s3.{region_name}.wasabisys.com", aws_access_key_id = ACCESS_KEY, aws_secret_access_key = SECRET_ACCESS_KEY)
     response = wasabi.put_object(
         Body = file.file,
-        Bucket = s3_bucket,
-        Key = f"{s3_dir}/{asset_type}/{asset_orm.id}/origin.{file_extention}"
+        Bucket = S3_BUCKET,
+        Key = f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extention}"
     )
 
-    file_url = "https://s3.%s.wasabisys.com/%s" % (region_name, f"{s3_bucket}/{s3_dir}/{asset_type}/{asset_orm.id}/origin.{file_extention}")
+    file_url = "https://s3.%s.wasabisys.com/%s" % (REGION_NAME, f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extention}")
     print(file_url)
 
     print(response)
@@ -63,9 +64,12 @@ def delete_asset_by_id(db: Session, asset_id: str) -> DeleteStatus:
     if asset_orm is None:
         raise HTTPException(status_code=404, detail='this asset is not exist')
 
-    upload_folder = os.environ.get('UPLOAD_FOLDER')
-    upload_folder = f'{upload_folder}/{asset_orm.asset_type}/{asset_orm.id}'
-    shutil.rmtree(upload_folder)
+    response = wasabi.delete_object(
+        Bucket = S3_BUCKET,
+        Key = f"{S3_DIR}/{asset_orm.asset_type}/{asset_orm.id}"
+    )
+
+    print(response)
 
     db.delete(asset_orm)
     db.commit()
