@@ -39,6 +39,9 @@ jobs:
             pip install pipenv
             pipenv install
             pipenv install boto3
+      - run:
+          name: make env file
+          command: echo $ENV_FILE | base64 --decode > .env
       
       - run:
           name: Run Test
