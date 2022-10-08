@@ -17,8 +17,6 @@ jobs:
           S3_BUCKET: toyboxdev
           S3_DIR: test_assets
           REGION_NAME: ap-northeast-2
-          ACCESS_KEY: $ACCESS_KEY
-          SECRET_ACCESS_KEY: $SECRET_ACCESS_KEY
 
       - image: circleci/postgres:13.3
         environment:
