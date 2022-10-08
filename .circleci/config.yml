@@ -38,6 +38,7 @@ jobs:
           command: |
             pip install pipenv
             pipenv install
+            pipenv install boto3
       
       - run:
           name: Run Test
