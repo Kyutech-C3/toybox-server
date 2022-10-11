@@ -48,9 +48,6 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     )
 
     file_url = "https://s3.%s.wasabisys.com/%s" % (REGION_NAME, f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extention}")
-    print(file_url)
-
-    print(response)
 
     asset_orm.url = file_url
     db.commit()
@@ -68,8 +65,6 @@ def delete_asset_by_id(db: Session, asset_id: str) -> DeleteStatus:
         Bucket = S3_BUCKET,
         Key = f"{S3_DIR}/{asset_orm.asset_type}/{asset_orm.id}"
     )
-
-    print(response)
 
     db.delete(asset_orm)
     db.commit()
