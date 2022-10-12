@@ -20,6 +20,7 @@ markdown = "*"
 alembic = "*"
 aiofiles = "*"
 certifi = "*"
+boto3 = "*"
 
 [dev-packages]
 
