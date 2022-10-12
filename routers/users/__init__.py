@@ -8,6 +8,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from schemas.work import Work
 from schemas.user import User, UserInfoChangeRequest
+from db import models
 
 user_router = APIRouter()
 
@@ -32,11 +33,11 @@ async def put_user_info(payload: UserInfoChangeRequest, db: Session = Depends(ge
   return user
 
 @user_router.get('/@me/works', response_model=List[Work])
-async def get_my_works(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
-  my_works = get_works_by_user_id(db, user.id, at_me=True)
+async def get_my_works(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser()), visibility: models.Visibility = None, oldest_id: str = None, tags: str = None):
+  my_works = get_works_by_user_id(db, user.id, visibility, oldest_id, tags, at_me=True)
   return my_works
 
 @user_router.get('/{user_id}/works', response_model=List[Work])
-async def get_users_works(user_id: str, db: Session = Depends(get_db), auth: User = Depends(GetCurrentUser(False))):
-  works = get_works_by_user_id(db, user_id, auth=bool(auth))
+async def get_users_works(user_id: str, oldest_id: str = None, tags: str = None, db: Session = Depends(get_db), auth: User = Depends(GetCurrentUser(False)), visibility: models.Visibility = None):
+  works = get_works_by_user_id(db, user_id, visibility, oldest_id, tags, auth=bool(auth))
   return works
