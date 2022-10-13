@@ -24,6 +24,11 @@ jobs:
           echo "TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}" >> .env
           echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
           echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env
+          echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> .env
+          echo "S3_DIR=${{ secrets.S3_DIR }}" >> .env
+          echo "REGION_NAME=${{ secrets.REGION_NAME }}" >> .env
+          echo "ACCESS_KEY=${{ secrets.ACCESS_KEY }}" >> .env
+          echo "SECRET_ACCESS_KEY=${{ secrets.SECRET_ACCESS_KEY }}" >> .env
       - name: create ssh config file
         uses: shimataro/ssh-key-action@v2
         with:
