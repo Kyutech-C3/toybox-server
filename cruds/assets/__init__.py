@@ -7,7 +7,7 @@ from schemas.asset import Asset
 from schemas.common import DeleteStatus
 import boto3
 
-ALLOW_EXTENTIONS = {
+ALLOW_EXTENSIONS = {
     'image': ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
     'video': ['mp4', 'mov', 'avi', 'flv'],
     'music': ['mp3', 'wav', 'm4a'],
@@ -27,27 +27,28 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     filename = file.filename
     if filename == '':
         raise HTTPException(status_code=400, detail='this file is invalid')
-    file_extention = filename[filename.rfind('.')+1:].lower()
-    if not file_extention in ALLOW_EXTENTIONS.get(asset_type, []):
-        raise HTTPException(status_code=400, detail='this file extention is invalid')
+    file_extension = filename[filename.rfind('.')+1:].lower()
+    if not file_extension in ALLOW_EXTENSIONS.get(asset_type, []):
+        raise HTTPException(status_code=400, detail='this file extension is invalid')
 
     asset_orm = models.Asset(
         asset_type = asset_type,
         user_id = user_id,
-        extention = file_extention,
+        extension = file_extension,
         url = ''
     )
     db.add(asset_orm)
     db.commit()
     db.refresh(asset_orm)
 
+
     response = wasabi.put_object(
         Body = file.file,
         Bucket = S3_BUCKET,
-        Key = f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extention}"
+        Key = f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extension}"
     )
 
-    file_url = "https://s3.%s.wasabisys.com/%s" % (REGION_NAME, f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extention}")
+    file_url = "https://s3.%s.wasabisys.com/%s" % (REGION_NAME, f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extension}")
 
     asset_orm.url = file_url
     db.commit()

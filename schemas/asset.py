@@ -27,7 +27,7 @@ class BaseAsset(BaseModel):
 class Asset(BaseAsset):
     id: str
     user: User
-    extention: str
+    extension: str
     url: str
     created_at: datetime
     updated_at: datetime
