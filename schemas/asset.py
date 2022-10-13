@@ -28,6 +28,7 @@ class Asset(BaseAsset):
     id: str
     user: User
     extension: str
+    url: str
     created_at: datetime
     updated_at: datetime
 

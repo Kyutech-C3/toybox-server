@@ -19,7 +19,6 @@ class UserInfoChangeRequest(BaseModel):
 class User(BaseModel):
     id: str
     name: str
-    email: str
     display_name: str
     avatar_url: Optional[HttpUrl]
     profile: Optional[str]
@@ -31,9 +30,12 @@ class User(BaseModel):
     class Config:
         orm_mode = True
 
+class UserForToken(User):
+    email: EmailStr
+
 class Token(BaseModel):
     refresh_token: str 
-    user: User
+    user: UserForToken
     expired_at: datetime
     created_at: datetime
     updated_at: datetime

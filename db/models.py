@@ -121,6 +121,7 @@ class Asset(Base):
     asset_type = Column(Enum(AssetType))
     user_id = Column(String(length=255), ForeignKey('user.id'))
     extension = Column(String(length=255))
+    url = Column(String(length=255))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
