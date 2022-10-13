@@ -172,7 +172,6 @@ def work_factory_for_test(
     title: str = 'WorkTitleForTest',
     description: str = 'this work is test',
     visibility: str = Visibility.public,
-    exist_thumbnail: bool = False,
     asset_types: List[str] = ['image'],
     urls: List[BaseUrlInfo] = [],
     tags_id: List[str] = [],
@@ -181,8 +180,7 @@ def work_factory_for_test(
     """
     Create test work
     """
-    image_asset_for_test = asset_factory_for_test()
-    thumbnail_id = image_asset_for_test.id if exist_thumbnail else None
+    thumbnail_id = asset_factory_for_test().id
     assets_id = []
 
     for asset_type in asset_types:

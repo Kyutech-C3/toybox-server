@@ -119,44 +119,6 @@ class TestWork:
         assert res_json['description'] == description
         assert res_json['visibility'] == visibility
 
-    def test_post_work_about_thumbnail(use_test_db_fixture, user_token_factory_for_test, asset_factory_for_test, tag_for_test):
-        """
-        サムネイルのあるものないものをそれぞれ投稿する
-        """
-        token = user_token_factory_for_test()
-        title = 'testwork'
-        description = 'this work is test work!!'
-        visibility = 'public'
-        asset = asset_factory_for_test()
-        urls = [
-            {
-                "url": "https://github.com/PigeonsHouse/NicoCommeDon",
-                "url_type": "github"
-            }
-        ]
-
-        thumbnail = asset_factory_for_test()
-        res = client.post('/api/v1/works', headers={
-                "Authorization": f"Bearer {token.access_token}"
-            },json={
-                "title": title,
-                "description": description,
-                "visibility": visibility,
-                "thumbnail_asset_id": thumbnail.id,
-                "assets_id": [
-                    asset.id
-                ],
-                "tags_id": [tag_for_test.id],
-                "urls": urls
-            }
-        )
-
-        assert res.status_code == 200, "Workの投稿に成功する"
-        res_json = res.json()
-        assert res_json['title'] == title
-        assert res_json['description'] == description
-        assert res_json['thumbnail']['id'] == thumbnail.id
-
     def test_post_work_about_assets(use_test_db_fixture, user_token_factory_for_test, asset_factory_for_test, tag_for_test):
         """
         アセットのあるものないものをそれぞれ投稿する
