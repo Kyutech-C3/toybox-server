@@ -15,15 +15,20 @@ jobs:
         run: mkdir -p assets
       - name: create .env file
         run: |
-          cp .env.sample .env
-          sed -i -e /=$/d .env
-          sed -i -e /HOST_URL=/d .env
+          touch .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+
           echo "DISCORD_CLIENT_ID=${{ secrets.DISCORD_CLIENT_ID }}" >> .env
           echo "DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}" >> .env
           echo "DISCORD_GUILD_ID=${{ secrets.DISCORD_GUILD_ID }}" >> .env
           echo "TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}" >> .env
+
           echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
           echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env
+
           echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> .env
           echo "S3_DIR=${{ secrets.S3_DIR }}" >> .env
           echo "REGION_NAME=${{ secrets.REGION_NAME }}" >> .env
