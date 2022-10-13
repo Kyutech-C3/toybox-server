@@ -14,7 +14,6 @@ wasabi = boto3.client("s3", endpoint_url = f"https://s3.{REGION_NAME}.wasabisys.
 logger = getLogger('Session Finish')
 
 def pytest_sessionfinish():
-    print(S3_DIR)
     response = wasabi.list_objects_v2(Bucket=S3_BUCKET, Prefix=f"{S3_DIR}/image/")
     for obj in response['Contents']:
         time.sleep(0.1)
