@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List
 from pydantic.class_validators import validator
 from db.models import Visibility
 from schemas.tag import GetTag

@@ -1,11 +1,16 @@
 from typing import Any
-from sqlalchemy import Column, String, Enum, ForeignKey, DateTime, Boolean, Integer
+from sqlalchemy import Column as Col, String, Enum, ForeignKey, DateTime, Boolean, Integer
 from uuid import uuid4
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 import enum
 import datetime
 from sqlalchemy.sql.functions import func
+
+class Column(Col):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('nullable', False)
+        super().__init__(*args, **kwargs)
 
 # 2 weeks
 DEFAULT_REFRESH_TOKEN_EXPIRED_DAYS = 14
@@ -112,7 +117,8 @@ class Work(Base):
     thumbnail = relationship(
         'Asset',
         secondary=Thumbnail.__tablename__,
-        back_populates='work_for_thumbnail'
+        back_populates='work_for_thumbnail',
+        uselist=False
     )
 
 class Asset(Base):
