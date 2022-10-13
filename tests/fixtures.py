@@ -33,7 +33,7 @@ USER = os.environ.get('POSTGRES_USER')
 PASSWORD = os.environ.get('POSTGRES_PASSWORD')
 HOST = os.environ.get('POSTGRES_HOST')
 DB_NAME = 'toybox_test'
-os.environ['UPLOAD_FOLDER'] = './assets_for_test'
+os.environ['S3_DIR'] = 'test_assets'
 
 DATABASE_URL = "{}://{}:{}@{}/{}".format(DATABASE, USER, PASSWORD, HOST, DB_NAME)
 

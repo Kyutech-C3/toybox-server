@@ -4,7 +4,7 @@ import time
 from logging import INFO, ERROR, getLogger
 
 S3_BUCKET = os.environ.get('S3_BUCKET')
-S3_DIR = os.environ.get('S3_DIR')
+S3_DIR = 'test_assets'
 REGION_NAME = os.environ.get('REGION_NAME')
 ACCESS_KEY = os.environ.get('ACCESS_KEY')
 SECRET_ACCESS_KEY = os.environ.get('SECRET_ACCESS_KEY')
@@ -16,7 +16,7 @@ logger = getLogger('Session Finish')
 def pytest_sessionfinish():
     response = wasabi.list_objects_v2(Bucket=S3_BUCKET, Prefix=f"{S3_DIR}/image/")
     for obj in response['Contents']:
-        time.sleep(0.5)
+        time.sleep(0.1)
         response = wasabi.delete_object(
             Bucket = S3_BUCKET,
             Key = obj['Key'].replace('/origin.png','')
