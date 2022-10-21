@@ -233,7 +233,7 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility, oldest_id: str, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
@@ -263,6 +263,7 @@ def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility,
         limit_created_at = limit_work.created_at
         works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
 
+    works_orm = works_orm.limit(limit)
     works_orm = works_orm.all()
     works = list(map(Work.from_orm, works_orm))
     return works
