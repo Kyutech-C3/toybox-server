@@ -19,7 +19,7 @@ async def post_asset(file: UploadFile = File(...), asset_type: str = Form(...), 
     created_asset = create_asset(db, user.id, asset_type, file)
     return created_asset
 
-@asset_router.delete('/{asset_id}', response_model=DeleteStatus, dependencies=[Depends(GetCurrentUser())])
-async def delete_asset(asset_id: str, db: Session = Depends(get_db)):
-    result = delete_asset_by_id(db, asset_id)
+@asset_router.delete('/{asset_id}', response_model=DeleteStatus)
+async def delete_asset(asset_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+    result = delete_asset_by_id(db, asset_id, user.id)
     return result
