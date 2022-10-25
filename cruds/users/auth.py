@@ -45,7 +45,7 @@ def authenticate_user(db: Session, email: str, password: str):
 def authenticate_discord_user(discord_token: DiscordAccessTokenResponse, db: Session = Depends(get_db)) -> TokenResponse:
 	discord_user = discord_fetch_user(discord_token.access_token)
 
-	u = db.query(User).filter(User.email == discord_user.email).first()
+	u = db.query(User).filter(User.discord_user_id == discord_user.id).first()
 
 	discord_verify_user_belongs_to_valid_guild(access_token=discord_token.access_token)
 
