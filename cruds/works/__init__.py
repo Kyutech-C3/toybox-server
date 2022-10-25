@@ -221,19 +221,37 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, at_me: bool = False, auth: bool = False) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
 
-    works_orm = db.query(models.Work).filter(models.Work.user_id == user_id)
+    works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.user_id == user_id)
 
-    if at_me:
-        works_orm = works_orm.all()
-    elif auth:
-        works_orm = works_orm.filter(models.Work.visibility != 'draft').all()
-    else:
-        works_orm = works_orm.filter(models.Work.visibility == 'public').all()
+    if tags:
+        tag_list = tags.split(',')
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(
+            tag_list)).filter(models.Tagging.work_id == models.Work.id)
+        works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
+    if not at_me:
+        if auth:
+            works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
+        else:
+            works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+        
+    if visiblity is not None:
+        works_orm = works_orm.filter(models.Work.visibility == visiblity)
+    
+    if oldest_id:
+        limit_work = db.query(models.Work).filter(
+            models.Work.id == oldest_id).first()
+        if limit_work is None:
+            raise HTTPException(
+                status_code=400, detail='this oldest_id is invalid')
+        limit_created_at = limit_work.created_at
+        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
 
+    works_orm = works_orm.limit(limit)
+    works_orm = works_orm.all()
     works = list(map(Work.from_orm, works_orm))
     return works
