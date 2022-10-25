@@ -57,10 +57,12 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     asset = Asset.from_orm(asset_orm)
     return asset
 
-def delete_asset_by_id(db: Session, asset_id: str) -> DeleteStatus:
+def delete_asset_by_id(db: Session, asset_id: str, user_id: str) -> DeleteStatus:
     asset_orm = db.query(models.Asset).get(asset_id)
     if asset_orm is None:
         raise HTTPException(status_code=404, detail='this asset is not exist')
+    if asset_orm.user_id != user_id:
+        raise HTTPException(status_code=403, detail='cannot delete other\'s asset')
 
     response = wasabi.delete_object(
         Bucket = S3_BUCKET,
