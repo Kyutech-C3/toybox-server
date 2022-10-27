@@ -143,7 +143,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         new_asset_ids.append(thumbnail_asset_id)
     delete_asset_ids = set(old_asset_ids) - set(new_asset_ids)
     for delete_asset_id in delete_asset_ids:
-        delete_asset_by_id(db, delete_asset_id)
+        delete_asset_by_id(db, delete_asset_id, user_id)
 
     # assetのwork_idの更新
     for asset_id in assets_id:
@@ -169,12 +169,12 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 
     # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
-        tagging_orm = models.Tagging(
-            work_id=work_id,
-            tag_id=tag_id
-        )
-        db.add(tagging_orm)
-        db.commit()
+            tagging_orm = models.Tagging(
+                work_id=work_id,
+                tag_id=tag_id
+            )
+            db.add(tagging_orm)
+            db.commit()
 
     # Thumbnailの中間テーブルへのインスタンスの作成
     if thumbnail_asset_id:
