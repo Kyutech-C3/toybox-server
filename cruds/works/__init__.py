@@ -198,15 +198,17 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     return work
 
 
-def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
+def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
     work_orm = db.query(models.Work).get(work_id)
+    if work_orm.user_id != user_id:
+        raise HTTPException(status_code=403, detail='cannot delete other\'s work')
 
     assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
     urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
     thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
 
     for asset_orm in assets_orm:
-        delete_asset_by_id(db, asset_orm.id)
+        delete_asset_by_id(db, asset_orm.id, user_id)
         if asset_orm.id == thumbnail_orm.id:
             thumbnail_orm = None
 
@@ -214,7 +216,7 @@ def delete_work_by_id(db: Session, work_id: str) -> DeleteStatus:
         delete_url_info(db, url_orm.id)
 
     if thumbnail_orm is not None:
-        delete_asset_by_id(db, thumbnail_orm.asset_id)
+        delete_asset_by_id(db, thumbnail_orm.asset_id, user_id)
 
     db.delete(work_orm)
     db.commit()
