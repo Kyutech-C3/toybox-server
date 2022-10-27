@@ -36,7 +36,8 @@ async def put_work(work_id: str, payload: PostWork, db: Session = Depends(get_db
                         payload.tags_id)
     return work
 
-@work_router.delete('/{work_id}', response_model=DeleteStatus, dependencies=[Depends(GetCurrentUser())])
-async def delete_work(work_id: str, db: Session = Depends(get_db)):
-    result = delete_work_by_id(db, work_id)
+@work_router.delete('/{work_id}', response_model=DeleteStatus)
+async def delete_work(work_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+    user_id = None if user is None else user.id
+    result = delete_work_by_id(db, work_id, user_id)
     return result
