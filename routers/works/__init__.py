@@ -25,8 +25,8 @@ async def get_works(limit: int = 30, visibility: models.Visibility = None, oldes
 
 @work_router.get('/{work_id}', response_model=Work)
 async def get_work(work_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(auto_error=False))):
-    auth = user is not None
-    work = get_work_by_id(db, work_id, auth=auth)
+    user_id = None if user is None else user.id
+    work = get_work_by_id(db, work_id, user_id)
     return work
 
 @work_router.put('/{work_id}', response_model=Work)

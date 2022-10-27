@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from fastapi import HTTPException
 from sqlalchemy import desc, func
 from cruds.assets import delete_asset_by_id
@@ -93,13 +93,13 @@ def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, o
     works = list(map(Work.from_orm, works_orm))
     return works
 
-def get_work_by_id(db: Session, work_id: str, auth: bool = False) -> Work:
+def get_work_by_id(db: Session, work_id: str, user_id: Optional[str]) -> Work:
     work_orm = db.query(models.Work).get(work_id)
-    if work_orm.visibility == models.Visibility.draft:
-        raise HTTPException(status_code=400, detail="This work is a draft work.")
-    work = Work.from_orm(work_orm)
-    if work.visibility == models.Visibility.private and not auth:
+    if (work_orm is None) or (work_orm.visibility == models.Visibility.draft and user_id != work_orm.user_id):
+        raise HTTPException(status_code=404, detail='work is not found')
+    if work_orm.visibility == models.Visibility.private and user_id is None:
         raise HTTPException(status_code=403, detail="This work is a private work. You need to sign in.")
+    work = Work.from_orm(work_orm)
     return work
 
 def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str, 
