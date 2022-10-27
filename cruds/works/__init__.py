@@ -209,7 +209,7 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
 
     for asset_orm in assets_orm:
         delete_asset_by_id(db, asset_orm.id, user_id)
-        if asset_orm.id == thumbnail_orm.id:
+        if asset_orm.id == thumbnail_orm.asset_id:
             thumbnail_orm = None
 
     for url_orm in urls_orm:
