@@ -141,4 +141,9 @@ def notice_discord(user_name: str, user_icon_url: str, work_title: str, work_des
       }
     ]
   }
-  requests.post(DISCORD_WEBHOOK_URL, json.dumps(main_content), headers={'Content-Type': 'application/json'})
+  res = requests.post(DISCORD_WEBHOOK_URL, json.dumps(main_content), headers={'Content-Type': 'application/json'})
+
+  try:
+    res.raise_for_status()
+  except Exception as e:
+    print(e)
