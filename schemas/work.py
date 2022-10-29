@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from pydantic.class_validators import validator
 from db.models import Visibility
 from schemas.tag import GetTag
@@ -35,11 +35,10 @@ class Work(BaseModel):
     visibility: str
     tags: List[GetTag]
     thumbnail: Asset
+    favorite_count: Optional[int]
+    is_favorite: Optional[bool]
     created_at: datetime
     updated_at: datetime
 
     class Config:
         orm_mode = True
-
-class SearchOption(BaseModel):
-    tags: list[str]

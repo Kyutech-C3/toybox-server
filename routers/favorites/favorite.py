@@ -23,13 +23,12 @@ async def favorite_by_work_id(work_id:str, db: Session = Depends(get_db), user: 
 
 @user_favorite_router.get("/@me/favorite",response_model=list[Work])
 async def favorite_by_user_id(user: User = Depends(GetCurrentUser()), db: Session = Depends(get_db)):
-    favorites = get_favorite_by_user_id(db, user.id, True)
+    favorites = get_favorite_by_user_id(db, user.id, user)
     return favorites
 
 @user_favorite_router.get("/{user_id}/favorite",response_model=list[Work])
 async def favorite_by_user_id(user_id: str,db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(False))):
-    auth = user is not None
-    favorites = get_favorite_by_user_id(db, user_id, auth)
+    favorites = get_favorite_by_user_id(db, user_id, user)
     return favorites
     
 @favorite_router.delete("/{work_id}/favorite",response_model=Favorite)
