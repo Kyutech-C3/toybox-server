@@ -142,7 +142,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         new_asset_ids.append(thumbnail_asset_id)
     delete_asset_ids = set(old_asset_ids) - set(new_asset_ids)
     for delete_asset_id in delete_asset_ids:
-        delete_asset_by_id(db, delete_asset_id, user_id)
+        db.query(models.Asset).get(delete_asset_id).work_id = None
 
     # assetのwork_idの更新
     for asset_id in assets_id:
@@ -204,18 +204,12 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
 
     assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
     urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
-    thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
 
     for asset_orm in assets_orm:
-        delete_asset_by_id(db, asset_orm.id, user_id)
-        if asset_orm.id == thumbnail_orm.asset_id:
-            thumbnail_orm = None
+        asset_orm.work_id = None
 
     for url_orm in urls_orm:
         delete_url_info(db, url_orm.id)
-
-    if thumbnail_orm is not None:
-        delete_asset_by_id(db, thumbnail_orm.asset_id, user_id)
 
     db.delete(work_orm)
     db.commit()
