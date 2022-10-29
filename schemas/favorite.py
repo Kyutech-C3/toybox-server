@@ -13,3 +13,4 @@ class BaseFavorite(BaseModel):
 class Favorite(BaseModel):
     favorites: list[BaseFavorite]
     is_favorite: bool
+    favorite_count: int

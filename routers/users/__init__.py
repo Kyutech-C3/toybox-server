@@ -34,10 +34,10 @@ async def put_user_info(payload: UserInfoChangeRequest, db: Session = Depends(ge
 
 @user_router.get('/@me/works', response_model=List[Work])
 async def get_my_works(db: Session = Depends(get_db), user: User = Depends(GetCurrentUser()), visibility: models.Visibility = None, oldest_user_id: str = None, newest_user_id: str = None, tags: str = None, limit: int = 30):
-  my_works = get_works_by_user_id(db, user.id, visibility, oldest_user_id, newest_user_id, limit, tags, at_me=True)
+  my_works = get_works_by_user_id(db, user.id, visibility, oldest_user_id, newest_user_id, limit, tags, user)
   return my_works
 
 @user_router.get('/{user_id}/works', response_model=List[Work])
-async def get_users_works(user_id: str, oldest_user_id: str = None, newest_user_id: str = None, limit: int = 30, tags: str = None, db: Session = Depends(get_db), auth: User = Depends(GetCurrentUser(False)), visibility: models.Visibility = None):
-  works = get_works_by_user_id(db, user_id, visibility, oldest_user_id, newest_user_id, limit, tags, auth=bool(auth))
+async def get_users_works(user_id: str, oldest_user_id: str = None, newest_user_id: str = None, limit: int = 30, tags: str = None, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser(False)), visibility: models.Visibility = None):
+  works = get_works_by_user_id(db, user_id, visibility, oldest_user_id, newest_user_id, limit, tags, user)
   return works
