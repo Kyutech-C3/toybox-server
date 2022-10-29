@@ -15,10 +15,10 @@ FRONTEND_HOST_URL = os.environ.get('FRONTEND_HOST_URL')
 work_router = APIRouter()
 
 @work_router.post('', response_model=Work)
-async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
+async def post_work(payload: PostWork, post_discord: bool, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
     work = set_work(db, payload.title, payload.description, user.id,
                     payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls, payload.tags_id)
-    if work.visibility != models.Visibility.draft:
+    if work.visibility != models.Visibility.draft and post_discord:
         notice_discord(
             user_name = work.user.name,
             user_icon_url = work.user.avatar_url,
