@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy import desc
 from db import models
 from sqlalchemy.orm.session import Session
 from schemas.comment import ResponseComment, ResponseReplyComment
@@ -36,7 +37,7 @@ def create_comment(db: Session, content: str, work_id: str, user_id: str = None,
 
     return comment
 
-def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_id: str = None, auth: bool = False) -> list[ResponseComment]:
+def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, oldest_comment_id: str = None, newest_comment_id: str = None, auth: bool = False) -> list[ResponseComment]:
     work_orm = db.query(models.Work).filter(models.Work.id == work_id).first()
     if work_orm is None:
         raise HTTPException(
@@ -44,22 +45,29 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
             detail="work_id is invalid"
         )
     
-    comments_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == None)
+    comments_orm = db.query(models.Comment).filter(models.Comment.work_id == work_id).filter(models.Comment.reply_at == None).order_by(desc(models.Comment.created_at))
     
     if auth:
         comments_orm = comments_orm.filter(models.Comment.visibility != models.Visibility.draft)
     else:
         comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
-    if offset_id:
-        offset = db.query(models.Comment).filter(models.Comment.id == offset_id).first()
-        if offset is None:
+    if oldest_comment_id:
+        oldest_comment = db.query(models.Comment).filter(models.Comment.id == oldest_comment_id).first()
+        if oldest_comment is None:
             raise HTTPException(
-                status_code=404,
-                detail="offset_id is invalid"
+                status_code=400,
+                detail="oldest comment is not found"
             )
-        offset_created_at = offset.created_at
-        comments_orm = comments_orm.filter(models.Comment.created_at > offset_created_at)
+        comments_orm = comments_orm.filter(models.Comment.created_at > oldest_comment.created_at)
+    if newest_comment_id:
+        newest_comment = db.query(models.Comment).filter(models.Comment.id == newest_comment_id).first()
+        if newest_comment is None:
+            raise HTTPException(
+                status_code=400,
+                detail="newest comment is not found"
+            )
+        comments_orm = comments_orm.filter(models.Comment.created_at < newest_comment.created_at)
     comments_orm = comments_orm.limit(limit)
     comments_orm = comments_orm.all()
 
@@ -75,7 +83,7 @@ def get_comments_by_work_id(work_id: str, db: Session, limit: int = 30, offset_i
     
     return comments
 
-def get_reply_comments_by_comment_id(db: Session, comment_id: str, work_id: str, limit: int = 30, offset_id: str = None, auth: bool = False) -> list[ResponseReplyComment]:
+def get_reply_comments_by_comment_id(db: Session, comment_id: str, work_id: str, limit: int = 30, oldest_comment_id: str = None, newest_comment_id: str = None, auth: bool = False) -> list[ResponseReplyComment]:
     work_orm = db.query(models.Work).filter(models.Work.id == work_id).first()
     if work_orm is None:
         raise HTTPException(
@@ -90,22 +98,29 @@ def get_reply_comments_by_comment_id(db: Session, comment_id: str, work_id: str,
             detail="comment_id is invalid"
         )
     
-    comments_orm = db.query(models.Comment).filter(models.Comment.reply_at == comment_id)
+    comments_orm = db.query(models.Comment).filter(models.Comment.reply_at == comment_id).order_by(models.Comment.created_at)
 
     if auth:
         comments_orm = comments_orm.filter(models.Comment.visibility != models.Visibility.draft)
     else:
         comments_orm = comments_orm.filter(models.Comment.visibility == models.Visibility.public)
 
-    if offset_id:
-        offset = db.query(models.Comment).filter(models.Comment.id == offset_id).first()
-        if offset is None:
+    if oldest_comment_id:
+        oldest_comment = db.query(models.Comment).filter(models.Comment.id == oldest_comment_id).first()
+        if oldest_comment is None:
             raise HTTPException(
-                status_code=404,
-                detail="offset_id is invalid"
+                status_code=400,
+                detail="oldest comment is not found"
             )
-        offset_created_at = offset.created_at
-        comments_orm = comments_orm.filter(models.Comment.created_at > offset_created_at)
+        comments_orm = comments_orm.filter(models.Comment.created_at > oldest_comment.created_at)
+    if newest_comment_id:
+        newest_comment = db.query(models.Comment).filter(models.Comment.id == newest_comment_id).first()
+        if newest_comment is None:
+            raise HTTPException(
+                status_code=400,
+                detail="newest comment is not found"
+            )
+        comments_orm = comments_orm.filter(models.Comment.created_at < newest_comment.created_at)
     comments_orm = comments_orm.limit(limit)
     comments_orm = comments_orm.all()
     comments = list(map(ResponseReplyComment.from_orm, comments_orm))

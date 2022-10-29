@@ -257,11 +257,11 @@ def tags_for_test(
     {'id': 'tag2', 'name': 'test1_tag2', 'color': '#fffffb'},
     {'id': 'tag3', 'name': 'test1_tag3', 'color': '#fffffc'},
     {'id': 'tag4', 'name': 'test1_tag4', 'color': '#fffffd'},
+    {'id': 'tag8', 'name': 'test1_tag8', 'color': '#fffffb'},
+    {'id': 'tag9', 'name': 'test1_tag9', 'color': '#fffffc'},
     {'id': 'tag5', 'name': 'test2_tag5', 'color': '#fffffe'},
     {'id': 'tag6', 'name': 'test2_tag6', 'color': '#ffffff'},
     {'id': 'tag7', 'name': 'test2_tag7', 'color': '#fffffa'},
-    {'id': 'tag8', 'name': 'test1_tag8', 'color': '#fffffb'},
-    {'id': 'tag9', 'name': 'test1_tag9', 'color': '#fffffc'},
   ]
 
   c: list = []

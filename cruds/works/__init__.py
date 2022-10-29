@@ -70,18 +70,22 @@ def set_work(db: Session, title: str, description: str, user_id: str,
 
     return work
 
-def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, tags: str, auth: bool = False) -> List[Work]:
+def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, tags: str, auth: bool = False) -> List[Work]:
     works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
     if tags:
         tag_list = tags.split(',')
         works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(models.Tagging.work_id == models.Work.id)
         works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
-    if oldest_id:
-        limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
-        if limit_work is None:
+    if oldest_work_id:
+        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        if oldest_work is None:
             raise HTTPException(status_code=400, detail='this oldest_id is invalid')
-        limit_created_at = limit_work.created_at
-        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
+        works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
+    if newest_work_id:
+        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        if newest_work is None:
+            raise HTTPException(status_code=400, detail='this newest_id is invalid')
+        works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
     if not auth:
         works_orm = works_orm.filter(
             models.Work.visibility == models.Visibility.public)
@@ -216,7 +220,7 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
@@ -237,14 +241,17 @@ def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibilit
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
     
-    if oldest_id:
-        limit_work = db.query(models.Work).filter(
-            models.Work.id == oldest_id).first()
-        if limit_work is None:
-            raise HTTPException(
-                status_code=400, detail='this oldest_id is invalid')
-        limit_created_at = limit_work.created_at
-        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
+    if oldest_work_id:
+        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        if oldest_work is None:
+            raise HTTPException(status_code=400, detail='oldest work is not found')
+        works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
+
+    if newest_work_id:
+        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        if newest_work is None:
+            raise HTTPException(status_code=400, detail='newest work is not found')
+        works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
 
     works_orm = works_orm.limit(limit)
     works_orm = works_orm.all()
