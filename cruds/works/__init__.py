@@ -250,11 +250,10 @@ def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibilit
         works_orm = works_orm.filter(models.Tagging.tag_id.in_(
             tag_list)).filter(models.Tagging.work_id == models.Work.id)
         works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
-    if user.id != user_id:
-        if user is not None:
-            works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
-        else:
-            works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+    if user is None:
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+    elif user.id != user_id:
+        works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
         
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
