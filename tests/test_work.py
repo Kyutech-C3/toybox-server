@@ -22,7 +22,7 @@ class TestWork:
             }
         ]
 
-        res = client.post('/api/v1/works', json={
+        res = client.post('/api/v1/works?post_discord=false', json={
                 "title": title,
                 "description": description,
                 "visibility": visibility,
@@ -54,7 +54,7 @@ class TestWork:
             }
         ]
 
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -76,7 +76,7 @@ class TestWork:
         assert res_json['visibility'] == visibility
 
         visibility = 'private'
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -98,7 +98,7 @@ class TestWork:
         assert res_json['visibility'] == visibility
 
         visibility = 'draft'
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -135,7 +135,7 @@ class TestWork:
             }
         ]
 
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -155,7 +155,7 @@ class TestWork:
         assert res_json['assets'] == []
 
         asset = asset_factory_for_test()
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -187,7 +187,7 @@ class TestWork:
         asset = asset_factory_for_test()
         thumbnail = asset_factory_for_test()
 
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,
@@ -216,7 +216,7 @@ class TestWork:
                 "url_type": url_type
             }
         ]
-        res = client.post('/api/v1/works', headers={
+        res = client.post('/api/v1/works?post_discord=false', headers={
                 "Authorization": f"Bearer {token.access_token}"
             },json={
                 "title": title,

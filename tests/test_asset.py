@@ -81,4 +81,4 @@ class TestWork:
             }
         )
 
-        assert res.status_code == 400, 'Assetの投稿に失敗する'
+        assert res.status_code == 422, 'Assetの投稿に失敗する'
