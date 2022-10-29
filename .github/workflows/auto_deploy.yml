@@ -26,6 +26,7 @@ jobs:
           echo "DISCORD_CLIENT_SECRET=${{ secrets.DISCORD_CLIENT_SECRET }}" >> .env
           echo "DISCORD_GUILD_ID=${{ secrets.DISCORD_GUILD_ID }}" >> .env
           echo "TOKEN_SECRET_KEY=${{ secrets.TOKEN_SECRET_KEY }}" >> .env
+          echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}" >> .env
 
           echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
           echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env

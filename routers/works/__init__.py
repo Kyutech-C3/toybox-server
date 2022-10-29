@@ -1,3 +1,4 @@
+import os
 from schemas.common import DeleteStatus
 from schemas.work import PostWork, Work
 from schemas.user import User
@@ -8,13 +9,24 @@ from sqlalchemy.orm import Session
 from cruds.users.auth import GetCurrentUser
 from cruds.works import delete_work_by_id, get_work_by_id, get_works_by_limit, replace_work, set_work
 from typing import List
+from utils.discord import notice_discord
 
+FRONTEND_HOST_URL = os.environ.get('FRONTEND_HOST_URL')
 work_router = APIRouter()
 
 @work_router.post('', response_model=Work)
 async def post_work(payload: PostWork, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())):
     work = set_work(db, payload.title, payload.description, user.id,
                     payload.visibility, payload.thumbnail_asset_id, payload.assets_id, payload.urls, payload.tags_id)
+    if work.visibility != models.Visibility.draft:
+        notice_discord(
+            user_name = work.user.name,
+            user_icon_url = work.user.avatar_url,
+            work_title = work.title,
+            work_description=work.description,
+            work_url = f'{FRONTEND_HOST_URL}/works/{work.id}',
+            thumbnail_image_url = work.thumbnail.url
+        )
     return work
 
 @work_router.get('', response_model=List[Work])
