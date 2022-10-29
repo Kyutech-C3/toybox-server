@@ -15,7 +15,6 @@ import markdown
 def set_work(db: Session, title: str, description: str, user_id: str, 
              visibility: str, thumbnail_asset_id: str,
              assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
-    
 
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
@@ -169,12 +168,12 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 
     # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
-            tagging_orm = models.Tagging(
-                work_id=work_id,
-                tag_id=tag_id
-            )
-            db.add(tagging_orm)
-            db.commit()
+        tagging_orm = models.Tagging(
+            work_id=work_id,
+            tag_id=tag_id
+        )
+        db.add(tagging_orm)
+        db.commit()
 
     # Thumbnailの中間テーブルへのインスタンスの作成
     if thumbnail_asset_id:
@@ -223,7 +222,7 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
@@ -241,8 +240,8 @@ def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility,
         else:
             works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
         
-    if visiblity is not None:
-        works_orm = works_orm.filter(models.Work.visibility == visiblity)
+    if visibility is not None:
+        works_orm = works_orm.filter(models.Work.visibility == visibility)
     
     if oldest_id:
         limit_work = db.query(models.Work).filter(
