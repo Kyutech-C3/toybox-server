@@ -20,15 +20,15 @@ async def post_comment(payload: PostComment, work_id: str, db: Session = Depends
   return comment
 
 @comment_router.get('/{work_id}/comments', response_model=list[ResponseComment])
-async def get_comments(work_id: str, db: Session = Depends(get_db), limit: int = 30, offset_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False))):
+async def get_comments(work_id: str, db: Session = Depends(get_db), limit: int = 30, oldest_comment_id: str = None, newest_comment_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False))):
   auth = user is not None
-  comments = get_comments_by_work_id(work_id, db, limit, offset_id, auth)
+  comments = get_comments_by_work_id(work_id, db, limit, oldest_comment_id, newest_comment_id, auth)
   return comments
 
 @comment_router.get('/{work_id}/comments/{comment_id}', response_model=list[ResponseReplyComment])
-async def get_reply_comments(work_id: str, comment_id: str, db: Session = Depends(get_db), limit: int = 10, offset_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False))):
+async def get_reply_comments(work_id: str, comment_id: str, db: Session = Depends(get_db), limit: int = 10, oldest_comment_id: str = None, newest_comment_id: str = None, user: User = Depends(GetCurrentUser(auto_error=False))):
   auth = user is not None
-  replies = get_reply_comments_by_comment_id(db, comment_id, work_id, limit, offset_id, auth)
+  replies = get_reply_comments_by_comment_id(db, comment_id, work_id, limit, oldest_comment_id, newest_comment_id, auth)
   return replies
 
 @comment_router.delete('/{work_id}/comments/{comment_id}', response_model=DeleteStatus)

@@ -77,24 +77,18 @@ class TestUser:
 			assert res.status_code == 404, 'ユーザーの情報の取得に失敗する'
 
 	def test_get_users(use_test_db_fixture, users_factory_for_test):
-		print("test_get_users :::::::: ユーザー一覧を取得")
 		"""
 		ユーザー一覧を取得
 		"""
-		count = 0
-		index = 0
 		users_info = users_factory_for_test()
 		res = client.get(f'/api/v1/users')
-		for user_info in users_info:
-			count+=1
-			print(f"===========================test_get_users: {count}==========================")
+		assert res.status_code == 200, 'ユーザー一覧の取得に成功する'
+		for index, user_info in enumerate(users_info):
 			print(user_info)
 			print(res.json())
 			user_id: str = user_info.id
 		
-			assert res.status_code == 200, 'ユーザー一覧の取得に成功する'
-			assert res.json()[index]['id'] == user_id
-			index += 1
+			assert res.json()[-index-1]['id'] == user_id
 
 	def test_get_users_with_limit(use_test_db_fixture, users_factory_for_test):
 		print("test_get_users_with_limit :::::::: 取得するユーザー数を制限してユーザー一覧を取得")
@@ -118,10 +112,10 @@ class TestUser:
 		users_info = users_factory_for_test()
 		offset_id = users_info[2].id
 		user_id = users_info[3].id
-		res = client.get(f'/api/v1/users?offset_id={offset_id}')
+		res = client.get(f'/api/v1/users?oldest_user_id={offset_id}')
 	
 		assert res.status_code == 200, 'オフセットを指定してユーザー一覧の取得に成功する'
-		assert res.json()[0]['id'] == user_id
+		assert res.json()[-1]['id'] == user_id
 
 	def test_get_users_with_not_exit_offset_id(use_test_db_fixture, users_factory_for_test):
 		print("test_get_users_with_not_exit_offset_id :::::::: 存在しないオフセットIDを指定してユーザー一覧を取得")
@@ -130,11 +124,10 @@ class TestUser:
 		"""
 		users_info = users_factory_for_test()
 		offset_id = users_info[2].id + "hoge"
-		res = client.get(f'/api/v1/users?offset_id={offset_id}')
-	
-		assert res.status_code == 404, '存在しないオフセットIDを指定してユーザー一覧の取得に失敗する'
+		res = client.get(f'/api/v1/users?oldest_user_id={offset_id}')
 
-	
+		assert res.status_code == 400, '存在しないオフセットIDを指定してユーザー一覧の取得に失敗する'
+
 	def test_put_all_info_of_user_me(use_test_db_fixture, user_factory_for_test, user_token_factory_for_test, session_for_test):
 		print("test_put_all_info_of_user_me :::::::: ユーザーの情報をすべて編集")
 		"""

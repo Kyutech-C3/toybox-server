@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import HTTPException
+from sqlalchemy import desc
 from db import models
 from sqlalchemy.orm.session import Session
 from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus
@@ -31,23 +32,30 @@ def create_tag(db: Session, name: str, color_code: str) -> GetTag:
 
     return tag
 
-def get_tags(db: Session, limit: int, offset_id: str, search_str: str) -> List[GetTag]:
-    tag_orm = db.query(models.Tag)
+def get_tags(db: Session, limit: int, smallest_tag_id: str, biggest_tag_id: str, search_str: str) -> List[GetTag]:
+    tag_orm = db.query(models.Tag).order_by(models.Tag.name)
     if tag_orm.first() is None:
         return []
 
     if search_str is not None:
         tag_orm = tag_orm.filter(models.Tag.name.ilike(f'{search_str}%'))
 
-    if offset_id:
-        limit_tag = db.query(models.Tag).filter(models.Tag.id == offset_id).first()
+    if smallest_tag_id:
+        limit_tag = db.query(models.Tag).filter(models.Tag.id == smallest_tag_id).first()
         if limit_tag is None:
             raise HTTPException(
                 status_code=400,
-                detail="offset_id is not exist"
+                detail="smallest_tag is not exist"
             )
-        limit_created_at = limit_tag.created_at
-        tag_orm = tag_orm.filter(models.Tag.created_at > limit_created_at)
+        tag_orm = tag_orm.filter(models.Tag.name > smallest_tag_id.name)
+    if biggest_tag_id:
+        limit_tag = db.query(models.Tag).filter(models.Tag.id == biggest_tag_id).first()
+        if limit_tag is None:
+            raise HTTPException(
+                status_code=400,
+                detail="biggest_tag is not exist"
+            )
+        tag_orm = tag_orm.filter(models.Tag.name > biggest_tag_id.name)
 
     tag_orm = tag_orm.limit(limit).all()
     tag_list = list(map(GetTag.from_orm, tag_orm))

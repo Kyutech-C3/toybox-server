@@ -15,7 +15,6 @@ import markdown
 def set_work(db: Session, title: str, description: str, user_id: str, 
              visibility: str, thumbnail_asset_id: str,
              assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
-    
 
     if title == '':
         raise HTTPException(status_code=400, detail="Title is empty")
@@ -71,18 +70,22 @@ def set_work(db: Session, title: str, description: str, user_id: str,
 
     return work
 
-def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_id: str, tags: str, auth: bool = False) -> List[Work]:
+def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, tags: str, auth: bool = False) -> List[Work]:
     works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
     if tags:
         tag_list = tags.split(',')
         works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(models.Tagging.work_id == models.Work.id)
         works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
-    if oldest_id:
-        limit_work = db.query(models.Work).filter(models.Work.id == oldest_id).first()
-        if limit_work is None:
+    if oldest_work_id:
+        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        if oldest_work is None:
             raise HTTPException(status_code=400, detail='this oldest_id is invalid')
-        limit_created_at = limit_work.created_at
-        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
+        works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
+    if newest_work_id:
+        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        if newest_work is None:
+            raise HTTPException(status_code=400, detail='this newest_id is invalid')
+        works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
     if not auth:
         works_orm = works_orm.filter(
             models.Work.visibility == models.Visibility.public)
@@ -143,7 +146,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
         new_asset_ids.append(thumbnail_asset_id)
     delete_asset_ids = set(old_asset_ids) - set(new_asset_ids)
     for delete_asset_id in delete_asset_ids:
-        delete_asset_by_id(db, delete_asset_id, user_id)
+        db.query(models.Asset).get(delete_asset_id).work_id = None
 
     # assetのwork_idの更新
     for asset_id in assets_id:
@@ -169,12 +172,12 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 
     # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
-            tagging_orm = models.Tagging(
-                work_id=work_id,
-                tag_id=tag_id
-            )
-            db.add(tagging_orm)
-            db.commit()
+        tagging_orm = models.Tagging(
+            work_id=work_id,
+            tag_id=tag_id
+        )
+        db.add(tagging_orm)
+        db.commit()
 
     # Thumbnailの中間テーブルへのインスタンスの作成
     if thumbnail_asset_id:
@@ -205,25 +208,19 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
 
     assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
     urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
-    thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
 
     for asset_orm in assets_orm:
-        delete_asset_by_id(db, asset_orm.id, user_id)
-        if asset_orm.id == thumbnail_orm.asset_id:
-            thumbnail_orm = None
+        asset_orm.work_id = None
 
     for url_orm in urls_orm:
         delete_url_info(db, url_orm.id)
-
-    if thumbnail_orm is not None:
-        delete_asset_by_id(db, thumbnail_orm.asset_id, user_id)
 
     db.delete(work_orm)
     db.commit()
 
     return {'status': 'OK'}
 
-def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility, oldest_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
+def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, limit: int, tags: str, at_me: bool = False, auth: bool = False) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail='this user is not exist')
@@ -241,17 +238,20 @@ def get_works_by_user_id(db: Session, user_id: str, visiblity:models.Visibility,
         else:
             works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
         
-    if visiblity is not None:
-        works_orm = works_orm.filter(models.Work.visibility == visiblity)
+    if visibility is not None:
+        works_orm = works_orm.filter(models.Work.visibility == visibility)
     
-    if oldest_id:
-        limit_work = db.query(models.Work).filter(
-            models.Work.id == oldest_id).first()
-        if limit_work is None:
-            raise HTTPException(
-                status_code=400, detail='this oldest_id is invalid')
-        limit_created_at = limit_work.created_at
-        works_orm = works_orm.filter(models.Work.created_at > limit_created_at)
+    if oldest_work_id:
+        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        if oldest_work is None:
+            raise HTTPException(status_code=400, detail='oldest work is not found')
+        works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
+
+    if newest_work_id:
+        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        if newest_work is None:
+            raise HTTPException(status_code=400, detail='newest work is not found')
+        works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
 
     works_orm = works_orm.limit(limit)
     works_orm = works_orm.all()
