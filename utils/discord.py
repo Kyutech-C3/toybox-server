@@ -1,3 +1,4 @@
+import json
 import requests
 from pydantic import BaseModel
 from fastapi import HTTPException
@@ -8,6 +9,7 @@ API_ENDPOINT = 'https://discord.com/api/v8'
 CLIENT_ID = os.environ.get('DISCORD_CLIENT_ID')
 CLIENT_SECRET = os.environ.get('DISCORD_CLIENT_SECRET')
 HOST_URL = os.environ.get('HOST_URL')
+DISCORD_WEBHOOK_URL = os.environ.get('DISCORD_WEBHOOK_URL')
 
 class DiscordAccessTokenResponse(BaseModel):
   access_token: str
@@ -115,3 +117,28 @@ def discord_verify_user_belongs_to_valid_guild(access_token: str) -> bool:
       return True
 
   raise DiscordException(discord_status_code=403, detail='User not belongs to valid guild')
+
+def notice_discord(user_name: str, user_icon_url: str, work_title: str, work_description: str, work_url: str, thumbnail_image_url: str):
+  desc = work_description
+  if len(work_description) > 100:
+    desc = work_description[:100]+'…'
+
+  main_content = {
+    "username": user_name,
+    "avatar_url": user_icon_url,
+    'embeds': [
+      {
+        'title': work_title,
+        'url': work_url,
+        'description': desc,
+        'thumbnail': {
+          'url': 'https://toybox.compositecomputer.club/_nuxt/img/ToyBoxlogo.21166b5.png'
+        },
+        'color': 4063189,
+        'image': {
+          'url': thumbnail_image_url
+        }
+      }
+    ]
+  }
+  requests.post(DISCORD_WEBHOOK_URL, json.dumps(main_content), headers={'Content-Type': 'application/json'})
