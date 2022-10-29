@@ -47,6 +47,16 @@ class AssetType(str, enum.Enum):
     music = 'music'
     model = 'model'
 
+class Favorite(Base):
+
+    __tablename__ = "favorite"
+
+    work_id = Column(String(length=255), ForeignKey('works.id'), primary_key=True)
+    user_id = Column(String(length=255), ForeignKey("user.id"), primary_key=True)
+    created_at = Column(DateTime, default=func.now())
+    work = relationship("Work",backref="favorite_info")
+    user = relationship("User",backref="favorite_info")
+
 class User(Base):
     __tablename__ = 'user'
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
