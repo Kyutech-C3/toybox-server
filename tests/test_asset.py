@@ -3,7 +3,7 @@ import pytest
 from .fixtures import client, use_test_db_fixture, user_token_factory_for_test, image_asset_for_test, session_for_test, user_factory_for_test, user_for_test
 
 @pytest.mark.usefixtures('use_test_db_fixture')
-class TestWork:
+class TestAsset:
 
     def test_post_asset_without_auth(use_test_db_fixture):
         """
