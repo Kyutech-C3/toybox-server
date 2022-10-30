@@ -8,7 +8,7 @@ from schemas.common import DeleteStatus
 import boto3
 
 ALLOW_EXTENSIONS = {
-    'image': ['png', 'jpg', 'jpeg', 'bmp', 'gif'],
+    'image': ['png', 'PNG', 'JPG', 'JPEG', 'jpg', 'jpeg', 'bmp', 'gif', 'GIF'],
     'video': ['mp4', 'mov', 'avi', 'flv'],
     'music': ['mp3', 'wav', 'm4a'],
     'zip': ['zip'],
