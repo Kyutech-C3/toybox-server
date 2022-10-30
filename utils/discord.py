@@ -110,11 +110,13 @@ def discord_fetch_user_guilds(access_token: str) -> List[DiscordGuild]:
 
 def discord_verify_user_belongs_to_valid_guild(access_token: str) -> bool:
   guilds = discord_fetch_user_guilds(access_token=access_token)
-  valid_guild_id = os.environ.get('DISCORD_GUILD_ID')
+  valid_guild_ids = os.environ.get('DISCORD_GUILD_ID').split(',')
+
   for guild in guilds:
-    print(guild.id, '==', valid_guild_id)
-    if guild.id == valid_guild_id:
-      return True
+    for valid_guild_id in valid_guild_ids:
+      print(guild.id, '==', valid_guild_id)
+      if guild.id == valid_guild_id:
+        return True
 
   raise DiscordException(discord_status_code=403, detail='User not belongs to valid guild')
 
