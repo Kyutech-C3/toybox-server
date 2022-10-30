@@ -4,12 +4,12 @@ from db import models
 import re
 
 url_type_pattern = {
-    'youtube': '^https://(www\.youtube\.com/watch\?v=|youtu\.be/)[\S]{11}$',
-    'soundcloud': '^https://soundcloud\.com/[^/]+/[^/]+$',
-    'github': '^https://github\.com/[^/]+/[^/]+$',
-    'sketchfab': '^https://sketchfab\.com/3d-models/[\w]+-[\da-z]{32}$',
-    'unityroom': '^https://unityroom\.com/games/[\S]+$',
-    'other': '^https?://.*$'
+    'youtube': r'^https://(www\.youtube\.com/watch\?v=|youtu\.be/)[\S]{11}$',
+    'soundcloud': r'^https://soundcloud\.com/[^/]+/[^/]+$',
+    'github': r'^https://github\.com/[^/]+/[^/]+$',
+    'sketchfab': r'^https://sketchfab\.com/3d-models/[\w]+-[\da-z]{32}$',
+    'unityroom': r'^https://unityroom\.com/games/[\S]+$',
+    'other': r'^https?://.*$'
 }
 
 def create_url_info(db: Session, url: str, url_type: str, work_id: str, user_id: str):

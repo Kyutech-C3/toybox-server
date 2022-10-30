@@ -11,6 +11,7 @@ class Column(Col):
     def __init__(self, *args, **kwargs):
         kwargs.setdefault('nullable', False)
         super().__init__(*args, **kwargs)
+    inherit_cache: bool = True
 
 # 2 weeks
 DEFAULT_REFRESH_TOKEN_EXPIRED_DAYS = 14

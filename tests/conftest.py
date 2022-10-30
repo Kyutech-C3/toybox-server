@@ -22,7 +22,7 @@ def pytest_sessionfinish():
             Key = obj['Key'].replace('/origin.png','')
         )
 
-        if response['ResponseMetadata']['HTTPStatusCode'] is 204:
+        if response['ResponseMetadata']['HTTPStatusCode'] == 204:
             logger.info(obj['Key'].replace('/origin.png',''))
             logger.info(response)
         else:
