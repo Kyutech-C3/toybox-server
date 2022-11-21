@@ -6,8 +6,10 @@ from pydantic.fields import Field
 
 from .user import User
 
+
 class PostComment(BaseModel):
-    content: str=Field(..., title="投稿内容", min_length=1, max_length=500)
+    content: str = Field(..., title="投稿内容", min_length=1, max_length=500)
+
 
 class ResponseReplyComment(PostComment):
     id: str
@@ -20,6 +22,7 @@ class ResponseReplyComment(PostComment):
 
     class Config:
         orm_mode = True
+
 
 class ResponseComment(ResponseReplyComment):
     id: str

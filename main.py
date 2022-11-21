@@ -8,22 +8,18 @@ from fastapi.staticfiles import StaticFiles
 import os
 from utils.limit_upload_size import LimitUploadSize
 
-app = FastAPI(
-    title='toybox-server'
-)
+app = FastAPI(title="toybox-server")
 
 app.add_middleware(LimitUploadSize, max_upload_size=50_000_000)
 
-origins = [
-    "http://localhost:8080"
-]
+origins = ["http://localhost:8080"]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ['*'],
-    allow_credentials = True,
-    allow_methods = ['*'],
-    allow_headers = ['*']
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.include_router(router, prefix='/api/v1')
+app.include_router(router, prefix="/api/v1")

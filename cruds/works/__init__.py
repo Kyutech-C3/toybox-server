@@ -13,21 +13,30 @@ import markdown
 
 # TODO: CASCADEを導入する
 
-def set_work(db: Session, title: str, description: str, user_id: str, 
-             visibility: str, thumbnail_asset_id: str,
-             assets_id: List[str], urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
 
-    if title == '':
+def set_work(
+    db: Session,
+    title: str,
+    description: str,
+    user_id: str,
+    visibility: str,
+    thumbnail_asset_id: str,
+    assets_id: List[str],
+    urls: List[BaseUrlInfo],
+    tags_id: List[str],
+) -> Work:
+
+    if title == "":
         raise HTTPException(status_code=400, detail="Title is empty")
 
     # DB書き込み
-    md = markdown.Markdown(extensions=['tables'])
+    md = markdown.Markdown(extensions=["tables"])
     work_orm = models.Work(
-        title = title,
-        description = description,
-        description_html = md.convert(description),
-        user_id = user_id,
-        visibility = visibility,
+        title=title,
+        description=description,
+        description_html=md.convert(description),
+        user_id=user_id,
+        visibility=visibility,
     )
     db.add(work_orm)
     db.commit()
@@ -37,19 +46,18 @@ def set_work(db: Session, title: str, description: str, user_id: str,
     for asset_id in assets_id:
         asset_orm = db.query(models.Asset).get(asset_id)
         if asset_orm is None:
-            raise HTTPException(status_code=400, detail='This asset id is invalid.')
+            raise HTTPException(status_code=400, detail="This asset id is invalid.")
         asset_orm.work_id = work_orm.id
 
     # url_infoテーブルへのインスタンスの作成
     for url in urls:
-        create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_orm.id, user_id)
+        create_url_info(
+            db, url.get("url"), url.get("url_type", "other"), work_orm.id, user_id
+        )
 
     # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
-        tagging_orm = models.Tagging(
-            work_id=work_orm.id,
-            tag_id=tag_id
-        )
+        tagging_orm = models.Tagging(work_id=work_orm.id, tag_id=tag_id)
         db.add(tagging_orm)
         db.commit()
 
@@ -57,11 +65,10 @@ def set_work(db: Session, title: str, description: str, user_id: str,
     if thumbnail_asset_id:
         thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
         if thumbnail is None:
-            raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
-        thumbnail_orm = models.Thumbnail(
-            work_id = work_orm.id,
-            asset_id = thumbnail.id
-        )
+            raise HTTPException(
+                status_code=400, detail="This thumbnail asset id is invalid."
+            )
+        thumbnail_orm = models.Thumbnail(work_id=work_orm.id, asset_id=thumbnail.id)
         db.add(thumbnail_orm)
         db.commit()
 
@@ -73,25 +80,45 @@ def set_work(db: Session, title: str, description: str, user_id: str,
 
     return work
 
-def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, tags: str, user: Optional[User]) -> List[Work]:
-    works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.visibility != models.Visibility.draft)
+
+def get_works_by_limit(
+    db: Session,
+    limit: int,
+    visibility: models.Visibility,
+    oldest_work_id: str,
+    newest_work_id: str,
+    tags: str,
+    user: Optional[User],
+) -> List[Work]:
+    works_orm = (
+        db.query(models.Work)
+        .order_by(desc(models.Work.created_at))
+        .filter(models.Work.visibility != models.Visibility.draft)
+    )
     if tags:
-        tag_list = tags.split(',')
-        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(models.Tagging.work_id == models.Work.id)
-        works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
+        tag_list = tags.split(",")
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_list)
+        )
     if oldest_work_id:
-        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        oldest_work = (
+            db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        )
         if oldest_work is None:
-            raise HTTPException(status_code=400, detail='this oldest_id is invalid')
+            raise HTTPException(status_code=400, detail="this oldest_id is invalid")
         works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
     if newest_work_id:
-        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        newest_work = (
+            db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        )
         if newest_work is None:
-            raise HTTPException(status_code=400, detail='this newest_id is invalid')
+            raise HTTPException(status_code=400, detail="this newest_id is invalid")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
     if user is None:
-        works_orm = works_orm.filter(
-            models.Work.visibility == models.Visibility.public)
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
     works_orm = works_orm.limit(limit)
@@ -100,43 +127,77 @@ def get_works_by_limit(db: Session, limit: int, visibility: models.Visibility, o
     for work_orm in works_orm:
         work = Work.from_orm(work_orm)
         if user is not None:
-            work.is_favorite = db.query(models.Favorite).filter(models.Favorite.work_id == work.id, models.Favorite.user_id == user.id).first() is not None
+            work.is_favorite = (
+                db.query(models.Favorite)
+                .filter(
+                    models.Favorite.work_id == work.id,
+                    models.Favorite.user_id == user.id,
+                )
+                .first()
+                is not None
+            )
         else:
             work.is_favorite = False
-        work.favorite_count = db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+        work.favorite_count = (
+            db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+        )
         works.append(work)
     return works
 
+
 def get_work_by_id(db: Session, work_id: str, user_id: Optional[str]) -> Work:
     work_orm = db.query(models.Work).get(work_id)
-    if (work_orm is None) or (work_orm.visibility == models.Visibility.draft and user_id != work_orm.user_id):
-        raise HTTPException(status_code=404, detail='work is not found')
+    if (work_orm is None) or (
+        work_orm.visibility == models.Visibility.draft and user_id != work_orm.user_id
+    ):
+        raise HTTPException(status_code=404, detail="work is not found")
     if work_orm.visibility == models.Visibility.private and user_id is None:
-        raise HTTPException(status_code=403, detail="This work is a private work. You need to sign in.")
+        raise HTTPException(
+            status_code=403, detail="This work is a private work. You need to sign in."
+        )
     work = Work.from_orm(work_orm)
     if user_id is not None:
-        work.is_favorite = db.query(models.Favorite).filter(models.Favorite.work_id == work.id, models.Favorite.user_id == user_id).first() is not None
+        work.is_favorite = (
+            db.query(models.Favorite)
+            .filter(
+                models.Favorite.work_id == work.id, models.Favorite.user_id == user_id
+            )
+            .first()
+            is not None
+        )
     else:
         work.is_favorite = False
-    work.favorite_count = db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+    work.favorite_count = (
+        db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+    )
     return work
 
-def replace_work(db: Session, work_id: str, title: str, description: str, user_id: str, 
-                 visibility: str, thumbnail_asset_id: str, assets_id: List[str],
-                 urls: List[BaseUrlInfo], tags_id: List[str]) -> Work:
+
+def replace_work(
+    db: Session,
+    work_id: str,
+    title: str,
+    description: str,
+    user_id: str,
+    visibility: str,
+    thumbnail_asset_id: str,
+    assets_id: List[str],
+    urls: List[BaseUrlInfo],
+    tags_id: List[str],
+) -> Work:
 
     work_orm = db.query(models.Work).get(work_id)
 
     # 自分のWorkでなければ弾く
     if work_orm.user_id != user_id:
-        raise HTTPException(status_code=401, detail='this work\'s author isn\'t you')
+        raise HTTPException(status_code=401, detail="this work's author isn't you")
 
     # titleのvalidator
-    if title == '':
+    if title == "":
         raise HTTPException(status_code=400, detail="Title is empty")
 
     # DB更新
-    md = markdown.Markdown(extensions=['tables'])
+    md = markdown.Markdown(extensions=["tables"])
     work_orm.title = title
     work_orm.description = description
     work_orm.description_html = md.convert(description)
@@ -154,7 +215,9 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 
     # 使われなくなったassetの削除
     old_asset_ids = [asset_orm.id for asset_orm in assets_orm]
-    old_thumbnail_orm = db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
+    old_thumbnail_orm = (
+        db.query(models.Thumbnail).filter(models.Thumbnail.work_id == work_id).first()
+    )
     if old_thumbnail_orm:
         old_asset_ids.append(old_thumbnail_orm.asset_id)
     new_asset_ids = assets_id[:]
@@ -168,7 +231,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     for asset_id in assets_id:
         asset_orm = db.query(models.Asset).get(asset_id)
         if asset_orm is None:
-            raise HTTPException(status_code=400, detail='This asset id is invalid.')
+            raise HTTPException(status_code=400, detail="This asset id is invalid.")
         asset_orm.work_id = work_id
 
     # url_infoの削除
@@ -178,20 +241,21 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 
     # url_infoテーブルへのインスタンスの作成
     for url in urls:
-        create_url_info(db, url.get('url'), url.get('url_type', 'other'), work_id, user_id)
+        create_url_info(
+            db, url.get("url"), url.get("url_type", "other"), work_id, user_id
+        )
 
     # tagの中間テーブルのインスタンスの削除
-    taggings_orm = db.query(models.Tagging).filter(models.Tagging.work_id == work_id).all()
+    taggings_orm = (
+        db.query(models.Tagging).filter(models.Tagging.work_id == work_id).all()
+    )
     for tagging in taggings_orm:
         db.delete(tagging)
     db.commit()
 
     # tagの中間テーブルへのインスタンスの作成
     for tag_id in tags_id:
-        tagging_orm = models.Tagging(
-            work_id=work_id,
-            tag_id=tag_id
-        )
+        tagging_orm = models.Tagging(work_id=work_id, tag_id=tag_id)
         db.add(tagging_orm)
         db.commit()
 
@@ -202,10 +266,11 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
             db.commit()
         thumbnail = db.query(models.Asset).get(thumbnail_asset_id)
         if thumbnail is None:
-            raise HTTPException(status_code=400, detail='This thumbnail asset id is invalid.')
+            raise HTTPException(
+                status_code=400, detail="This thumbnail asset id is invalid."
+            )
         new_thumbnail_orm = models.Thumbnail(
-            work_id = work_id,
-            asset_id = thumbnail_asset_id
+            work_id=work_id, asset_id=thumbnail_asset_id
         )
         db.add(new_thumbnail_orm)
         db.commit()
@@ -213,8 +278,15 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
     # schemaに変換
     db.refresh(work_orm)
     work = Work.from_orm(work_orm)
-    work.is_favorite = db.query(models.Favorite).filter(models.Favorite.work_id == work.id, models.Favorite.user_id == user_id).first() is not None
-    work.favorite_count = db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+    work.is_favorite = (
+        db.query(models.Favorite)
+        .filter(models.Favorite.work_id == work.id, models.Favorite.user_id == user_id)
+        .first()
+        is not None
+    )
+    work.favorite_count = (
+        db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+    )
 
     return work
 
@@ -222,7 +294,7 @@ def replace_work(db: Session, work_id: str, title: str, description: str, user_i
 def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
     work_orm = db.query(models.Work).get(work_id)
     if work_orm.user_id != user_id:
-        raise HTTPException(status_code=403, detail='cannot delete other\'s work')
+        raise HTTPException(status_code=403, detail="cannot delete other's work")
 
     assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
     urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
@@ -236,38 +308,59 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
     db.delete(work_orm)
     db.commit()
 
-    return {'status': 'OK'}
+    return {"status": "OK"}
 
-def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibility, oldest_work_id: str, newest_work_id: str, limit: int, tags: str, user: Optional[User]) -> List[Work]:
+
+def get_works_by_user_id(
+    db: Session,
+    user_id: str,
+    visibility: models.Visibility,
+    oldest_work_id: str,
+    newest_work_id: str,
+    limit: int,
+    tags: str,
+    user: Optional[User],
+) -> List[Work]:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
-        raise HTTPException(status_code=404, detail='this user is not exist')
+        raise HTTPException(status_code=404, detail="this user is not exist")
 
-    works_orm = db.query(models.Work).order_by(desc(models.Work.created_at)).filter(models.Work.user_id == user_id)
+    works_orm = (
+        db.query(models.Work)
+        .order_by(desc(models.Work.created_at))
+        .filter(models.Work.user_id == user_id)
+    )
 
     if tags:
-        tag_list = tags.split(',')
-        works_orm = works_orm.filter(models.Tagging.tag_id.in_(
-            tag_list)).filter(models.Tagging.work_id == models.Work.id)
-        works_orm = works_orm.group_by(models.Work.id).having(func.count(models.Work.id) == len(tag_list))
+        tag_list = tags.split(",")
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_list)
+        )
     if user is None:
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif user.id != user_id:
         works_orm = works_orm.filter(models.Work.visibility != models.Visibility.draft)
-        
+
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
-    
+
     if oldest_work_id:
-        oldest_work = db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        oldest_work = (
+            db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
+        )
         if oldest_work is None:
-            raise HTTPException(status_code=400, detail='oldest work is not found')
+            raise HTTPException(status_code=400, detail="oldest work is not found")
         works_orm = works_orm.filter(models.Work.created_at > oldest_work.created_at)
 
     if newest_work_id:
-        newest_work = db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        newest_work = (
+            db.query(models.Work).filter(models.Work.id == newest_work_id).first()
+        )
         if newest_work is None:
-            raise HTTPException(status_code=400, detail='newest work is not found')
+            raise HTTPException(status_code=400, detail="newest work is not found")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
 
     works_orm = works_orm.limit(limit)
@@ -276,9 +369,19 @@ def get_works_by_user_id(db: Session, user_id: str, visibility: models.Visibilit
     for work_orm in works_orm:
         work = Work.from_orm(work_orm)
         if user is not None:
-            work.is_favorite = db.query(models.Favorite).filter(models.Favorite.work_id == work.id, models.Favorite.user_id == user.id).first() is not None
+            work.is_favorite = (
+                db.query(models.Favorite)
+                .filter(
+                    models.Favorite.work_id == work.id,
+                    models.Favorite.user_id == user.id,
+                )
+                .first()
+                is not None
+            )
         else:
             work.is_favorite = False
-        work.favorite_count = db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+        work.favorite_count = (
+            db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+        )
         works.append(work)
     return works
