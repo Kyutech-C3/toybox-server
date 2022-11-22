@@ -35,7 +35,6 @@ create_test_database()
 
 engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
 
-Base.metadata.create_all(bind=engine)
 
 SessionClass = sessionmaker(engine)
 

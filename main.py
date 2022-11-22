@@ -8,7 +8,6 @@ from fastapi.staticfiles import StaticFiles
 import os
 from utils.limit_upload_size import LimitUploadSize
 
-Base.metadata.create_all(engine)
 app = FastAPI(
     title='toybox-server'
 )
