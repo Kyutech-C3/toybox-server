@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter
 from fastapi.security import OAuth2PasswordBearer
 from utils.discord import discord_exchange_code
+from datetime import datetime
 
 FRONTEND_HOST_URL = os.environ.get("FRONTEND_HOST_URL")
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID")
@@ -39,5 +40,6 @@ async def discord_callback(code: str = "", db: Session = Depends(get_db)):
 @auth_router.post("/logout")
 async def logout():
     response = Response()
-    response.set_cookie(AUTH_COOKIE_KEY, "")
+    # 有効期限として現在のtimestampを設定することでCookieを削除する
+    response.set_cookie(AUTH_COOKIE_KEY, "", expires=datetime.now().timestamp())
     return response
