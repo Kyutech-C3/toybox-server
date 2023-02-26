@@ -6,7 +6,7 @@ from cruds.users.auth import GetCurrentUser
 from cruds.users import get_user_by_id, get_users, change_user_info
 from fastapi import APIRouter
 from fastapi.params import Depends
-from schemas.work import Work
+from schemas.work import Work, ResWorks
 from schemas.user import User, UserInfoChangeRequest
 from db import models
 
@@ -54,7 +54,7 @@ async def put_user_info(
     return user
 
 
-@user_router.get("/@me/works", response_model=List[Work])
+@user_router.get("/@me/works", response_model=ResWorks)
 async def get_my_works(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
@@ -70,7 +70,7 @@ async def get_my_works(
     return my_works
 
 
-@user_router.get("/{user_id}/works", response_model=List[Work])
+@user_router.get("/{user_id}/works", response_model=ResWorks)
 async def get_users_works(
     user_id: str,
     oldest_user_id: str = None,

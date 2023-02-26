@@ -44,3 +44,8 @@ class Work(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ResWorks(BaseModel):
+    works: list[Work]
+    works_total_count: int

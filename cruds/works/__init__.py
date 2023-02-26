@@ -8,7 +8,7 @@ from sqlalchemy.orm.session import Session
 from schemas.common import DeleteStatus
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User
-from schemas.work import Work
+from schemas.work import Work, ResWorks
 import markdown
 
 # TODO: CASCADEを導入する
@@ -25,7 +25,6 @@ def set_work(
     urls: List[BaseUrlInfo],
     tags_id: List[str],
 ) -> Work:
-
     if title == "":
         raise HTTPException(status_code=400, detail="Title is empty")
 
@@ -89,7 +88,7 @@ def get_works_by_limit(
     newest_work_id: str,
     tags: str,
     user: Optional[User],
-) -> List[Work]:
+) -> ResWorks:
     works_orm = (
         db.query(models.Work)
         .order_by(desc(models.Work.created_at))
@@ -121,8 +120,10 @@ def get_works_by_limit(
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
-    works_orm = works_orm.limit(limit)
-    works_orm = works_orm.all()
+
+    works_total_count = works_orm.count()
+    works_orm = works_orm.limit(limit).all()
+
     works = []
     for work_orm in works_orm:
         work = Work.from_orm(work_orm)
@@ -142,7 +143,9 @@ def get_works_by_limit(
             db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
         )
         works.append(work)
-    return works
+
+    resWorks = ResWorks(works=works, works_total_count=works_total_count)
+    return resWorks
 
 
 def get_work_by_id(db: Session, work_id: str, user_id: Optional[str]) -> Work:
@@ -185,7 +188,6 @@ def replace_work(
     urls: List[BaseUrlInfo],
     tags_id: List[str],
 ) -> Work:
-
     work_orm = db.query(models.Work).get(work_id)
 
     # 自分のWorkでなければ弾く
@@ -320,7 +322,7 @@ def get_works_by_user_id(
     limit: int,
     tags: str,
     user: Optional[User],
-) -> List[Work]:
+) -> ResWorks:
     user_orm = db.query(models.User).get(user_id)
     if user_orm is None:
         raise HTTPException(status_code=404, detail="this user is not exist")
@@ -363,8 +365,9 @@ def get_works_by_user_id(
             raise HTTPException(status_code=400, detail="newest work is not found")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
 
-    works_orm = works_orm.limit(limit)
-    works_orm = works_orm.all()
+    works_total_count = works_orm.count()
+    works_orm = works_orm.limit(limit).all()
+
     works = []
     for work_orm in works_orm:
         work = Work.from_orm(work_orm)
@@ -384,4 +387,6 @@ def get_works_by_user_id(
             db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
         )
         works.append(work)
-    return works
+
+    resWorks = ResWorks(works=works, works_total_count=works_total_count)
+    return resWorks
