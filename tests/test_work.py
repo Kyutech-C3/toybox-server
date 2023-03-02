@@ -356,8 +356,8 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 1
-        assert res_json[0]["id"] == work.id
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0]["id"] == work.id
 
     def test_get_my_works_without_auth(use_test_db_fixture):
         """
@@ -386,8 +386,8 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 1
-        assert res_json[0]["id"] == work.id
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0]["id"] == work.id
 
     def test_get_not_exist_user_works(use_test_db_fixture, user_token_factory_for_test):
         """
@@ -441,9 +441,9 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 2
-        assert res_json[0].get("title") == work3.title
-        assert res_json[1].get("title") == work1.title
+        assert len(res_json["works"]) == 2
+        assert res_json["works"][0].get("title") == work3.title
+        assert res_json["works"][1].get("title") == work1.title
 
         res = client.get(
             f"/api/v1/works?tags={test_tag5.id}",
@@ -452,10 +452,10 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 3
-        assert res_json[0].get("title") == work3.title
-        assert res_json[1].get("title") == work2.title
-        assert res_json[2].get("title") == work1.title
+        assert len(res_json["works"]) == 3
+        assert res_json["works"][0].get("title") == work3.title
+        assert res_json["works"][1].get("title") == work2.title
+        assert res_json["works"][2].get("title") == work1.title
 
     def test_search_works_by_some_tag(
         use_test_db_fixture,
@@ -497,8 +497,8 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 1
-        assert res_json[0].get("title") == work3.title
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0].get("title") == work3.title
 
     def test_search_works_by_tag_without_auth(
         use_test_db_fixture, tag_factory_for_test, work_factory_for_test
@@ -532,8 +532,8 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 1
-        assert res_json[0].get("title") == work1.title
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0].get("title") == work1.title
 
     def test_search_works_by_strict_tag(
         use_test_db_fixture,
@@ -575,5 +575,5 @@ class TestWork:
 
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json) == 0
-        assert res_json == []
+        assert len(res_json["works"]) == 0
+        assert res_json["works"] == []

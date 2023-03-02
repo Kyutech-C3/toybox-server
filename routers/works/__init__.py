@@ -1,6 +1,6 @@
 import os
 from schemas.common import DeleteStatus
-from schemas.work import PostWork, Work
+from schemas.work import PostWork, Work, ResWorks
 from schemas.user import User
 from fastapi import APIRouter
 from db import get_db, models
@@ -51,7 +51,7 @@ async def post_work(
     return work
 
 
-@work_router.get("", response_model=List[Work])
+@work_router.get("", response_model=ResWorks)
 async def get_works(
     limit: int = 30,
     visibility: models.Visibility = None,
