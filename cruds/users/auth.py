@@ -22,7 +22,7 @@ from utils.discord import (
     discord_verify_user_belongs_to_valid_guild,
     download_discord_avatar,
 )
-from utils.wasabi import S3_BUCKET, S3_DIR, wasabi
+from utils.wasabi import upload_avatar
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -77,13 +77,7 @@ def authenticate_discord_user(
         db.refresh(u)
         if discord_user.avatar:
             file_bin = download_discord_avatar(discord_user.id, discord_user.avatar)
-            wasabi.put_object(
-                Body=file_bin,
-                Bucket=S3_BUCKET,
-                Key=f"{S3_DIR}/avatar/{u.id}/origin.png",
-                ContentType="image/png",
-            )
-            u.avatar_url = f"https://s3.ap-northeast-2.wasabisys.com/{S3_BUCKET}/{S3_DIR}/avatar/{u.id}/origin.png"
+            upload_avatar(file_bin)
             db.commit()
 
     token_response = create_tokens(u, db)

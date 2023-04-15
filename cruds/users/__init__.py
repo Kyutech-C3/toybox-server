@@ -63,11 +63,11 @@ def create_user(db: Session, user: UserSchema):
 def change_user_info(
     db: Session,
     user_id: str,
-    display_name: str,
-    profile: str,
-    avatar_url: str,
-    twitter_id: str,
-    github_id: str,
+    display_name: str = None,
+    profile: str = None,
+    avatar_url: str = None,
+    twitter_id: str = None,
+    github_id: str = None,
 ) -> UserSchema:
     user_orm = db.query(models.User).filter(models.User.id == user_id).first()
     if user_orm is None:
@@ -88,3 +88,13 @@ def change_user_info(
     user = UserSchema.from_orm(user_orm)
 
     return user
+
+
+def remove_avatar_url(db: Session, user_id: str):
+    user_orm = db.query(models.User).get(user_id)
+    if user_orm is None:
+        raise HTTPException(
+            status_code=404, detail="The user specified by id is not exist"
+        )
+    user_orm.avatar_url = None
+    db.commit()
