@@ -657,4 +657,81 @@ class TestWork:
         res_json = res.json()
         assert len(res_json["works"]) == 0
 
+    def test_search_works_by_tag_ids(
+            use_test_db_fixture,work_factory_for_test
+    ):
+        test_tag1 = tag_factory_for_test(name="testtag1", color="#ff3030")
+        test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
+        test_tag3 = tag_factory_for_test(name="testtag3", color="#3030ff")
+        test_tag4 = tag_factory_for_test(name="testtag4", color="#44e099")
+        test_tag5 = tag_factory_for_test(name="testtag5", color="#30dda0")
 
+        work1 = work_factory_for_test(
+            title="testwork1",
+            visibility=Visibility.public,
+            tags_id=[test_tag1.id, test_tag2.id, test_tag5.id],
+        )
+        work2 = work_factory_for_test(
+            title="testwork2",
+            visibility=Visibility.public,
+            tags_id=[test_tag2.id, test_tag3.id, test_tag5.id],
+        )
+        work3 = work_factory_for_test(
+            title="testwork3",
+            visibility=Visibility.private,
+            tags_id=[test_tag1.id, test_tag4.id, test_tag5.id],
+        )
+
+        res = client.get(f"/api/v1/works?tag_ids={test_tag1.id},{test_tag2.id}")
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0].get("title") == work1.title.title
+
+        res = client.get(f"/api/v1/works?tag_ids={test_tag5.id}")
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+        for work in res_json["works"]:
+            assert work.get("title") in [work1.title,work2.title,work3.title]
+    def test_search_works_by_tag_ids(
+            use_test_db_fixture,work_factory_for_test
+    ):
+        test_tag1 = tag_factory_for_test(name="testtag1", color="#ff3030")
+        test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
+        test_tag3 = tag_factory_for_test(name="testtag3", color="#3030ff")
+        test_tag4 = tag_factory_for_test(name="testtag4", color="#44e099")
+        test_tag5 = tag_factory_for_test(name="testtag5", color="#30dda0")
+
+        work1 = work_factory_for_test(
+            title="testwork1",
+            visibility=Visibility.public,
+            tags_id=[test_tag1.id, test_tag2.id, test_tag5.id],
+        )
+        work2 = work_factory_for_test(
+            title="testwork2",
+            visibility=Visibility.public,
+            tags_id=[test_tag2.id, test_tag3.id, test_tag5.id],
+        )
+        work3 = work_factory_for_test(
+            title="testwork3",
+            visibility=Visibility.private,
+            tags_id=[test_tag1.id, test_tag4.id, test_tag5.id],
+        )
+
+        res = client.get(f"/api/v1/works?tag_names={test_tag1.name},{test_tag2.name}")
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 1
+        assert res_json["works"][0].get("title") == work1.title.title
+
+        res = client.get(f"/api/v1/works?tag_ids={test_tag5.name}")
+
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+        for work in res_json["works"]:
+            assert work.get("title") in [work1.title,work2.title,work3.title]
