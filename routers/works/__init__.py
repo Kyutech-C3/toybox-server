@@ -58,9 +58,10 @@ async def get_works(
     tag_ids:str = None,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser(auto_error=False)),
+    search_word:str= None
 ):
     works = get_works_by_limit(
-        db, limit, visibility, oldest_work_id, newest_work_id,tag_names, tag_ids, user
+        db, limit, visibility, oldest_work_id, newest_work_id,tag_names, tag_ids, user,search_word
     )
     return works
 

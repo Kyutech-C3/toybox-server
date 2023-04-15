@@ -2,7 +2,7 @@ from typing import List, Optional
 
 import markdown
 from fastapi import HTTPException
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, or_
 from sqlalchemy.orm.session import Session
 
 from cruds.assets import delete_asset_by_id
@@ -91,6 +91,7 @@ def get_works_by_limit(
     tag_names: str,
     tag_ids: str,
     user: Optional[User],
+    search_word:str,
 ) -> ResWorks:
     if tag_names != None and tag_ids != None:
         raise HTTPException(
@@ -102,6 +103,10 @@ def get_works_by_limit(
         .order_by(desc(models.Work.created_at))
         .filter(models.Work.visibility != models.Visibility.draft)
     )
+    if search_word:
+        works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),or_(models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%"))))
+
+
     if tag_ids:
         tag_id_list = tag_ids.split(",")
         works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_id_list)).filter(
