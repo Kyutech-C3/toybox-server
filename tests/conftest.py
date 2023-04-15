@@ -1,7 +1,8 @@
 import os
-import boto3
 import time
-from logging import INFO, ERROR, getLogger
+from logging import ERROR, INFO, getLogger
+
+import boto3
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
 S3_DIR = "test_assets"
@@ -21,15 +22,15 @@ logger = getLogger("Session Finish")
 
 def pytest_sessionfinish():
     response = wasabi.list_objects_v2(Bucket=S3_BUCKET, Prefix=f"{S3_DIR}/image/")
-    for obj in response["Contents"]:
-        time.sleep(0.1)
-        response = wasabi.delete_object(
-            Bucket=S3_BUCKET, Key=obj["Key"].replace("/origin.png", "")
-        )
+    # for obj in response["Contents"]:
+    #     time.sleep(0.1)
+    #     response = wasabi.delete_object(
+    #         Bucket=S3_BUCKET, Key=obj["Key"].replace("/origin.png", "")
+    #     )
 
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
-            logger.info(obj["Key"].replace("/origin.png", ""))
-            logger.info(response)
-        else:
-            logger.error(obj["Key"].replace("/origin.png", ""))
-            logger.error(response)
+    #     if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
+    #         logger.info(obj["Key"].replace("/origin.png", ""))
+    #         logger.info(response)
+    #     else:
+    #         logger.error(obj["Key"].replace("/origin.png", ""))
+    #         logger.error(response)

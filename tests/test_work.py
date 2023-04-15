@@ -430,7 +430,7 @@ class TestWork:
         )
 
         res = client.get(
-            f"/api/v1/works?tags={test_tag1.id}",
+            f"/api/v1/works?tag_ids={test_tag1.id}",
             headers={"Authorization": f"Bearer { token.access_token }"},
         )
 
@@ -441,7 +441,7 @@ class TestWork:
         assert res_json["works"][1].get("title") == work1.title
 
         res = client.get(
-            f"/api/v1/works?tags={test_tag5.id}",
+            f"/api/v1/works?tag_ids={test_tag5.id}",
             headers={"Authorization": f"Bearer { token.access_token }"},
         )
 
@@ -486,7 +486,7 @@ class TestWork:
         )
 
         res = client.get(
-            f"/api/v1/works?tags={test_tag1.id},{test_tag4.id}",
+            f"/api/v1/works?tag_ids={test_tag1.id},{test_tag4.id}",
             headers={"Authorization": f"Bearer { token.access_token }"},
         )
 
@@ -523,7 +523,7 @@ class TestWork:
             tags_id=[test_tag1.id, test_tag4.id, test_tag5.id],
         )
 
-        res = client.get(f"/api/v1/works?tags={test_tag1.id}")
+        res = client.get(f"/api/v1/works?tag_ids={test_tag1.id}")
 
         assert res.status_code == 200
         res_json = res.json()
@@ -564,7 +564,7 @@ class TestWork:
         )
 
         res = client.get(
-            f"/api/v1/works?tags={test_tag1.id},{test_tag2.id},{test_tag4.id}",
+            f"/api/v1/works?tag_ids={test_tag1.id},{test_tag2.id},{test_tag4.id}",
             headers={"Authorization": f"Bearer { token.access_token }"},
         )
 
@@ -574,7 +574,7 @@ class TestWork:
         assert res_json["works"] == []
 
     def test_search_works_by_search_words(
-        use_test_db_fixture,work_factory_for_test
+        use_test_db_fixture,work_factory_for_test,tag_factory_for_test,user_factory_for_test
     ):
         """
         検索ワードで制作物を検索する
@@ -583,9 +583,9 @@ class TestWork:
         test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
         test_tag3 = tag_factory_for_test(name="testtag3", color="#3030ff")
 
-        user1 = user_factory_for_test(name="user1")
-        user2 = user_factory_for_test(name="user2")
-        user3 = user_factory_for_test(name="user3")
+        user1 = user_factory_for_test(name="user1",email="user1@mail.com")
+        user2 = user_factory_for_test(name="user2",email="user2@gmail.com")
+        user3 = user_factory_for_test(name="user3",email="user3@gmail.com")
 
         work1 = work_factory_for_test(
             title="testwork1",
@@ -602,9 +602,10 @@ class TestWork:
         work3 = work_factory_for_test(
             title="testwork3",
             user_id=user3.id,
-            visibility=Visibility.private,
+            visibility=Visibility.public,
             tags_id=[test_tag2.id],
         )
+        # userで検索
         res = client.get(
             f"/api/v1/works?search_word=user"
         )
@@ -613,16 +614,16 @@ class TestWork:
         assert len(res_json["works"]) == 3
         for work in res_json["works"]:
             assert "user" in work["user"]["name"]
-
+        # testworkで検索
         res = client.get(
-            f"/api/v1/works?search_word=testWork"
+            f"/api/v1/works?search_word=testwork"
         )
         assert res.status_code == 200
         res_json = res.json()
         assert len(res_json["works"]) == 3
         for work in res_json["works"]:
-            assert "testWork" in work["title"]
-
+            assert "testwork" in work["title"]
+        # testtagで検索
         res = client.get(
             f"/api/v1/works?search_word=testtag"
         )
@@ -631,18 +632,19 @@ class TestWork:
         assert len(res_json["works"]) == 3
         for work in res_json["works"]:
             flag = False
-            for tag in work["title"]["tags"]:
-                if tag == "testtag":
+            for tag in work["tags"]:
+                if "testtag" in tag["name"] :
                     flag = True
             assert flag
-
+        # testで検索
         res = client.get(
             f"/api/v1/works?search_word=test"
         )
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json["works"]) == 6
+        assert len(res_json["works"]) == 3
 
+        # １で検索
         res = client.get(
             f"/api/v1/works?search_word=1"
         )
@@ -650,6 +652,7 @@ class TestWork:
         res_json = res.json()
         assert len(res_json["works"]) == 3
 
+        # hogeで検索
         res = client.get(
             f"/api/v1/works?search_word=hoge"
         )
@@ -658,7 +661,7 @@ class TestWork:
         assert len(res_json["works"]) == 0
 
     def test_search_works_by_tag_ids(
-            use_test_db_fixture,work_factory_for_test
+            use_test_db_fixture,work_factory_for_test,tag_factory_for_test
     ):
         test_tag1 = tag_factory_for_test(name="testtag1", color="#ff3030")
         test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
@@ -678,7 +681,7 @@ class TestWork:
         )
         work3 = work_factory_for_test(
             title="testwork3",
-            visibility=Visibility.private,
+            visibility=Visibility.public,
             tags_id=[test_tag1.id, test_tag4.id, test_tag5.id],
         )
 
@@ -687,7 +690,7 @@ class TestWork:
         assert res.status_code == 200
         res_json = res.json()
         assert len(res_json["works"]) == 1
-        assert res_json["works"][0].get("title") == work1.title.title
+        assert res_json["works"][0].get("title") == work1.title
 
         res = client.get(f"/api/v1/works?tag_ids={test_tag5.id}")
 
@@ -696,8 +699,8 @@ class TestWork:
         assert len(res_json["works"]) == 3
         for work in res_json["works"]:
             assert work.get("title") in [work1.title,work2.title,work3.title]
-    def test_search_works_by_tag_ids(
-            use_test_db_fixture,work_factory_for_test
+    def test_search_works_by_tag_names(
+            use_test_db_fixture,work_factory_for_test,tag_factory_for_test
     ):
         test_tag1 = tag_factory_for_test(name="testtag1", color="#ff3030")
         test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
@@ -717,7 +720,7 @@ class TestWork:
         )
         work3 = work_factory_for_test(
             title="testwork3",
-            visibility=Visibility.private,
+            visibility=Visibility.public,
             tags_id=[test_tag1.id, test_tag4.id, test_tag5.id],
         )
 
@@ -726,9 +729,9 @@ class TestWork:
         assert res.status_code == 200
         res_json = res.json()
         assert len(res_json["works"]) == 1
-        assert res_json["works"][0].get("title") == work1.title.title
+        assert res_json["works"][0].get("title") == work1.title
 
-        res = client.get(f"/api/v1/works?tag_ids={test_tag5.name}")
+        res = client.get(f"/api/v1/works?tag_names={test_tag5.name}")
 
         assert res.status_code == 200
         res_json = res.json()
