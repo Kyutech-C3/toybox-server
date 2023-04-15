@@ -102,6 +102,14 @@ def get_works_by_limit(
         works_orm = works_orm.group_by(models.Work.id).having(
             func.count(models.Work.id) == len(tag_list)
         )
+
+    if user is None:
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+    elif visibility is not None:
+        works_orm = works_orm.filter(models.Work.visibility == visibility)
+
+    works_total_count = works_orm.count()
+
     if oldest_work_id:
         oldest_work = (
             db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
@@ -116,12 +124,7 @@ def get_works_by_limit(
         if newest_work is None:
             raise HTTPException(status_code=400, detail="this newest_id is invalid")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
-    if user is None:
-        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
-    elif visibility is not None:
-        works_orm = works_orm.filter(models.Work.visibility == visibility)
 
-    works_total_count = works_orm.count()
     works_orm = works_orm.limit(limit).all()
 
     works = []
@@ -341,6 +344,7 @@ def get_works_by_user_id(
         works_orm = works_orm.group_by(models.Work.id).having(
             func.count(models.Work.id) == len(tag_list)
         )
+    
     if user is None:
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif user.id != user_id:
@@ -348,6 +352,8 @@ def get_works_by_user_id(
 
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
+    
+    works_total_count = works_orm.count()
 
     if oldest_work_id:
         oldest_work = (
@@ -365,7 +371,6 @@ def get_works_by_user_id(
             raise HTTPException(status_code=400, detail="newest work is not found")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
 
-    works_total_count = works_orm.count()
     works_orm = works_orm.limit(limit).all()
 
     works = []
