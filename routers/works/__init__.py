@@ -1,20 +1,17 @@
 import os
-from schemas.common import DeleteStatus
-from schemas.work import PostWork, Work, ResWorks
-from schemas.user import User
+from typing import List
+
 from fastapi import APIRouter
-from db import get_db, models
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
+
 from cruds.users.auth import GetCurrentUser
-from cruds.works import (
-    delete_work_by_id,
-    get_work_by_id,
-    get_works_by_limit,
-    replace_work,
-    set_work,
-)
-from typing import List
+from cruds.works import (delete_work_by_id, get_work_by_id, get_works_by_limit,
+                         replace_work, set_work)
+from db import get_db, models
+from schemas.common import DeleteStatus
+from schemas.user import User
+from schemas.work import PostWork, ResWorks, Work
 from utils.discord import notice_discord
 
 FRONTEND_HOST_URL = os.environ.get("FRONTEND_HOST_URL")
@@ -57,12 +54,13 @@ async def get_works(
     visibility: models.Visibility = None,
     oldest_work_id: str = None,
     newest_work_id: str = None,
-    tags: str = None,
+    tag_names: str = None,
+    tag_ids:str = None,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser(auto_error=False)),
 ):
     works = get_works_by_limit(
-        db, limit, visibility, oldest_work_id, newest_work_id, tags, user
+        db, limit, visibility, oldest_work_id, newest_work_id,tag_names, tag_ids, user
     )
     return works
 
@@ -107,3 +105,5 @@ async def delete_work(
     user_id = None if user is None else user.id
     result = delete_work_by_id(db, work_id, user_id)
     return result
+
+

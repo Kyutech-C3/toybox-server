@@ -1,15 +1,17 @@
 from typing import List, Optional
+
+import markdown
 from fastapi import HTTPException
 from sqlalchemy import desc, func
+from sqlalchemy.orm.session import Session
+
 from cruds.assets import delete_asset_by_id
 from cruds.url_infos import create_url_info, delete_url_info
 from db import models
-from sqlalchemy.orm.session import Session
 from schemas.common import DeleteStatus
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User
-from schemas.work import Work, ResWorks
-import markdown
+from schemas.work import ResWorks, Work
 
 # TODO: CASCADEを導入する
 
@@ -86,7 +88,8 @@ def get_works_by_limit(
     visibility: models.Visibility,
     oldest_work_id: str,
     newest_work_id: str,
-    tags: str,
+    tag_names: str,
+    tag_ids: str,
     user: Optional[User],
 ) -> ResWorks:
     works_orm = (
@@ -94,13 +97,21 @@ def get_works_by_limit(
         .order_by(desc(models.Work.created_at))
         .filter(models.Work.visibility != models.Visibility.draft)
     )
-    if tags:
-        tag_list = tags.split(",")
-        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(
+    if tag_ids:
+        tag_id_list = tag_ids.split(",")
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_id_list)).filter(
             models.Tagging.work_id == models.Work.id
         )
         works_orm = works_orm.group_by(models.Work.id).having(
-            func.count(models.Work.id) == len(tag_list)
+            func.count(models.Work.id) == len(tag_id_list)
+        )
+    if tag_names:
+        tag_name_list = tag_names.split(",")
+        works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(models.Tagging.tag_id==models.Tag.id).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_name_list)
         )
     if oldest_work_id:
         oldest_work = (
