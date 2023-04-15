@@ -92,6 +92,11 @@ def get_works_by_limit(
     tag_ids: str,
     user: Optional[User],
 ) -> ResWorks:
+    if tag_names != None and tag_ids != None:
+        raise HTTPException(
+            status_code=422, detail="tag name and ID cannot be specified at the same time."
+        )
+
     works_orm = (
         db.query(models.Work)
         .order_by(desc(models.Work.created_at))
@@ -131,7 +136,6 @@ def get_works_by_limit(
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
-
     works_total_count = works_orm.count()
     works_orm = works_orm.limit(limit).all()
 
