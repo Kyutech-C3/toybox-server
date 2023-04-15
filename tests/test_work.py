@@ -1,18 +1,13 @@
 import json
+
 import pytest
-from .fixtures import (
-    client,
-    use_test_db_fixture,
-    session_for_test,
-    user_factory_for_test,
-    user_token_factory_for_test,
-    asset_factory_for_test,
-    user_for_test,
-    tag_for_test,
-    work_factory_for_test,
-    tag_factory_for_test,
-)
+
 from db.models import Visibility
+
+from .fixtures import (asset_factory_for_test, client, session_for_test,
+                       tag_factory_for_test, tag_for_test, use_test_db_fixture,
+                       user_factory_for_test, user_for_test,
+                       user_token_factory_for_test, work_factory_for_test)
 
 
 @pytest.mark.usefixtures("use_test_db_fixture")
@@ -577,3 +572,89 @@ class TestWork:
         res_json = res.json()
         assert len(res_json["works"]) == 0
         assert res_json["works"] == []
+
+    def test_search_works_by_search_words(
+        use_test_db_fixture,work_factory_for_test
+    ):
+        """
+        検索ワードで制作物を検索する
+        """
+        test_tag1 = tag_factory_for_test(name="testtag1", color="#ff3030")
+        test_tag2 = tag_factory_for_test(name="testtag2", color="#30ff30")
+        test_tag3 = tag_factory_for_test(name="testtag3", color="#3030ff")
+
+        user1 = user_factory_for_test(name="user1")
+        user2 = user_factory_for_test(name="user2")
+        user3 = user_factory_for_test(name="user3")
+
+        work1 = work_factory_for_test(
+            title="testwork1",
+            visibility=Visibility.public,
+            user_id=user2.id,
+            tags_id=[test_tag1.id, test_tag2.id, test_tag3.id],
+        )
+        work2 = work_factory_for_test(
+            title="testwork2",
+            user_id=user1.id,
+            visibility=Visibility.public,
+            tags_id=[test_tag2.id, test_tag3.id],
+        )
+        work3 = work_factory_for_test(
+            title="testwork3",
+            user_id=user3.id,
+            visibility=Visibility.private,
+            tags_id=[test_tag2.id],
+        )
+        res = client.get(
+            f"/api/v1/works?search_word=user"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+        for work in res_json["works"]:
+            assert "user" in work["user"]["name"]
+
+        res = client.get(
+            f"/api/v1/works?search_word=testWork"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+        for work in res_json["works"]:
+            assert "testWork" in work["title"]
+
+        res = client.get(
+            f"/api/v1/works?search_word=testtag"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+        for work in res_json["works"]:
+            flag = False
+            for tag in work["title"]["tags"]:
+                if tag == "testtag":
+                    flag = True
+            assert flag
+
+        res = client.get(
+            f"/api/v1/works?search_word=test"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 6
+
+        res = client.get(
+            f"/api/v1/works?search_word=1"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 3
+
+        res = client.get(
+            f"/api/v1/works?search_word=hoge"
+        )
+        assert res.status_code == 200
+        res_json = res.json()
+        assert len(res_json["works"]) == 0
+
+
