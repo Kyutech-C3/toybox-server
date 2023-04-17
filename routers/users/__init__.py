@@ -63,10 +63,10 @@ async def update_user_avatar(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
 ):
-    file_extension = file.filename[file.filename.rfind(".") + 1 :]
-    print(file_extension)
-    avatar_url = upload_avatar(user.id, file.file, file_extension)
-    print(avatar_url)
+    old_extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
+    delete_avatar(user.id, old_extension)
+    new_extension = file.filename[file.filename.rfind(".") + 1 :]
+    avatar_url = upload_avatar(user.id, file.file, new_extension)
     user_info = change_user_info(db, user_id=user.id, avatar_url=avatar_url)
     return user_info
 
@@ -77,7 +77,7 @@ async def delete_user_avatar(
     user: User = Depends(GetCurrentUser()),
 ):
     if user.avatar_url:
-        extension = user.avatar_url[user.avatar_url.rfind(".") :]
+        extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
         remove_avatar_url(db, user_id=user.id)
         delete_avatar(user.id, extension)
     return {"status": "OK"}
