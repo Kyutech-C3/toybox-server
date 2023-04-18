@@ -4,7 +4,7 @@ from cruds.works import get_works_by_user_id
 from db import get_db
 from cruds.users.auth import GetCurrentUser
 from cruds.users import get_user_by_id, get_users, change_user_info, remove_avatar_url
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from schemas.work import Work, ResWorks
 from schemas.user import User, UserInfoChangeRequest
@@ -63,15 +63,21 @@ async def update_user_avatar(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
 ):
-    old_extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
-    delete_avatar(user.id, old_extension)
+    if user.avatar_url:
+        old_extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
+        delete_avatar(user.id, old_extension)
     new_extension = file.filename[file.filename.rfind(".") + 1 :]
-    avatar_url = upload_avatar(user.id, file.file, new_extension)
+    try:
+        avatar_url = upload_avatar(user.id, file.file, new_extension)
+    except Exception:
+        raise HTTPException(status_code=500, detail="upload image failed")
+    if avatar_url == None:
+        raise HTTPException(status_code=422, detail="avatar type is invalid")
     user_info = change_user_info(db, user_id=user.id, avatar_url=avatar_url)
     return user_info
 
 
-@user_router.delete("/@me/avatar", response_model=DeleteStatus)
+@user_router.delete("/@me/avatar", response_model=User)
 async def delete_user_avatar(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
@@ -80,7 +86,8 @@ async def delete_user_avatar(
         extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
         remove_avatar_url(db, user_id=user.id)
         delete_avatar(user.id, extension)
-    return {"status": "OK"}
+    user = get_user_by_id(db, user.id)
+    return user
 
 
 @user_router.get("/@me/works", response_model=ResWorks)

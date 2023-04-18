@@ -277,3 +277,52 @@ class TestUser:
         )
 
         assert res.status_code == 403, "期限切れのアクセストークンを用いて自分の情報の変更に失敗する"
+
+    def test_update_avatar(
+        use_test_db_fixture, user_for_test, user_token_factory_for_test
+    ):
+        """
+        ユーザーのアバターを更新する
+        """
+        image = open("tests/test_data/test_image.png", "rb")
+        token = user_token_factory_for_test()
+        res = client.put(
+            "/api/v1/users/@me/avatar",
+            headers={"Authorization": f"Bearer { token.access_token }"},
+            files={"file": ("test_image.png", image, "image/png")},
+        )
+        assert res.status_code == 200, "自分の情報の取得に成功する"
+        res_json = res.json()
+        assert res_json["avatar_url"] != user_for_test.avatar_url
+
+    # def test_update_avatar(use_test_db_fixture, user_token_factory_for_test):
+    #     """
+    #     ユーザーのアバターの更新に失敗する
+    #     """
+    #     image = open("tests/test_data/test_image.mp4", "rb")
+    #     token = user_token_factory_for_test()
+    #     res = client.put(
+    #         "/api/v1/users/@me/avatar",
+    #         headers={"Authorization": f"Bearer { token.access_token }"},
+    #         files={"file": ("test_image.mp4", image, "video/mp4")},
+    #     )
+    #     assert res.status_code == 422, "ファイルの型が異なるため失敗する"
+
+    def test_delete_avatar(use_test_db_fixture, user_token_factory_for_test):
+        """
+        ユーザーのアバターを削除する
+        """
+        image = open("tests/test_data/test_image.png", "rb")
+        token = user_token_factory_for_test()
+        res = client.put(
+            "/api/v1/users/@me/avatar",
+            headers={"Authorization": f"Bearer { token.access_token }"},
+            files={"file": ("test_image.png", image, "image/png")},
+        )
+        old_avatar = res.json()["avatar_url"]
+        res = client.delete(
+            "/api/v1/users/@me/avatar",
+            headers={"Authorization": f"Bearer { token.access_token }"},
+        )
+        assert res.status_code == 200, "アバターの削除に成功する"
+        assert res.json()["avatar_url"] != old_avatar
