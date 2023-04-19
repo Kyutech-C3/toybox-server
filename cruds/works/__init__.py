@@ -100,6 +100,10 @@ def get_works_by_limit(
 
     works_orm = (
         db.query(models.Work)
+        .join(models.User,models.Work.user_id==models.User.id)
+        .join(models.Tagging,models.Work.id==models.Tagging.work_id)
+        .join(models.Tag,models.Tagging.tag_id==models.Tag.id)
+        .group_by(models.Work.id)
         .order_by(desc(models.Work.created_at))
         .filter(models.Work.visibility != models.Visibility.draft)
     )
@@ -117,7 +121,7 @@ def get_works_by_limit(
         )
     if tag_names:
         tag_name_list = tag_names.split(",")
-        works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(models.Tagging.tag_id==models.Tag.id).filter(
+        works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(
             models.Tagging.work_id == models.Work.id
         )
         works_orm = works_orm.group_by(models.Work.id).having(
@@ -364,7 +368,7 @@ def get_works_by_user_id(
         works_orm = works_orm.group_by(models.Work.id).having(
             func.count(models.Work.id) == len(tag_list)
         )
-    
+
     if user is None:
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif user.id != user_id:
@@ -372,7 +376,7 @@ def get_works_by_user_id(
 
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
-    
+
     works_total_count = works_orm.count()
 
     if oldest_work_id:
