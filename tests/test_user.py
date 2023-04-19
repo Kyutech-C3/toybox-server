@@ -295,18 +295,18 @@ class TestUser:
         res_json = res.json()
         assert res_json["avatar_url"] != user_for_test.avatar_url
 
-    # def test_update_avatar(use_test_db_fixture, user_token_factory_for_test):
-    #     """
-    #     ユーザーのアバターの更新に失敗する
-    #     """
-    #     image = open("tests/test_data/test_image.mp4", "rb")
-    #     token = user_token_factory_for_test()
-    #     res = client.put(
-    #         "/api/v1/users/@me/avatar",
-    #         headers={"Authorization": f"Bearer { token.access_token }"},
-    #         files={"file": ("test_image.mp4", image, "video/mp4")},
-    #     )
-    #     assert res.status_code == 422, "ファイルの型が異なるため失敗する"
+    def test_update_avatar(use_test_db_fixture, user_token_factory_for_test):
+        """
+        ユーザーのアバターの更新に失敗する
+        """
+        video = open("tests/test_data/test_video.mp4", "rb")
+        token = user_token_factory_for_test()
+        res = client.put(
+            "/api/v1/users/@me/avatar",
+            headers={"Authorization": f"Bearer { token.access_token }"},
+            files={"file": ("test_video.mp4", video, "video/mp4")},
+        )
+        assert res.status_code == 422, "ファイルの型が異なるため失敗する"
 
     def test_delete_avatar(use_test_db_fixture, user_token_factory_for_test):
         """
