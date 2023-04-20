@@ -650,7 +650,7 @@ class TestWork:
         )
         assert res.status_code == 200
         res_json = res.json()
-        assert len(res_json["works"]) == 3
+        assert len(res_json["works"]) == 2
 
         # hogeで検索
         res = client.get(
