@@ -108,7 +108,7 @@ def get_works_by_limit(
         .filter(models.Work.visibility != models.Visibility.draft)
     )
     if search_word:
-        works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),or_(models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%"))))
+        works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%")))
 
 
     if tag_ids:
