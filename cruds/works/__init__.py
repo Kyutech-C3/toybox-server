@@ -1,15 +1,17 @@
 from typing import List, Optional
+
+import markdown
 from fastapi import HTTPException
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, or_
+from sqlalchemy.orm.session import Session
+
 from cruds.assets import delete_asset_by_id
 from cruds.url_infos import create_url_info, delete_url_info
 from db import models
-from sqlalchemy.orm.session import Session
 from schemas.common import DeleteStatus
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User
-from schemas.work import Work, ResWorks
-import markdown
+from schemas.work import ResWorks, Work
 
 # TODO: CASCADEを導入する
 
@@ -86,21 +88,44 @@ def get_works_by_limit(
     visibility: models.Visibility,
     oldest_work_id: str,
     newest_work_id: str,
-    tags: str,
+    tag_names: str,
+    tag_ids: str,
     user: Optional[User],
+    search_word:str,
 ) -> ResWorks:
+    if tag_names != None and tag_ids != None:
+        raise HTTPException(
+            status_code=422, detail="tag name and ID cannot be specified at the same time."
+        )
+
     works_orm = (
         db.query(models.Work)
+        .join(models.User,models.Work.user_id==models.User.id)
+        .join(models.Tagging,models.Work.id==models.Tagging.work_id)
+        .join(models.Tag,models.Tagging.tag_id==models.Tag.id)
+        .group_by(models.Work.id)
         .order_by(desc(models.Work.created_at))
         .filter(models.Work.visibility != models.Visibility.draft)
     )
-    if tags:
-        tag_list = tags.split(",")
-        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_list)).filter(
+    if search_word:
+        works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%")))
+
+
+    if tag_ids:
+        tag_id_list = tag_ids.split(",")
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_id_list)).filter(
             models.Tagging.work_id == models.Work.id
         )
         works_orm = works_orm.group_by(models.Work.id).having(
-            func.count(models.Work.id) == len(tag_list)
+            func.count(models.Work.id) == len(tag_id_list)
+        )
+    if tag_names:
+        tag_name_list = tag_names.split(",")
+        works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_name_list)
         )
 
     if user is None:
@@ -124,7 +149,6 @@ def get_works_by_limit(
         if newest_work is None:
             raise HTTPException(status_code=400, detail="this newest_id is invalid")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
-
     works_orm = works_orm.limit(limit).all()
 
     works = []
@@ -344,7 +368,7 @@ def get_works_by_user_id(
         works_orm = works_orm.group_by(models.Work.id).having(
             func.count(models.Work.id) == len(tag_list)
         )
-    
+
     if user is None:
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif user.id != user_id:
@@ -352,7 +376,7 @@ def get_works_by_user_id(
 
     if visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
-    
+
     works_total_count = works_orm.count()
 
     if oldest_work_id:

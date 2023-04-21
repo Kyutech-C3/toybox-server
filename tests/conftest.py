@@ -1,7 +1,8 @@
 import os
-import boto3
 import time
-from logging import INFO, ERROR, getLogger
+from logging import ERROR, INFO, getLogger
+
+import boto3
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
 S3_DIR = "test_assets"
