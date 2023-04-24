@@ -8,6 +8,7 @@ from .user import User
 from .asset import Asset
 from pydantic import BaseModel
 
+
 class PostWork(BaseModel):
     title: str
     description: str
@@ -17,12 +18,13 @@ class PostWork(BaseModel):
     urls: List[BaseUrlInfo]
     tags_id: List[str]
 
-    @validator('visibility')
+    @validator("visibility")
     def value_of(cls, v):
         for e in Visibility:
             if e.value == v:
                 return e
-        raise ValueError('{} is invalid visibility type.'.format(v))
+        raise ValueError("{} is invalid visibility type.".format(v))
+
 
 class Work(BaseModel):
     id: str
@@ -42,3 +44,8 @@ class Work(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ResWorks(BaseModel):
+    works: list[Work]
+    works_total_count: int

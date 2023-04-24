@@ -4,15 +4,16 @@ from .user import User
 from pydantic import BaseModel, validator
 from db.models import AssetType, Work
 
+
 class BaseAsset(BaseModel):
     asset_type: str
 
-    @validator('asset_type')
+    @validator("asset_type")
     def value_of(cls, v):
         for e in AssetType:
             if e.value == v:
                 return e
-        raise ValueError('{} is invalid asset type.'.format(v))
+        raise ValueError("{} is invalid asset type.".format(v))
 
     @classmethod
     def __get_validators__(cls):
@@ -23,6 +24,7 @@ class BaseAsset(BaseModel):
         if isinstance(value, str):
             return cls(**json.loads(value))
         return value
+
 
 class Asset(BaseAsset):
     id: str
