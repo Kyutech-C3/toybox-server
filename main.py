@@ -10,7 +10,7 @@ from utils.limit_upload_size import LimitUploadSize
 
 app = FastAPI(title="toybox-server")
 
-app.add_middleware(LimitUploadSize, max_upload_size=50_000_000)
+app.add_middleware(LimitUploadSize, max_upload_size=2_147_483_648)
 
 origins = ["http://localhost:8080"]
 

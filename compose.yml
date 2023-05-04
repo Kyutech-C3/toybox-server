@@ -7,6 +7,11 @@ services:
       - ./data:/db/conf/
     env_file:
       - .env
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 1s
+      timeout: 3s
+      retries: 30
 
   api:
     build: .
@@ -18,7 +23,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
 volumes:
   dbdata: null
