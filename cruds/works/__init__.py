@@ -2,7 +2,9 @@ from typing import List, Optional
 
 import markdown
 from fastapi import HTTPException
-from sqlalchemy import desc, func, or_
+from sqlalchemy import desc, asc, func, or_, case
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql.functions import coalesce, count
 from sqlalchemy.orm.session import Session
 
 from cruds.assets import delete_asset_by_id
@@ -14,7 +16,6 @@ from schemas.user import User
 from schemas.work import ResWorks, Work
 
 # TODO: CASCADEを導入する
-
 
 def set_work(
     db: Session,
@@ -92,25 +93,65 @@ def get_works_by_limit(
     tag_ids: str,
     user: Optional[User],
     search_word:str,
+    order_by:str = 'created_at',
+    order:str = 'asc'
 ) -> ResWorks:
     if tag_names != None and tag_ids != None:
         raise HTTPException(
             status_code=422, detail="tag name and ID cannot be specified at the same time."
         )
 
+    favorite_count_subquery = db.query(models.Favorite.work_id, count(models.Favorite.work_id).label('favorite_count')).group_by(models.Favorite.work_id).subquery('favorite_count_subquery')
+
+    is_favorite_subquery = None
+    if user is not None:
+        is_favorite_subquery = db.query(models.Favorite.work_id, models.Favorite.user_id.label('is_favorite_flag')).filter(models.Work.id == models.Favorite.work_id, models.Favorite.user_id == user.id).subquery('is_favorite_subquery')
+
     works_orm = (
-        db.query(models.Work)
+        db.query(
+            models.Work,
+            coalesce(favorite_count_subquery.c.favorite_count, 0).label('favorite_count'),
+            case([(is_favorite_subquery.c.is_favorite_flag == None, False)], else_=True).label('is_favorite') if is_favorite_subquery is not None else False
+        )
         .join(models.User,models.Work.user_id==models.User.id)
         .join(models.Tagging,models.Work.id==models.Tagging.work_id)
         .join(models.Tag,models.Tagging.tag_id==models.Tag.id)
-        .group_by(models.Work.id)
-        .order_by(desc(models.Work.created_at))
+        .outerjoin(favorite_count_subquery, models.Work.id==favorite_count_subquery.c.work_id)
         .filter(models.Work.visibility != models.Visibility.draft)
     )
+
+    if is_favorite_subquery is not None:
+        works_orm = works_orm.outerjoin(is_favorite_subquery, models.Work.id==is_favorite_subquery.c.work_id)
+
+    # order_byの指定
+    if order_by == 'created_at':
+        column_of_order_by = models.Work.created_at
+    elif order_by == 'updated_at':
+        column_of_order_by = models.Work.updated_at
+    elif order_by == 'favorite_count':
+        column_of_order_by = favorite_count_subquery.c.favorite_count
+    elif order_by == 'comment':
+        column_of_order_by = models.Work.comment_count
+    else:
+        column_of_order_by = models.Work.created_at
+    
+    # orderの指定
+    if order == 'desc':
+        print('desc')
+        works_orm = works_orm.order_by(desc(column_of_order_by))
+        print(works_orm)
+    else:
+        print('asc')
+        works_orm = works_orm.order_by(asc(column_of_order_by))
+        print(works_orm)
+    
+    work_orm = works_orm.group_by(models.Work.id)
+
+    # search_by_free_word
     if search_word:
         works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%")))
 
-
+    # search_by_tag_ids
     if tag_ids:
         tag_id_list = tag_ids.split(",")
         works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_id_list)).filter(
@@ -119,6 +160,8 @@ def get_works_by_limit(
         works_orm = works_orm.group_by(models.Work.id).having(
             func.count(models.Work.id) == len(tag_id_list)
         )
+
+    # search_by_tag_names
     if tag_names:
         tag_name_list = tag_names.split(",")
         works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(
@@ -128,13 +171,16 @@ def get_works_by_limit(
             func.count(models.Work.id) == len(tag_name_list)
         )
 
+    # check user
     if user is None:
         works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
     elif visibility is not None:
         works_orm = works_orm.filter(models.Work.visibility == visibility)
 
+    # get works total count
     works_total_count = works_orm.count()
 
+    # pagination
     if oldest_work_id:
         oldest_work = (
             db.query(models.Work).filter(models.Work.id == oldest_work_id).first()
@@ -149,27 +195,26 @@ def get_works_by_limit(
         if newest_work is None:
             raise HTTPException(status_code=400, detail="this newest_id is invalid")
         works_orm = works_orm.filter(models.Work.created_at < newest_work.created_at)
+    
     works_orm = works_orm.limit(limit).all()
 
-    works = []
-    for work_orm in works_orm:
-        work = Work.from_orm(work_orm)
-        if user is not None:
-            work.is_favorite = (
-                db.query(models.Favorite)
-                .filter(
-                    models.Favorite.work_id == work.id,
-                    models.Favorite.user_id == user.id,
-                )
-                .first()
-                is not None
-            )
-        else:
-            work.is_favorite = False
-        work.favorite_count = (
-            db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
-        )
-        works.append(work)
+    works = list(map(lambda work_orm: Work(
+        id=work_orm[0].id,
+        title=work_orm[0].title,
+        description=work_orm[0].description,
+        description_html=work_orm[0].description_html,
+        user=work_orm[0].user,
+        assets=work_orm[0].assets,
+        urls=work_orm[0].urls,
+        visibility=work_orm[0].visibility,
+        tags=work_orm[0].tags,
+        thumbnail=work_orm[0].thumbnail,
+        created_at=work_orm[0].created_at,
+        updated_at=work_orm[0].updated_at,
+        comments=work_orm[0].comments,
+        favorite_count=work_orm[1],
+        is_favorite=work_orm[2]
+    ), works_orm))
 
     resWorks = ResWorks(works=works, works_total_count=works_total_count)
     return resWorks
