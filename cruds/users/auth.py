@@ -77,8 +77,12 @@ def authenticate_discord_user(
         db.refresh(u)
         if discord_user.avatar:
             file_bin = download_discord_avatar(discord_user.id, discord_user.avatar)
-            upload_avatar(file_bin)
-            db.commit()
+            if file_bin:
+                avatar_url = upload_avatar(u.id, file_bin, "png")
+                if avatar_url:
+                    u.avatar_url = avatar_url
+                    db.commit()
+                    db.refresh(u)
 
     token_response = create_tokens(u, db)
     return token_response

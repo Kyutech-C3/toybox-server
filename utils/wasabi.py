@@ -1,5 +1,6 @@
 import os
 import boto3
+from boto3 import botocore
 from typing import Optional
 
 ALLOW_EXTENSIONS = {
@@ -45,12 +46,16 @@ wasabi = boto3.client(
 def upload_avatar(user_id: str, file_bin: bin, extension: str) -> Optional[str]:
     if extension not in ALLOW_EXTENSIONS["image"]:
         return
-    wasabi.put_object(
-        Body=file_bin,
-        Bucket=S3_BUCKET,
-        Key=f"{S3_DIR}/avatar/{user_id}/origin.{extension}",
-        ContentType=MIME_TYPE_DICT.get(extension, MIME_TYPE_DICT["default"]),
-    )
+    try:
+        wasabi.put_object(
+            Body=file_bin,
+            Bucket=S3_BUCKET,
+            Key=f"{S3_DIR}/avatar/{user_id}/origin.{extension}",
+            ContentType=MIME_TYPE_DICT.get(extension, MIME_TYPE_DICT["default"]),
+        )
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        return
     return f"https://s3.ap-northeast-2.wasabisys.com/{S3_BUCKET}/{S3_DIR}/avatar/{user_id}/origin.{extension}"
 
 
