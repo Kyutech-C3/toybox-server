@@ -1,6 +1,6 @@
 import os
 import boto3
-from boto3 import botocore
+import botocore
 from typing import Optional
 
 ALLOW_EXTENSIONS = {
