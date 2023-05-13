@@ -12,7 +12,6 @@ RUN apk add --no-cache postgresql-libs && \
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
 RUN pip install --upgrade pip
 RUN pip install pipenv
-RUN pip install cryptography
 
 COPY ./Pipfile .
 COPY ./Pipfile.lock .
