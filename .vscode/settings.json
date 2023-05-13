@@ -3,5 +3,23 @@
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
-  }
+  },
+  "cSpell.words": [
+    "ASGI",
+    "backref",
+    "boto",
+    "fastapi",
+    "ilike",
+    "onupdate",
+    "passlib",
+    "pydantic",
+    "sessionmaker",
+    "sketchfab",
+    "soundcloud",
+    "sqlalchemy",
+    "starlette",
+    "toybox",
+    "unityroom",
+    "uselist"
+  ]
 }
