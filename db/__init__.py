@@ -1,6 +1,7 @@
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql import text
 
 from .models import *
 import os
@@ -15,14 +16,15 @@ DATABASE_URL = "{}://{}:{}@{}/{}".format(DATABASE, USER, PASSWORD, HOST, DB_NAME
 
 ECHO_LOG = False
 
+
 # Create database for test
 def create_test_database():
     DATABASE_URL = "{}://{}:{}@{}".format(DATABASE, USER, PASSWORD, HOST)
     engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
-    session = Session(bind=engine, autocommit=True, autoflush=True)
+    session = Session(bind=engine, autoflush=True)
     session.connection().connection.set_isolation_level(0)
     result = session.execute(
-        "SELECT datname from pg_database where datname='%s'" % "toybox_test"
+        text("SELECT datname from pg_database where datname='%s'" % "toybox_test")
     )
     if len(result.all()) == 0:
         session.execute("CREATE DATABASE %s;" % ("toybox_test"))
