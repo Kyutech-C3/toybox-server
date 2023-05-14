@@ -35,7 +35,7 @@ jobs:
           name: Install Pipfile dependencies
           command: |
             pip install pipenv
-            pipenv install
+            pipenv sync
       - run:
           name: make env file
           command: echo $ENV_FILE | base64 --decode > .env
