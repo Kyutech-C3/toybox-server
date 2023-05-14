@@ -5,6 +5,8 @@ from sqlalchemy.orm.session import Session
 from .models import *
 import os
 
+APP_TYPE = os.environ.get("APP_TYPE")
+
 DATABASE = "postgresql"
 USER = os.environ.get("POSTGRES_USER")
 PASSWORD = os.environ.get("POSTGRES_PASSWORD")
@@ -14,6 +16,7 @@ DB_NAME = os.environ.get("POSTGRES_DB")
 DATABASE_URL = "{}://{}:{}@{}/{}".format(DATABASE, USER, PASSWORD, HOST, DB_NAME)
 
 ECHO_LOG = False
+
 
 # Create database for test
 def create_test_database():
@@ -30,7 +33,8 @@ def create_test_database():
     session.close()
 
 
-create_test_database()
+if APP_TYPE is "dev":
+    create_test_database()
 
 engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
 
