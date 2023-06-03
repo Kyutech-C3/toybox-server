@@ -23,7 +23,7 @@ from utils.discord import (
     download_discord_avatar,
 )
 from utils.wasabi import upload_avatar
-from utils.convert import convert_to_webp
+from utils.convert import convert_to_webp_for_avatar
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -79,7 +79,7 @@ def authenticate_discord_user(
         if discord_user.avatar:
             file_bin = download_discord_avatar(discord_user.id, discord_user.avatar)
             if file_bin:
-                webp_file_bin = convert_to_webp(file_bin)
+                webp_file_bin = convert_to_webp_for_avatar(file_bin)
                 avatar_url = upload_avatar(u.id, webp_file_bin, "webp")
                 if avatar_url:
                     u.avatar_url = avatar_url

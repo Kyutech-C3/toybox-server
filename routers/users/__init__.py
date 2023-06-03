@@ -13,7 +13,7 @@ from fastapi.datastructures import UploadFile
 from fastapi.param_functions import File, Form
 from db import models
 from utils.wasabi import upload_avatar, delete_avatar, ALLOW_EXTENSIONS
-from utils.convert import convert_to_webp
+from utils.convert import convert_to_webp_for_avatar
 
 user_router = APIRouter()
 
@@ -67,7 +67,7 @@ async def update_user_avatar(
     extension = file.filename[file.filename.rfind(".") + 1 :].lower()
     if extension not in ALLOW_EXTENSIONS["image"]:
         raise HTTPException(status_code=422, detail="avatar type is invalid")
-    webp_file = convert_to_webp(file.file.read())
+    webp_file = convert_to_webp_for_avatar(file.file.read())
     avatar_url = upload_avatar(user.id, webp_file, "webp")
     if avatar_url == None:
         raise HTTPException(status_code=500, detail="upload image failed")
