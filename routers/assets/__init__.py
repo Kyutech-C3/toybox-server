@@ -23,7 +23,14 @@ async def post_asset(
 ):
     if file is None:
         raise HTTPException(status_code=400, detail="UploadFile is not found")
-    created_asset = create_asset(db, user.id, asset_type, file)
+    filename = file.filename
+    if filename is None:
+        raise HTTPException(
+            status_code=400, detail="UploadFile's filename is not found"
+        )
+    created_asset = create_asset(
+        db, user.id, asset_type, file, filename[filename.rfind(".") + 1 :]
+    )
     return created_asset
 
 

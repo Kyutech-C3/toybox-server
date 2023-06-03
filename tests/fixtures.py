@@ -262,7 +262,13 @@ def asset_factory_for_test(
         """
         Create test asset
         """
-        a = create_asset(session_for_test, user_for_test.id, asset_type, file)
+        a = create_asset(
+            session_for_test,
+            user_for_test.id,
+            asset_type,
+            file,
+            extension="png",
+        )
         return a
 
     return asset_for_test
@@ -276,7 +282,7 @@ def image_asset_for_test(
     file: UploadFile = UploadFile("tests/test_data/test_image.png"),
 ) -> AssetSchema:
     u = user_factory_for_test()
-    a = create_asset(session_for_test, u.id, asset_type, file)
+    a = create_asset(session_for_test, u.id, asset_type, file, extension="png")
     return a
 
 
