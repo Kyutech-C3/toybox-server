@@ -17,6 +17,7 @@ jobs:
           S3_BUCKET: toyboxdev
           S3_DIR: test_assets
           REGION_NAME: ap-northeast-2
+          ALLOW_ORIGIN_URLS: '*'
 
       - image: circleci/postgres:13.3
         environment:
