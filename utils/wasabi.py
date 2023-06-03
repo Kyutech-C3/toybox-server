@@ -4,7 +4,7 @@ import botocore
 from typing import Optional
 
 ALLOW_EXTENSIONS = {
-    "image": ["png", "jpg", "jpeg", "bmp", "gif"],
+    "image": ["png", "jpg", "jpeg", "bmp", "gif", "webp"],
     "video": ["mp4", "mov", "avi", "flv"],
     "music": ["mp3", "wav", "m4a"],
     "zip": ["zip"],
@@ -17,6 +17,7 @@ MIME_TYPE_DICT = {
     "jpeg": "image/jpeg",
     "bmp": "image/bmp",
     "gif": "image/gif",
+    "webp": "image/webp",
     "mp4": "video/mp4",
     "mov": "video/quicktime",
     "avi": "video/x-msvideo",
@@ -43,20 +44,21 @@ wasabi = boto3.client(
 )
 
 
-def upload_avatar(user_id: str, file_bin: bin, extension: str) -> Optional[str]:
+def upload_avatar(user_id: str, file_bin: bytes, extension: str) -> Optional[str]:
+    extension = extension.lower()
     if extension not in ALLOW_EXTENSIONS["image"]:
         return
     try:
         wasabi.put_object(
             Body=file_bin,
             Bucket=S3_BUCKET,
-            Key=f"{S3_DIR}/avatar/{user_id}/origin.{extension}",
+            Key=f"{S3_DIR}/avatar/{user_id}.{extension}",
             ContentType=MIME_TYPE_DICT.get(extension, MIME_TYPE_DICT["default"]),
         )
     except botocore.exceptions.ClientError as e:
         print(e)
         return
-    return f"https://s3.ap-northeast-2.wasabisys.com/{S3_BUCKET}/{S3_DIR}/avatar/{user_id}/origin.{extension}"
+    return f"https://s3.ap-northeast-2.wasabisys.com/{S3_BUCKET}/{S3_DIR}/avatar/{user_id}.{extension}"
 
 
 def delete_avatar(user_id: str, extension: str):

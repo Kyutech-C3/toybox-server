@@ -33,17 +33,11 @@ def pytest_sessionfinish():
         else:
             logger.error(obj["Key"].replace("/origin.png", ""))
             logger.error(response)
-    response = wasabi.list_objects_v2(Bucket=S3_BUCKET, Prefix=f"{S3_DIR}/avatar/")
 
-    for obj in response.get("Contents", []):
-        time.sleep(0.1)
-        response = wasabi.delete_object(
-            Bucket=S3_BUCKET, Key=obj["Key"].replace("/origin.png", "")
-        )
-
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
-            logger.info(obj["Key"].replace("/origin.png", ""))
-            logger.info(response)
-        else:
-            logger.error(obj["Key"].replace("/origin.png", ""))
-            logger.error(response)
+    response = wasabi.delete_object(Bucket=S3_BUCKET, Key=f"{S3_DIR}/avatar/")
+    if response["ResponseMetadata"]["HTTPStatusCode"] == 204:
+        logger.info(f"{S3_DIR}/avatar/")
+        logger.info(response)
+    else:
+        logger.info(f"{S3_DIR}/avatar/")
+        logger.error(response)

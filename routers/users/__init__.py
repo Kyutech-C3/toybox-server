@@ -12,7 +12,8 @@ from schemas.common import DeleteStatus
 from fastapi.datastructures import UploadFile
 from fastapi.param_functions import File, Form
 from db import models
-from utils.wasabi import upload_avatar, delete_avatar
+from utils.wasabi import upload_avatar, delete_avatar, ALLOW_EXTENSIONS
+from utils.convert import convert_to_webp
 
 user_router = APIRouter()
 
@@ -63,16 +64,13 @@ async def update_user_avatar(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
 ):
-    if user.avatar_url:
-        old_extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
-        delete_avatar(user.id, old_extension)
-    new_extension = file.filename[file.filename.rfind(".") + 1 :]
-    try:
-        avatar_url = upload_avatar(user.id, file.file, new_extension)
-    except Exception:
-        raise HTTPException(status_code=500, detail="upload image failed")
-    if avatar_url == None:
+    extension = file.filename[file.filename.rfind(".") + 1 :].lower()
+    if extension not in ALLOW_EXTENSIONS["image"]:
         raise HTTPException(status_code=422, detail="avatar type is invalid")
+    webp_file = convert_to_webp(file.file.read())
+    avatar_url = upload_avatar(user.id, webp_file, "webp")
+    if avatar_url == None:
+        raise HTTPException(status_code=500, detail="upload image failed")
     user_info = change_user_info(db, user_id=user.id, avatar_url=avatar_url)
     return user_info
 
