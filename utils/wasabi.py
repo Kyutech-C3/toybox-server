@@ -62,6 +62,10 @@ def upload_avatar(user_id: str, file_bin: bytes, extension: str) -> Optional[str
 
 
 def delete_avatar(user_id: str, extension: str):
-    wasabi.delete_object(
-        Bucket=S3_BUCKET, Key=f"{S3_DIR}/avatar/{user_id}/origin.{extension}"
-    )
+    try:
+        wasabi.delete_object(
+            Bucket=S3_BUCKET, Key=f"{S3_DIR}/avatar/{user_id}.{extension}"
+        )
+    except botocore.exceptions.ClientError as e:
+        print(e)
+        return e
