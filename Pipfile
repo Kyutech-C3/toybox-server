@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 fastapi = "*"
 uvicorn = {extras = ["standard"], version = "*"}
-sqlalchemy = "*"
+sqlalchemy = "==1.4.41"
 psycopg2 = "*"
 passlib = {extras = ["bcrypt"], version = "*"}
 python-jose = {extras = ["cryptography"], version = "*"}
@@ -15,12 +15,15 @@ pytest = "*"
 requests = "*"
 pylint = "*"
 pydantic = {extras = ["email"], version = "*"}
-sqlalchemy-utils = "*"
+sqlalchemy-utils = "==0.38.3"
 markdown = "*"
 alembic = "*"
 aiofiles = "*"
 certifi = "*"
 boto3 = "*"
+pillow = "*"
+httpx = "*"
+cryptography = "*"
 
 [dev-packages]
 
