@@ -79,8 +79,14 @@ def authenticate_discord_user(
         if discord_user.avatar:
             file_bin = download_discord_avatar(discord_user.id, discord_user.avatar)
             if file_bin:
-                webp_file_bin = convert_to_webp_for_avatar(file_bin)
-                avatar_url = upload_avatar(u.id, webp_file_bin, "webp")
+                sizes = [64, 128, 256, 512]
+                avatar_urls = {}
+                for size in sizes:
+                    converted_bin = convert_to_webp_for_avatar(file_bin, size)
+                    avatar_urls[str(size)] = upload_avatar(
+                        u.id, converted_bin, "webp", size
+                    )
+                avatar_url = avatar_urls.get("256")
                 if avatar_url:
                     u.avatar_url = avatar_url
                     db.commit()

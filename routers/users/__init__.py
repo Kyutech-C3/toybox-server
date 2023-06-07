@@ -67,8 +67,13 @@ async def update_user_avatar(
     extension = file.filename[file.filename.rfind(".") + 1 :].lower()
     if extension not in ALLOW_EXTENSIONS["image"]:
         raise HTTPException(status_code=422, detail="avatar type is invalid")
-    webp_file = convert_to_webp_for_avatar(file.file.read())
-    avatar_url = upload_avatar(user.id, webp_file, "webp")
+    file_bin = file.file.read()
+    sizes = [64, 128, 256, 512]
+    avatar_urls = {}
+    for size in sizes:
+        converted_bin = convert_to_webp_for_avatar(file_bin, size)
+        avatar_urls[str(size)] = upload_avatar(user.id, converted_bin, "webp", size)
+    avatar_url = avatar_urls.get("256")
     if avatar_url == None:
         raise HTTPException(status_code=500, detail="upload image failed")
     user_info = change_user_info(db, user_id=user.id, avatar_url=avatar_url)
