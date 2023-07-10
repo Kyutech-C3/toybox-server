@@ -5,40 +5,18 @@ from sqlalchemy.orm.session import Session
 from db import models
 from schemas.asset import Asset
 from schemas.common import DeleteStatus
-import boto3
-
-ALLOW_EXTENSIONS = {
-    "image": ["png", "PNG", "JPG", "JPEG", "jpg", "jpeg", "bmp", "gif", "GIF"],
-    "video": ["mp4", "mov", "avi", "flv"],
-    "music": ["mp3", "wav", "m4a"],
-    "zip": ["zip"],
-    "model": ["gltf", "fbx"],
-}
-
-S3_BUCKET = os.environ.get("S3_BUCKET")
-S3_DIR = os.environ.get("S3_DIR")
-REGION_NAME = os.environ.get("REGION_NAME")
-ACCESS_KEY = os.environ.get("ACCESS_KEY")
-SECRET_ACCESS_KEY = os.environ.get("SECRET_ACCESS_KEY")
-
-wasabi = boto3.client(
-    "s3",
-    endpoint_url=f"https://s3.{REGION_NAME}.wasabisys.com",
-    aws_access_key_id=ACCESS_KEY,
-    aws_secret_access_key=SECRET_ACCESS_KEY,
-)
+from utils.wasabi import ALLOW_EXTENSIONS, S3_BUCKET, S3_DIR, REGION_NAME, wasabi
 
 
-def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -> Asset:
-    filename = file.filename
-    if filename == "":
-        raise HTTPException(status_code=400, detail="this file is invalid")
-    file_extension = filename[filename.rfind(".") + 1 :].lower()
-    if not file_extension in ALLOW_EXTENSIONS.get(asset_type, []):
+def create_asset(
+    db: Session, user_id: str, asset_type: str, file: UploadFile, extension: str
+) -> Asset:
+    extension = extension.lower()
+    if not extension in ALLOW_EXTENSIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail="this file extension is invalid")
 
     asset_orm = models.Asset(
-        asset_type=asset_type, user_id=user_id, extension=file_extension, url=""
+        asset_type=asset_type, user_id=user_id, extension=extension, url=""
     )
     db.add(asset_orm)
     db.commit()
@@ -47,12 +25,12 @@ def create_asset(db: Session, user_id: str, asset_type: str, file: UploadFile) -
     response = wasabi.put_object(
         Body=file.file,
         Bucket=S3_BUCKET,
-        Key=f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extension}",
+        Key=f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}",
     )
 
     file_url = "https://s3.%s.wasabisys.com/%s" % (
         REGION_NAME,
-        f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{file_extension}",
+        f"{S3_BUCKET}/{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}",
     )
 
     asset_orm.url = file_url

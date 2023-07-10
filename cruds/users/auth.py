@@ -20,7 +20,10 @@ from utils.discord import (
     discord_fetch_user,
     discord_refresh_token,
     discord_verify_user_belongs_to_valid_guild,
+    download_discord_avatar,
 )
+from utils.wasabi import upload_avatar
+from utils.convert import convert_to_webp_for_avatar
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -69,19 +72,25 @@ def authenticate_discord_user(
             discord_token=discord_token.access_token,
             discord_refresh_token=discord_token.refresh_token,
             discord_user_id=discord_user.id,
-            avatar_url="https://cdn.discordapp.com/avatars/{user_id}/{avatar_id}.png".format(
-                user_id=discord_user.id, avatar_id=discord_user.avatar
-            ),
         )
         db.add(u)
         db.commit()
-    else:
-        u.avatar_url = (
-            "https://cdn.discordapp.com/avatars/{user_id}/{avatar_id}.png".format(
-                user_id=discord_user.id, avatar_id=discord_user.avatar
-            )
-        )
-        db.commit()
+        db.refresh(u)
+        if discord_user.avatar:
+            file_bin = download_discord_avatar(discord_user.id, discord_user.avatar)
+            if file_bin:
+                sizes = [64, 128, 256, 512]
+                avatar_urls = {}
+                for size in sizes:
+                    converted_bin = convert_to_webp_for_avatar(file_bin, size)
+                    avatar_urls[str(size)] = upload_avatar(
+                        u.id, converted_bin, "webp", size
+                    )
+                avatar_url = avatar_urls.get("256")
+                if avatar_url:
+                    u.avatar_url = avatar_url
+                    db.commit()
+                    db.refresh(u)
 
     token_response = create_tokens(u, db)
     return token_response

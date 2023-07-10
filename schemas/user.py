@@ -13,7 +13,6 @@ class UserCreateRequest(BaseModel):
 
 class UserInfoChangeRequest(BaseModel):
     display_name: Optional[str]
-    avatar_url: Optional[HttpUrl]
     profile: Optional[str]
     twitter_id: Optional[str]
     github_id: Optional[str]

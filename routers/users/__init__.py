@@ -3,12 +3,17 @@ from sqlalchemy.orm.session import Session
 from cruds.works import get_works_by_user_id
 from db import get_db
 from cruds.users.auth import GetCurrentUser
-from cruds.users import get_user_by_id, get_users, change_user_info
-from fastapi import APIRouter
+from cruds.users import get_user_by_id, get_users, change_user_info, remove_avatar_url
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from schemas.work import Work, ResWorks
 from schemas.user import User, UserInfoChangeRequest
+from schemas.common import DeleteStatus
+from fastapi.datastructures import UploadFile
+from fastapi.param_functions import File, Form
 from db import models
+from utils.wasabi import upload_avatar, delete_avatar, ALLOW_EXTENSIONS
+from utils.convert import convert_to_webp_for_avatar
 
 user_router = APIRouter()
 
@@ -42,15 +47,49 @@ async def put_user_info(
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
 ):
-    user = change_user_info(
+    user_info = change_user_info(
         db,
-        user.id,
-        payload.display_name,
-        payload.profile,
-        payload.avatar_url,
-        payload.twitter_id,
-        payload.github_id,
+        user_id=user.id,
+        display_name=payload.display_name,
+        profile=payload.profile,
+        twitter_id=payload.twitter_id,
+        github_id=payload.github_id,
     )
+    return user_info
+
+
+@user_router.put("/@me/avatar", response_model=User)
+async def update_user_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(GetCurrentUser()),
+):
+    extension = file.filename[file.filename.rfind(".") + 1 :].lower()
+    if extension not in ALLOW_EXTENSIONS["image"]:
+        raise HTTPException(status_code=422, detail="avatar type is invalid")
+    file_bin = file.file.read()
+    sizes = [64, 128, 256, 512]
+    avatar_urls = {}
+    for size in sizes:
+        converted_bin = convert_to_webp_for_avatar(file_bin, size)
+        avatar_urls[str(size)] = upload_avatar(user.id, converted_bin, "webp", size)
+    avatar_url = avatar_urls.get("256")
+    if avatar_url == None:
+        raise HTTPException(status_code=500, detail="upload image failed")
+    user_info = change_user_info(db, user_id=user.id, avatar_url=avatar_url)
+    return user_info
+
+
+@user_router.delete("/@me/avatar", response_model=User)
+async def delete_user_avatar(
+    db: Session = Depends(get_db),
+    user: User = Depends(GetCurrentUser()),
+):
+    if user.avatar_url:
+        extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
+        remove_avatar_url(db, user_id=user.id)
+        delete_avatar(user.id, extension)
+    user = get_user_by_id(db, user.id)
     return user
 
 
