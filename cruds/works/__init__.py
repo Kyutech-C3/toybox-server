@@ -5,15 +5,12 @@ from fastapi import HTTPException
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm.session import Session
 
-from cruds.assets import delete_asset_by_id
 from cruds.url_infos import create_url_info, delete_url_info
 from db import models
 from schemas.common import DeleteStatus
 from schemas.url_info import BaseUrlInfo
 from schemas.user import User
 from schemas.work import ResWorks, Work
-
-# TODO: CASCADEを導入する
 
 
 def set_work(
@@ -91,25 +88,31 @@ def get_works_by_limit(
     tag_names: str,
     tag_ids: str,
     user: Optional[User],
-    search_word:str,
+    search_word: str,
 ) -> ResWorks:
     if tag_names != None and tag_ids != None:
         raise HTTPException(
-            status_code=422, detail="tag name and ID cannot be specified at the same time."
+            status_code=422,
+            detail="tag name and ID cannot be specified at the same time.",
         )
 
     works_orm = (
         db.query(models.Work)
-        .join(models.User,models.Work.user_id==models.User.id)
-        .join(models.Tagging,models.Work.id==models.Tagging.work_id)
-        .join(models.Tag,models.Tagging.tag_id==models.Tag.id)
+        .join(models.User, models.Work.user_id == models.User.id)
+        .join(models.Tagging, models.Work.id == models.Tagging.work_id)
+        .join(models.Tag, models.Tagging.tag_id == models.Tag.id)
         .group_by(models.Work.id)
         .order_by(desc(models.Work.created_at))
         .filter(models.Work.visibility != models.Visibility.draft)
     )
     if search_word:
-        works_orm = works_orm.filter(or_(models.User.name.ilike(f"%{search_word}%"),models.Tag.name.ilike(f"%{search_word}%"),models.Work.title.ilike(f"%{search_word}%")))
-
+        works_orm = works_orm.filter(
+            or_(
+                models.User.name.ilike(f"%{search_word}%"),
+                models.Tag.name.ilike(f"%{search_word}%"),
+                models.Work.title.ilike(f"%{search_word}%"),
+            )
+        )
 
     if tag_ids:
         tag_id_list = tag_ids.split(",")
@@ -324,15 +327,6 @@ def delete_work_by_id(db: Session, work_id: str, user_id: str) -> DeleteStatus:
     work_orm = db.query(models.Work).get(work_id)
     if work_orm.user_id != user_id:
         raise HTTPException(status_code=403, detail="cannot delete other's work")
-
-    assets_orm = db.query(models.Asset).filter(models.Asset.work_id == work_id).all()
-    urls_orm = db.query(models.UrlInfo).filter(models.UrlInfo.work_id == work_id).all()
-
-    for asset_orm in assets_orm:
-        asset_orm.work_id = None
-
-    for url_orm in urls_orm:
-        delete_url_info(db, url_orm.id)
 
     db.delete(work_orm)
     db.commit()
