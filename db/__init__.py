@@ -33,7 +33,7 @@ def create_test_database():
     session.close()
 
 
-if APP_TYPE is "dev":
+if APP_TYPE == "dev":
     create_test_database()
 
 engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
