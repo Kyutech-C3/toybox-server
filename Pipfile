@@ -24,12 +24,12 @@ boto3 = "*"
 pillow = "*"
 httpx = "*"
 cryptography = "*"
-
-[dev-packages]
 isort = "*"
 black = "*"
 flake8 = "*"
 pre-commit = "*"
+
+[dev-packages]
 
 [requires]
 python_version = "3.9"
