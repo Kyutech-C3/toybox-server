@@ -42,6 +42,10 @@ jobs:
           command: echo $ENV_FILE | base64 --decode > .env
 
       - run:
+          name: Run lint
+          command: pipenv run flake8
+
+      - run:
           name: Run Test
           command: pipenv run pytest
 
