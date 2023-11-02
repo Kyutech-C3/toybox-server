@@ -165,7 +165,10 @@ def notice_discord(
                 "url": work_url,
                 "description": desc,
                 "thumbnail": {
-                    "url": "https://toybox.compositecomputer.club/_nuxt/img/ToyBoxlogo.21166b5.png"
+                    "url": (
+                        "https://toybox.compositecomputer.club"
+                        "/_nuxt/img/ToyBoxlogo.21166b5.png"
+                    )
                 },
                 "color": 4063189,
                 "image": {"url": thumbnail_image_url},
