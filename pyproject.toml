@@ -1,8 +1,7 @@
 [tool.black]
-exclude = '''
-alembic/**
-'''
+exclude = "alembic/"
 
 [tool.isort]
 profile = "black"
 line_length = 88
+extend_skip_glob = ["alembic/**"]

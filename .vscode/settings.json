@@ -38,6 +38,7 @@
   ],
   "isort.args": [
     "--profile=black",
+    "--extend-skip-glob=alembic/**",
     "-l 88"
   ],
   "flake8.args": [

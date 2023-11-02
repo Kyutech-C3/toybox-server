@@ -6,6 +6,7 @@ repos:
         args:
           - "--profile=black"
           - "-l 88"
+          - "--extend-skip-glob=alembic/**"
   - repo: https://github.com/ambv/black
     rev: "23.10.1"
     hooks:
