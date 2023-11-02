@@ -2,13 +2,13 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from cruds.favorite.favorite import (
+from cruds.favorite import (
     delete_favorite_by_id,
     get_favorite_by_user_id,
     get_favorite_by_work_id,
     set_favorite,
 )
-from cruds.users.auth import GetCurrentUser
+from cruds.users import GetCurrentUser
 from db import get_db
 from schemas.favorite import Favorite
 from schemas.user import User

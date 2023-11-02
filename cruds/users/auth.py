@@ -11,9 +11,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from sqlalchemy.orm.session import Session
 
-from cruds.users import get_user
-from db import get_db
-from db.models import Token, User
+from db import get_db, models
 from schemas.user import Token as TokenSchema
 from schemas.user import TokenData, TokenResponse
 from utils.convert import convert_to_webp_for_avatar
@@ -24,6 +22,8 @@ from utils.discord import (
     download_discord_avatar,
 )
 from utils.wasabi import upload_avatar
+
+from .users import get_user
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -59,13 +59,17 @@ def authenticate_discord_user(
 ) -> TokenResponse:
     discord_user = discord_fetch_user(discord_token.access_token)
 
-    u = db.query(User).filter(User.discord_user_id == discord_user.id).first()
+    u = (
+        db.query(models.User)
+        .filter(models.User.discord_user_id == discord_user.id)
+        .first()
+    )
 
     discord_verify_user_belongs_to_valid_guild(access_token=discord_token.access_token)
 
     if u is None:
         # user's first login
-        u = User(
+        u = models.User(
             name=discord_user.username,
             email=discord_user.email,
             display_name=discord_user.username,
@@ -96,7 +100,7 @@ def authenticate_discord_user(
     return token_response
 
 
-def create_tokens(user: User, db: Session = Depends(get_db)) -> TokenResponse:
+def create_tokens(user: models.User, db: Session = Depends(get_db)) -> TokenResponse:
     new_refresh_token = create_refresh_token(user, db)
     new_access_token = create_access_token(new_refresh_token.user)
 
@@ -115,17 +119,17 @@ def renew_token(refresh_token_str: str, db: Session = Depends(get_db)) -> TokenR
     old_t.expired_at = datetime.now().isoformat()
     db.commit()
 
-    u = db.query(User).filter(User.id == token.user.id).first()
+    u = db.query(models.User).filter(models.User.id == token.user.id).first()
 
     return create_tokens(u, db)
 
 
 def create_refresh_token(
-    user: User,
+    user: models.User,
     db: Session = Depends(get_db),
     expired_delta: timedelta = timedelta(days=15),
 ) -> TokenSchema:
-    t = Token(refresh_token=None, user_id=user.id)
+    t = models.Token(refresh_token=None, user_id=user.id)
     if expired_delta:
         t.expired_at = datetime.now() + expired_delta
     db.add(t)
@@ -136,8 +140,12 @@ def create_refresh_token(
 
 def verify_refresh_token(
     refresh_token: str, db: Session = Depends(get_db)
-) -> tuple[TokenSchema, Token]:
-    t = db.query(Token).filter(Token.refresh_token == refresh_token).first()
+) -> tuple[TokenSchema, models.Token]:
+    t = (
+        db.query(models.Token)
+        .filter(models.Token.refresh_token == refresh_token)
+        .first()
+    )
     if t is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -154,7 +162,7 @@ def verify_refresh_token(
     return [token, t]
 
 
-def create_access_token(user: User, expires_delta: Optional[timedelta] = None):
+def create_access_token(user: models.User, expires_delta: Optional[timedelta] = None):
     to_encode = {"sub": user.email, "token_type": "bearer"}
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

@@ -2,13 +2,13 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from cruds.comments.comment import (
+from cruds.comments import (
     create_comment,
     delete_by_comment_id,
     get_comments_by_work_id,
     get_reply_comments_by_comment_id,
 )
-from cruds.users.auth import GetCurrentUser
+from cruds.users import GetCurrentUser
 from db import get_db, models
 from schemas.comment import PostComment, ResponseComment, ResponseReplyComment
 from schemas.common import DeleteStatus

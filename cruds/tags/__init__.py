@@ -1,7 +1,1 @@
-from .tag import (
-    create_tag,
-    get_tags,
-    get_tag_by_id,
-    change_tag_by_id,
-    delete_tag_by_id,
-)
+from .tag import change_tag_by_id, create_tag, delete_tag_by_id, get_tag_by_id, get_tags

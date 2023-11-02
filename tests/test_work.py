@@ -1,10 +1,10 @@
 import pytest
 
-from db.models import Visibility
+from db import Visibility
 
 from .fixtures import (
-    client,
     asset_factory_for_test,
+    client,
     session_for_test,
     tag_factory_for_test,
     tag_for_test,

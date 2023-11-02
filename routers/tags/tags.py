@@ -4,14 +4,14 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from cruds.tags.tag import (
+from cruds.tags import (
     change_tag_by_id,
     create_tag,
     delete_tag_by_id,
     get_tag_by_id,
     get_tags,
 )
-from cruds.users.auth import GetCurrentUser
+from cruds.users import GetCurrentUser
 from db import get_db
 from schemas.tag import GetTag, PostTag, PutTag, TagResponsStatus
 from schemas.user import User

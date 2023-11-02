@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, validator
 
-from db.models import AssetType
+from db import AssetType
 
 from .user import User
 

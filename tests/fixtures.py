@@ -11,13 +11,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-# from cruds.works import create_work
 from cruds.assets import create_asset
-from cruds.tags.tag import create_tag
+from cruds.tags import create_tag
 from cruds.users import auth
 from cruds.works import set_work
-from db import Base, get_db
-from db.models import User, Visibility
+from db import Base, Visibility, get_db, models
 from main import app
 from schemas.asset import Asset as AssetSchema
 from schemas.tag import GetTag as TagSchema
@@ -94,7 +92,7 @@ def user_factory_for_test(
         name: str = "iamtestuser",
         display_name: str = "I am Test User",
     ) -> UserSchema:
-        u = User(email=email, name=name, display_name=display_name)
+        u = models.User(email=email, name=name, display_name=display_name)
         session_for_test.add(u)
         session_for_test.commit()
         return UserSchema.from_orm(u)
@@ -115,7 +113,7 @@ def users_factory_for_test(
         with open("./tests/test_data/test_user.json") as f:
             test_users = json.load(f)
             for test_user in test_users:
-                user = User(
+                user = models.User(
                     email=test_users[test_user]["email"],
                     name=test_users[test_user]["name"],
                     display_name=test_users[test_user]["display_name"],
@@ -137,7 +135,7 @@ def user_for_test(
     name: str = "iamtestuser",
     display_name: str = "I am Test User",
 ) -> UserSchema:
-    u = User(email=email, name=name, display_name=display_name)
+    u = models.User(email=email, name=name, display_name=display_name)
     session_for_test.add(u)
     session_for_test.commit()
     return UserSchema.from_orm(u)
@@ -151,7 +149,11 @@ def user_token_factory_for_test(
     """
     Create test user's token
     """
-    user = session_for_test.query(User).filter(User.id == user_for_test.id).first()
+    user = (
+        session_for_test.query(models.User)
+        .filter(models.User.id == user_for_test.id)
+        .first()
+    )
 
     def factory(
         access_token_expires_delta: timedelta = timedelta(minutes=15),
