@@ -1,17 +1,16 @@
 from datetime import timedelta
 
-from starlette.routing import Mount
 import pytest
+
 from .fixtures import (
     client,
-    use_test_db_fixture,
     session_for_test,
+    use_test_db_fixture,
     user_factory_for_test,
+    user_for_test,
     user_token_factory_for_test,
     users_factory_for_test,
-    user_for_test,
 )
-from cruds.users.auth import GetCurrentUser
 
 
 @pytest.mark.usefixtures("use_test_db_fixture")
@@ -63,15 +62,12 @@ class TestUser:
     def test_get_user_by_id(use_test_db_fixture, users_factory_for_test):
         print("test_get_user_by_id :::::::: ユーザーの情報を取得")
         """
-		ユーザーの情報を取得
-		"""
+        ユーザーの情報を取得
+        """
         count = 0
         users_info = users_factory_for_test()
         for user_info in users_info:
             count += 1
-            print(
-                f"===========================test_get_user_by_id: {count}=========================="
-            )
             user_id: str = user_info.id
             name: str = user_info.name
             display_name: str = user_info.display_name
@@ -85,15 +81,12 @@ class TestUser:
     def test_get_user_by_not_correct_id(use_test_db_fixture, users_factory_for_test):
         print("test_get_user_by_not_correct_id :::::::: 間違ったユーザーIDでユーザーの情報を取得")
         """
-		間違ったユーザーIDでユーザーの情報を取得
-		"""
+        間違ったユーザーIDでユーザーの情報を取得
+        """
         count = 0
         users_info = users_factory_for_test()
         for user_info in users_info:
             count += 1
-            print(
-                f"===========================test_get_user_by_not_correct_id: {count}=========================="
-            )
             user_id: str = user_info.id + "hoge"
 
             res = client.get(f"/api/v1/users/{user_id}")
@@ -104,7 +97,7 @@ class TestUser:
         ユーザー一覧を取得
         """
         users_info = users_factory_for_test()
-        res = client.get(f"/api/v1/users")
+        res = client.get("/api/v1/users")
         assert res.status_code == 200, "ユーザー一覧の取得に成功する"
         for index, user_info in enumerate(users_info):
             print(user_info)
@@ -116,10 +109,9 @@ class TestUser:
     def test_get_users_with_limit(use_test_db_fixture, users_factory_for_test):
         print("test_get_users_with_limit :::::::: 取得するユーザー数を制限してユーザー一覧を取得")
         """
-		取得するユーザー数を制限してユーザー一覧を取得
-		"""
+        取得するユーザー数を制限してユーザー一覧を取得
+        """
         limit = 3
-        users_info = users_factory_for_test()
         res = client.get(f"/api/v1/users?limit={limit}")
 
         print(res.json())
@@ -130,8 +122,8 @@ class TestUser:
     def test_get_users_with_offset_id(use_test_db_fixture, users_factory_for_test):
         print("test_get_users_with_offset_id :::::::: オフセットを指定してユーザー一覧を取得")
         """
-		オフセットを指定してユーザー一覧を取得
-		"""
+        オフセットを指定してユーザー一覧を取得
+        """
         users_info = users_factory_for_test()
         offset_id = users_info[2].id
         user_id = users_info[3].id
@@ -147,8 +139,8 @@ class TestUser:
             "test_get_users_with_not_exit_offset_id :::::::: 存在しないオフセットIDを指定してユーザー一覧を取得"
         )
         """
-		存在しないオフセットIDを指定してユーザー一覧を取得
-		"""
+        存在しないオフセットIDを指定してユーザー一覧を取得
+        """
         users_info = users_factory_for_test()
         offset_id = users_info[2].id + "hoge"
         res = client.get(f"/api/v1/users?oldest_user_id={offset_id}")
@@ -163,8 +155,8 @@ class TestUser:
     ):
         print("test_put_all_info_of_user_me :::::::: ユーザーの情報をすべて編集")
         """
-		ユーザーの情報をすべて編集
-		"""
+        ユーザーの情報をすべて編集
+        """
         user_info = user_factory_for_test(
             session_for_test, "testuser1@test.com", "testuser1", "testuser1"
         )
@@ -206,8 +198,8 @@ class TestUser:
     ):
         print("test_put_a_info_of_user_me :::::::: ユーザーの情報を1つ編集")
         """
-		ユーザーの情報を1つ編集
-		"""
+        ユーザーの情報を1つ編集
+        """
         user_info = user_factory_for_test(
             session_for_test, "testuser2@test.com", "testuser2", "testuser2"
         )
@@ -233,8 +225,8 @@ class TestUser:
     def test_put_unauthorized(use_test_db_fixture):
         print("test_put_unauthorized :::::::: アクセストークンなしで自分の情報を変更する")
         """
-		アクセストークンなしで自分の情報を変更する
-		"""
+        アクセストークンなしで自分の情報を変更する
+        """
         new_display_name: str = "new_display_name"
         new_profile: str = "new_profile"
 
@@ -256,8 +248,8 @@ class TestUser:
     ):
         print("test_put_with_expired_access_token :::::::: 期限切れのアクセストークンを用いて自分の情報を変更する")
         """
-		期限切れのアクセストークンを用いて自分の情報を変更する
-		"""
+        期限切れのアクセストークンを用いて自分の情報を変更する
+        """
         # Create access_token which is expired before 10s
         token = user_token_factory_for_test(
             access_token_expires_delta=timedelta(seconds=-10)

@@ -1,12 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
+
+from pydantic import BaseModel
 from pydantic.class_validators import validator
+
 from db.models import Visibility
 from schemas.tag import GetTag
 from schemas.url_info import BaseUrlInfo, UrlInfo
-from .user import User
+
 from .asset import Asset
-from pydantic import BaseModel
+from .user import User
 
 
 class PostWork(BaseModel):

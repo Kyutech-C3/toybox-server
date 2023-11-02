@@ -1,8 +1,11 @@
-from datetime import datetime
 import json
-from .user import User
+from datetime import datetime
+
 from pydantic import BaseModel, validator
-from db.models import AssetType, Work
+
+from db.models import AssetType
+
+from .user import User
 
 
 class BaseAsset(BaseModel):

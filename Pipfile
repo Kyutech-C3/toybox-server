@@ -14,7 +14,7 @@ python-multipart = "*"
 pytest = "*"
 requests = "*"
 pylint = "*"
-pydantic = {extras = ["email"], version = "*"}
+pydantic = {extras = ["email"], version = "==1.*"}
 sqlalchemy-utils = "==0.38.3"
 markdown = "*"
 alembic = "*"
@@ -26,6 +26,9 @@ httpx = "*"
 cryptography = "*"
 
 [dev-packages]
+isort = "*"
+black = "*"
+flake8 = "*"
 
 [requires]
 python_version = "3.9"

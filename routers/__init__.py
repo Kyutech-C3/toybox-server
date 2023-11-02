@@ -1,11 +1,12 @@
 from fastapi import APIRouter
-from .users import user_router
-from .works import work_router
-from .tags.tag import tag_router
+
 from .assets import asset_router
 from .auth import auth_router
-from .favorites.favorite import favorite_router, user_favorite_router
 from .comments.comment import comment_router
+from .favorites.favorite import favorite_router, user_favorite_router
+from .tags.tag import tag_router
+from .users import user_router
+from .works import work_router
 
 router = APIRouter()
 

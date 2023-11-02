@@ -1,17 +1,18 @@
-from db import get_db
 from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from schemas.favorite import Favorite
-from schemas.work import Work
-from schemas.user import User
-from cruds.users.auth import GetCurrentUser
+
 from cruds.favorite.favorite import (
-    set_favorite,
     delete_favorite_by_id,
-    get_favorite_by_work_id,
     get_favorite_by_user_id,
+    get_favorite_by_work_id,
+    set_favorite,
 )
+from cruds.users.auth import GetCurrentUser
+from db import get_db
+from schemas.favorite import Favorite
+from schemas.user import User
+from schemas.work import Work
 
 favorite_router = APIRouter()
 user_favorite_router = APIRouter()
@@ -34,7 +35,7 @@ async def favorite_by_work_id(
 
 
 @user_favorite_router.get("/@me/favorite", response_model=list[Work])
-async def favorite_by_user_id(
+async def get_my_favorite(
     user: User = Depends(GetCurrentUser()), db: Session = Depends(get_db)
 ):
     favorites = get_favorite_by_user_id(db, user.id, user)
@@ -42,7 +43,7 @@ async def favorite_by_user_id(
 
 
 @user_favorite_router.get("/{user_id}/favorite", response_model=list[Work])
-async def favorite_by_user_id(
+async def get_a_user_favorite(
     user_id: str,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser(False)),

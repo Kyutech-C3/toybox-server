@@ -1,7 +1,9 @@
+import re
+
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
+
 from db import models
-import re
 
 url_type_pattern = {
     "youtube": r"^https://(www\.youtube\.com/watch\?v=|youtu\.be/)[\S]{11}$",

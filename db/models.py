@@ -1,18 +1,12 @@
+import datetime
+import enum
 from typing import Any
-from sqlalchemy import (
-    Column as Col,
-    String,
-    Enum,
-    ForeignKey,
-    DateTime,
-    Boolean,
-    Integer,
-)
 from uuid import uuid4
+
+from sqlalchemy import Column as Col
+from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
-import enum
-import datetime
 from sqlalchemy.sql.functions import func
 
 

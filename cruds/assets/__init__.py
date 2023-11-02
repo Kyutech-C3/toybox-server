@@ -1,18 +1,18 @@
-import os, shutil
 from fastapi.datastructures import UploadFile
 from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
+
 from db import models
 from schemas.asset import Asset
 from schemas.common import DeleteStatus
-from utils.wasabi import ALLOW_EXTENSIONS, S3_BUCKET, S3_DIR, REGION_NAME, wasabi
+from utils.wasabi import ALLOW_EXTENSIONS, REGION_NAME, S3_BUCKET, S3_DIR, wasabi
 
 
 def create_asset(
     db: Session, user_id: str, asset_type: str, file: UploadFile, extension: str
 ) -> Asset:
     extension = extension.lower()
-    if not extension in ALLOW_EXTENSIONS.get(asset_type, []):
+    if extension not in ALLOW_EXTENSIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail="this file extension is invalid")
 
     asset_orm = models.Asset(
@@ -22,7 +22,7 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    response = wasabi.put_object(
+    _ = wasabi.put_object(
         Body=file.file,
         Bucket=S3_BUCKET,
         Key=f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}",
@@ -48,7 +48,7 @@ def delete_asset_by_id(db: Session, asset_id: str, user_id: str) -> DeleteStatus
     if asset_orm.user_id != user_id:
         raise HTTPException(status_code=403, detail="cannot delete other's asset")
 
-    response = wasabi.delete_object(
+    _ = wasabi.delete_object(
         Bucket=S3_BUCKET, Key=f"{S3_DIR}/{asset_orm.asset_type}/{asset_orm.id}"
     )
 

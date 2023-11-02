@@ -1,13 +1,17 @@
 import os
-from typing import List
 
 from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
 from cruds.users.auth import GetCurrentUser
-from cruds.works import (delete_work_by_id, get_work_by_id, get_works_by_limit,
-                         replace_work, set_work)
+from cruds.works import (
+    delete_work_by_id,
+    get_work_by_id,
+    get_works_by_limit,
+    replace_work,
+    set_work,
+)
 from db import get_db, models
 from schemas.common import DeleteStatus
 from schemas.user import User
@@ -55,13 +59,21 @@ async def get_works(
     oldest_work_id: str = None,
     newest_work_id: str = None,
     tag_names: str = None,
-    tag_ids:str = None,
+    tag_ids: str = None,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser(auto_error=False)),
-    search_word:str= None
+    search_word: str = None,
 ):
     works = get_works_by_limit(
-        db, limit, visibility, oldest_work_id, newest_work_id,tag_names, tag_ids, user,search_word
+        db,
+        limit,
+        visibility,
+        oldest_work_id,
+        newest_work_id,
+        tag_names,
+        tag_ids,
+        user,
+        search_word,
     )
     return works
 
@@ -106,5 +118,3 @@ async def delete_work(
     user_id = None if user is None else user.id
     result = delete_work_by_id(db, work_id, user_id)
     return result
-
-

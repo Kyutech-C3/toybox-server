@@ -1,7 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy import desc
-from db import models
 from sqlalchemy.orm.session import Session
+
+from db import models
 from schemas.comment import ResponseComment, ResponseReplyComment
 from schemas.common import DeleteStatus
 
@@ -57,7 +58,7 @@ def get_comments_by_work_id(
     comments_orm = (
         db.query(models.Comment)
         .filter(models.Comment.work_id == work_id)
-        .filter(models.Comment.reply_at == None)
+        .filter(models.Comment.reply_at is None)
         .order_by(desc(models.Comment.created_at))
     )
 
@@ -187,11 +188,11 @@ def delete_by_comment_id(
         .filter(models.Comment.work_id == work_id)
         .filter(models.Comment.id == comment_id)
     )
-    if comment.first() == None:
+    if comment.first() is None:
         raise HTTPException(status_code=404, detail="Comment is not exist")
 
     comment = comment.filter(models.Comment.user_id == user_id).first()
-    if comment == None:
+    if comment is None:
         raise HTTPException(status_code=404, detail="user_id is invalid")
 
     if comment.reply_at is None:

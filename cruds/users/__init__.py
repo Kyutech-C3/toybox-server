@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from sqlalchemy import desc
-from sqlalchemy.sql.functions import user
-from db import models
 from sqlalchemy.orm.session import Session
+
+from db import models
 from schemas.user import User as UserSchema
 
 

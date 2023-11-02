@@ -90,7 +90,7 @@ def get_works_by_limit(
     user: Optional[User],
     search_word: str,
 ) -> ResWorks:
-    if tag_names != None and tag_ids != None:
+    if tag_names is not None and tag_ids is not None:
         raise HTTPException(
             status_code=422,
             detail="tag name and ID cannot be specified at the same time.",

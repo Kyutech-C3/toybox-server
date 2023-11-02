@@ -1,29 +1,29 @@
-from fastapi.params import Security
-from fastapi.security import HTTPBearer
-from fastapi.security.http import HTTPAuthorizationCredentials
-from db.models import Token, User
-from db import get_db
-from os import stat, environ
-from schemas.user import TokenData, TokenResponse
-from fastapi.exceptions import HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from datetime import datetime, timedelta
+from os import environ
+from typing import Optional
+
 from fastapi import Depends, status
-from cruds.users import get_user
-from sqlalchemy.orm.session import Session
+from fastapi.exceptions import HTTPException
+from fastapi.params import Security
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer
+from fastapi.security.http import HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from typing import Optional
-from datetime import datetime, timedelta
+from sqlalchemy.orm.session import Session
+
+from cruds.users import get_user
+from db import get_db
+from db.models import Token, User
 from schemas.user import Token as TokenSchema
+from schemas.user import TokenData, TokenResponse
+from utils.convert import convert_to_webp_for_avatar
 from utils.discord import (
     DiscordAccessTokenResponse,
     discord_fetch_user,
-    discord_refresh_token,
     discord_verify_user_belongs_to_valid_guild,
     download_discord_avatar,
 )
 from utils.wasabi import upload_avatar
-from utils.convert import convert_to_webp_for_avatar
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -63,7 +63,7 @@ def authenticate_discord_user(
 
     discord_verify_user_belongs_to_valid_guild(access_token=discord_token.access_token)
 
-    if u == None:
+    if u is None:
         # user's first login
         u = User(
             name=discord_user.username,
@@ -138,7 +138,7 @@ def verify_refresh_token(
     refresh_token: str, db: Session = Depends(get_db)
 ) -> tuple[TokenSchema, Token]:
     t = db.query(Token).filter(Token.refresh_token == refresh_token).first()
-    if t == None:
+    if t is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Specified refresh token not found",
@@ -178,7 +178,7 @@ class GetCurrentUser:
         credentials: HTTPAuthorizationCredentials = Security(security),
     ):
         try:
-            if credentials == None:
+            if credentials is None:
                 return self.handle_error(detail="Credential is missing")
             if credentials.scheme != "Bearer":
                 return self.handle_error(detail="Invalid scheme")

@@ -1,18 +1,20 @@
 from typing import List
-from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus, PutTag
-from schemas.user import User
-from fastapi import APIRouter, HTTPException
-from db import get_db
+
+from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-from cruds.users.auth import GetCurrentUser
+
 from cruds.tags.tag import (
+    change_tag_by_id,
     create_tag,
+    delete_tag_by_id,
     get_tag_by_id,
     get_tags,
-    change_tag_by_id,
-    delete_tag_by_id,
 )
+from cruds.users.auth import GetCurrentUser
+from db import get_db
+from schemas.tag import GetTag, PostTag, PutTag, TagResponsStatus
+from schemas.user import User
 
 tag_router = APIRouter()
 
@@ -40,13 +42,13 @@ async def tags_all(
 
 
 @tag_router.get("/{tag_id}", response_model=GetTag)
-async def tag_by_id(tag_id: str, db: Session = Depends(get_db)):
+async def get_a_tag(tag_id: str, db: Session = Depends(get_db)):
     tag = get_tag_by_id(db, tag_id)
     return tag
 
 
 @tag_router.put("/{tag_id}", response_model=GetTag)
-async def tag_by_id(
+async def put_a_tag(
     tag_id: str,
     payload: PutTag,
     db: Session = Depends(get_db),
@@ -57,7 +59,7 @@ async def tag_by_id(
 
 
 @tag_router.delete("/{tag_id}", response_model=TagResponsStatus)
-async def tag_by_id(
+async def delete_a_tag(
     tag_id: str, db: Session = Depends(get_db), user: User = Depends(GetCurrentUser())
 ):
     result = delete_tag_by_id(db, tag_id)

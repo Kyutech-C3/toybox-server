@@ -1,9 +1,10 @@
+import os
+
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 from .models import *
-import os
 
 APP_TYPE = os.environ.get("APP_TYPE")
 
