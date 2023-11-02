@@ -22,7 +22,7 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    _ = wasabi.put_object(
+    wasabi.put_object(
         Body=file.file,
         Bucket=S3_BUCKET,
         Key=f"{S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}",
@@ -48,7 +48,7 @@ def delete_asset_by_id(db: Session, asset_id: str, user_id: str) -> DeleteStatus
     if asset_orm.user_id != user_id:
         raise HTTPException(status_code=403, detail="cannot delete other's asset")
 
-    _ = wasabi.delete_object(
+    wasabi.delete_object(
         Bucket=S3_BUCKET, Key=f"{S3_DIR}/{asset_orm.asset_type}/{asset_orm.id}"
     )
 

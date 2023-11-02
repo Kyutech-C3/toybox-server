@@ -112,6 +112,7 @@ class TestUser:
         取得するユーザー数を制限してユーザー一覧を取得
         """
         limit = 3
+        users_factory_for_test()
         res = client.get(f"/api/v1/users?limit={limit}")
 
         print(res.json())

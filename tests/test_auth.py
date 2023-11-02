@@ -80,8 +80,6 @@ class TestAuth:
         )
 
         assert res.status_code == 200, "アクセストークンの更新が成功する"
-        body_dict = res.json()
-        _ = body_dict["refresh_token"]
 
         res = client.post(
             "/api/v1/auth/token",
@@ -95,6 +93,6 @@ class TestAuth:
         """
         Discordログイン画面へ遷移する
         """
-        res = client.get("/api/v1/auth/discord", allow_redirects=False)
+        res = client.get("/api/v1/auth/discord", follow_redirects=False)
 
         assert res.status_code == 307, "Discordログイン画面へリダイレクトする"
