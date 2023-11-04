@@ -61,7 +61,7 @@ def init_wasabi_for_test(
     )
     try:
         wasabi.create_bucket(Bucket=bucket_name)
-    except botocore.errorfactory.NoSuchBucket:
+    except wasabi.exceptions.NoSuchBucket:
         pass
 
 
