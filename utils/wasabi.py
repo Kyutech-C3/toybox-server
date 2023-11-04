@@ -45,6 +45,26 @@ wasabi = boto3.client(
 )
 
 
+def init_wasabi_for_test(
+    minio_host: str,
+    minio_port: int = 9000,
+    access_key: str = ACCESS_KEY,
+    secret_access_key: str = SECRET_ACCESS_KEY,
+    bucket_name: str = S3_BUCKET,
+):
+    global wasabi
+    wasabi = boto3.client(
+        "s3",
+        endpoint_url=f"http://{minio_host}:{minio_port}",
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_access_key,
+    )
+    try:
+        wasabi.create_bucket(Bucket=bucket_name)
+    except botocore.errorfactory.NoSuchBucket:
+        pass
+
+
 def upload_asset(
     asset_id: str,
     file_bin: bytes,

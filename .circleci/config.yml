@@ -18,6 +18,9 @@ jobs:
           S3_DIR: test_assets
           REGION_NAME: ap-northeast-2
           ALLOW_ORIGIN_URLS: '*'
+          MINIO_HOST: minio
+          ACCESS_KEY: minio-user
+          SECRET_ACCESS_KEY: minio-password
 
       - image: circleci/postgres:13.3
         environment:
@@ -25,6 +28,11 @@ jobs:
           POSTGRES_PASSWORD: password
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_DB: toybox
+
+      - image: quay.io/minio/minio:latest
+        environment:
+          MINIO_ROOT_USER: minio-user
+          MINIO_ROOT_PASSWORD: minio-password
 
     steps:
       - checkout
