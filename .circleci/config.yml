@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: circleci/python:3.9.7
+      - image: cimg/python:3.9
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -22,7 +22,7 @@ jobs:
           ACCESS_KEY: minio-user
           SECRET_ACCESS_KEY: minio-password
 
-      - image: circleci/postgres:13.3
+      - image: cimg/postgres:13.3
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -33,6 +33,7 @@ jobs:
         environment:
           MINIO_ROOT_USER: minio-user
           MINIO_ROOT_PASSWORD: minio-password
+        command: server --console-address ":9001" /data
 
     steps:
       - checkout
