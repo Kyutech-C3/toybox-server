@@ -18,9 +18,10 @@ jobs:
           S3_DIR: test_assets
           REGION_NAME: ap-northeast-2
           ALLOW_ORIGIN_URLS: '*'
-          MINIO_HOST: minio
-          ACCESS_KEY: minio-user
-          SECRET_ACCESS_KEY: minio-password
+          MINIO_HOST: 127.0.0.1
+          MINIO_PORT: 9000
+          ACCESS_KEY: KW6J6L5FHALG7VKY6UVY
+          SECRET_ACCESS_KEY: WH3dCfYPn6Czds2PetGJwFv4V4QsuFqGRphBqUPg
 
       - image: cimg/postgres:13.3
         environment:
@@ -31,8 +32,8 @@ jobs:
 
       - image: quay.io/minio/minio:latest
         environment:
-          MINIO_ROOT_USER: minio-user
-          MINIO_ROOT_PASSWORD: minio-password
+          MINIO_ROOT_USER: KW6J6L5FHALG7VKY6UVY
+          MINIO_ROOT_PASSWORD: WH3dCfYPn6Czds2PetGJwFv4V4QsuFqGRphBqUPg
         command: server --console-address ":9001" /data
 
     steps:
