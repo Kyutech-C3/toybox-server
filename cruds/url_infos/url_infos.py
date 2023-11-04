@@ -17,7 +17,6 @@ url_type_pattern = {
 
 def create_url_info(db: Session, url: str, url_type: str, work_id: str, user_id: str):
     pattern = url_type_pattern.get(url_type, "")
-    print(pattern)
     if not re.match(pattern, url):
         raise HTTPException(status_code=400, detail="url pattern is invalid")
     url_info_orm = models.UrlInfo(

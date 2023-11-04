@@ -26,8 +26,6 @@ class TestAsset:
             data={"asset_type": asset_type},
         )
 
-        print(res.request)
-
         assert res.status_code == 403, "Assetの投稿に失敗する"
 
     def test_post_correct_image_asset(use_test_db_fixture, user_token_factory_for_test):
