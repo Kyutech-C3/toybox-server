@@ -58,7 +58,7 @@ def get_comments_by_work_id(
     comments_orm = (
         db.query(models.Comment)
         .filter(models.Comment.work_id == work_id)
-        .filter(models.Comment.reply_at is None)
+        .filter(models.Comment.reply_at.is_(None))
         .order_by(desc(models.Comment.created_at))
     )
 
