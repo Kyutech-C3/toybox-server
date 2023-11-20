@@ -1,10 +1,10 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import router
 from utils.limit_upload_size import LimitUploadSize
-
-import os
 
 app = FastAPI(title="toybox-server")
 

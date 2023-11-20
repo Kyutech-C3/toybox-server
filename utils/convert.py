@@ -1,5 +1,6 @@
-from PIL import Image
 import io
+
+from PIL import Image
 
 
 def convert_to_webp_for_avatar(image_data: bytes, size: int = 256) -> bytes:

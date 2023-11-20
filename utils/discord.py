@@ -1,12 +1,12 @@
 import json
-import requests
-from pydantic import BaseModel
-from fastapi import HTTPException
-from typing import List, Optional
 import os
 import urllib.error
 import urllib.request
+from typing import List, Optional
 
+import requests
+from fastapi import HTTPException
+from pydantic import BaseModel
 
 API_ENDPOINT = "https://discord.com/api/v8"
 CLIENT_ID = os.environ.get("DISCORD_CLIENT_ID")
@@ -165,7 +165,10 @@ def notice_discord(
                 "url": work_url,
                 "description": desc,
                 "thumbnail": {
-                    "url": "https://toybox.compositecomputer.club/_nuxt/img/ToyBoxlogo.21166b5.png"
+                    "url": (
+                        "https://toybox.compositecomputer.club"
+                        "/_nuxt/img/ToyBoxlogo.21166b5.png"
+                    )
                 },
                 "color": 4063189,
                 "image": {"url": thumbnail_image_url},
@@ -187,8 +190,9 @@ def notice_discord(
 def download_discord_avatar(discord_user_id, avatar_id) -> bin:
     try:
         req = urllib.request.Request(
-            f'https://cdn.discordapp.com/avatars/{discord_user_id}/{avatar_id}.png')
-        req.add_header('User-Agent', 'Mozilla/5.0')
+            f"https://cdn.discordapp.com/avatars/{discord_user_id}/{avatar_id}.png"
+        )
+        req.add_header("User-Agent", "Mozilla/5.0")
         file = urllib.request.urlopen(req)
         return file.read()
     except urllib.error.URLError as e:

@@ -31,7 +31,7 @@ jobs:
 
       - restore_cache:
           key: toybox-{{ checksum "Pipfile.lock" }}
-      
+
       - run:
           name: Install Pipfile dependencies
           command: |
@@ -40,11 +40,15 @@ jobs:
       - run:
           name: make env file
           command: echo $ENV_FILE | base64 --decode > .env
-      
+
+      - run:
+          name: Run lint
+          command: pipenv run flake8
+
       - run:
           name: Run Test
           command: pipenv run pytest
-      
+
       - discord/status:
           mentions: '@here'
 

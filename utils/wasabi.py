@@ -1,7 +1,8 @@
 import os
+from typing import Optional
+
 import boto3
 import botocore
-from typing import Optional
 
 ALLOW_EXTENSIONS = {
     "image": ["png", "jpg", "jpeg", "bmp", "gif", "webp"],
@@ -60,7 +61,10 @@ def upload_avatar(
     except botocore.exceptions.ClientError as e:
         print(e)
         return
-    return f"https://s3.ap-northeast-2.wasabisys.com/{S3_BUCKET}/{S3_DIR}/avatar/{user_id}_{size}.{extension}"
+    return (
+        "https://s3.ap-northeast-2.wasabisys.com"
+        f"/{S3_BUCKET}/{S3_DIR}/avatar/{user_id}_{size}.{extension}"
+    )
 
 
 def delete_avatar(user_id: str, extension: str):

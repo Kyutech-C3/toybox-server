@@ -2,6 +2,9 @@
   "recommendations": [
     "ms-python.python",
     "streetsidesoftware.code-spell-checker",
-    "ms-python.black-formatter"
+    "ms-python.black-formatter",
+    "ms-python.isort",
+    "ms-python.flake8",
+    "usernamehw.errorlens"
   ]
 }

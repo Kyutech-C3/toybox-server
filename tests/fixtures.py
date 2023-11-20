@@ -1,37 +1,28 @@
-import array
-from fastapi.datastructures import UploadFile
-import sqlalchemy
-import pytest
-from sqlalchemy.orm import sessionmaker
-import sqlalchemy_utils
-from fastapi.testclient import TestClient
-from pytest import fixture
-from sqlalchemy.orm.session import Session
-from sqlalchemy_utils.view import refresh_materialized_view
-from cruds.works import set_work
-
-from db.models import User, Visibility
-from schemas.url_info import BaseUrlInfo
-from schemas.user import (
-    User as UserSchema,
-    Token as TokenSchema,
-    TokenResponse as TokenResponseSchema,
-)
-from schemas.work import Work as WorkSchema
-from schemas.asset import Asset as AssetSchema
-from schemas.tag import GetTag as TagSchema
-from db import Base, get_db
-from main import app
+import json
 import os
 from datetime import timedelta
-from cruds.users import auth
-
-# from cruds.works import create_work
-from cruds.assets import create_asset
 from typing import Callable, List, Optional
-from cruds.tags.tag import create_tag
 
-import json
+import pytest
+import sqlalchemy
+import sqlalchemy_utils
+from fastapi.datastructures import UploadFile
+from fastapi.testclient import TestClient
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
+
+from cruds.assets import create_asset
+from cruds.tags import create_tag
+from cruds.users import auth
+from cruds.works import set_work
+from db import Base, Visibility, get_db, models
+from main import app
+from schemas.asset import Asset as AssetSchema
+from schemas.tag import GetTag as TagSchema
+from schemas.url_info import BaseUrlInfo
+from schemas.user import TokenResponse as TokenResponseSchema
+from schemas.user import User as UserSchema
+from schemas.work import Work as WorkSchema
 
 DATABASE = "postgresql"
 USER = os.environ.get("POSTGRES_USER")
@@ -101,7 +92,7 @@ def user_factory_for_test(
         name: str = "iamtestuser",
         display_name: str = "I am Test User",
     ) -> UserSchema:
-        u = User(email=email, name=name, display_name=display_name)
+        u = models.User(email=email, name=name, display_name=display_name)
         session_for_test.add(u)
         session_for_test.commit()
         return UserSchema.from_orm(u)
@@ -122,7 +113,7 @@ def users_factory_for_test(
         with open("./tests/test_data/test_user.json") as f:
             test_users = json.load(f)
             for test_user in test_users:
-                user = User(
+                user = models.User(
                     email=test_users[test_user]["email"],
                     name=test_users[test_user]["name"],
                     display_name=test_users[test_user]["display_name"],
@@ -144,7 +135,7 @@ def user_for_test(
     name: str = "iamtestuser",
     display_name: str = "I am Test User",
 ) -> UserSchema:
-    u = User(email=email, name=name, display_name=display_name)
+    u = models.User(email=email, name=name, display_name=display_name)
     session_for_test.add(u)
     session_for_test.commit()
     return UserSchema.from_orm(u)
@@ -158,7 +149,11 @@ def user_token_factory_for_test(
     """
     Create test user's token
     """
-    user = session_for_test.query(User).filter(User.id == user_for_test.id).first()
+    user = (
+        session_for_test.query(models.User)
+        .filter(models.User.id == user_for_test.id)
+        .first()
+    )
 
     def factory(
         access_token_expires_delta: timedelta = timedelta(minutes=15),
@@ -203,31 +198,31 @@ def work_factory_for_test(
         for asset_type in asset_types:
             if asset_type == "zip":
                 asset = asset_factory_for_test(
-                    session_for_test, "zip", UploadFile(f"tests/test_data/test_zip.zip")
+                    session_for_test, "zip", UploadFile("tests/test_data/test_zip.zip")
                 )
             if asset_type == "image":
                 asset = asset_factory_for_test(
                     session_for_test,
                     "image",
-                    UploadFile(f"tests/test_data/test_image.png"),
+                    UploadFile("tests/test_data/test_image.png"),
                 )
             if asset_type == "video":
                 asset = asset_factory_for_test(
                     session_for_test,
                     "video",
-                    UploadFile(f"tests/test_data/test_video.mp4"),
+                    UploadFile("tests/test_data/test_video.mp4"),
                 )
             if asset_type == "music":
                 asset = asset_factory_for_test(
                     session_for_test,
                     "music",
-                    UploadFile(f"tests/test_data/test_music.wav"),
+                    UploadFile("tests/test_data/test_music.wav"),
                 )
             if asset_type == "model":
                 asset = asset_factory_for_test(
                     session_for_test,
                     "model",
-                    UploadFile(f"tests/test_data/test_model.gltf"),
+                    UploadFile("tests/test_data/test_model.gltf"),
                 )
             assets_id.append(asset.id)
 

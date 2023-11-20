@@ -1,6 +1,6 @@
 import os
 import time
-from logging import ERROR, INFO, getLogger
+from logging import getLogger
 
 import boto3
 

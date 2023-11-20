@@ -1,10 +1,12 @@
 from typing import Optional
+
+from fastapi import HTTPException
 from sqlalchemy.orm.session import Session
+
 from db import models
-from schemas.favorite import Favorite, BaseFavorite
+from schemas.favorite import BaseFavorite, Favorite
 from schemas.user import User
 from schemas.work import Work
-from fastapi import HTTPException
 
 
 def set_favorite(work_id: str, db: Session, user_id: str) -> Favorite:
