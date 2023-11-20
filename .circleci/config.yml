@@ -22,6 +22,7 @@ jobs:
           MINIO_PORT: 9000
           ACCESS_KEY: KW6J6L5FHALG7VKY6UVY
           SECRET_ACCESS_KEY: WH3dCfYPn6Czds2PetGJwFv4V4QsuFqGRphBqUPg
+          APP_TYPE: dev
 
       - image: cimg/postgres:13.3
         environment:
@@ -47,10 +48,6 @@ jobs:
           command: |
             pip install pipenv
             pipenv sync
-      - run:
-          name: make env file
-          command: echo $ENV_FILE | base64 --decode > .env
-
       - run:
           name: Run lint
           command: pipenv run flake8
