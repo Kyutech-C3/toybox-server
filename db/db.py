@@ -1,6 +1,8 @@
 import os
+from typing import Any
 
 import sqlalchemy
+from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
@@ -34,6 +36,25 @@ def create_test_database():
 
 if APP_TYPE == "dev":
     create_test_database()
+
+
+@as_declarative()
+class Base:
+    id: Any
+    __name__: Any
+
+    @declared_attr
+    def __tablename__(self) -> str:
+        return self.__name__.lower()
+
+
+class Column(sqlalchemy.Column):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("nullable", False)
+        super().__init__(*args, **kwargs)
+
+    inherit_cache: bool = True
+
 
 engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
 
