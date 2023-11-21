@@ -49,6 +49,7 @@ class User(Base):
     urls = relationship("UrlInfo", foreign_keys="UrlInfo.user_id")
     tokens = relationship("Token", foreign_keys="Token.user_id")
     comments = relationship("Comment", back_populates="user")
+    blogs = relationship("Blog", foreign_keys="Blog.user_id", back_populates="user")
 
 
 class Token(Base):

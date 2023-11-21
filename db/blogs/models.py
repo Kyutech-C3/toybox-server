@@ -43,7 +43,7 @@ class BlogAsset(Base):
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
-    user = relationship("User", back_populates="assets")
+    user = relationship("User", backref="blog_assets")
     blog = relationship("Blog", foreign_keys=[blog_id], back_populates="assets")
 
 
@@ -57,8 +57,8 @@ class BlogFavorite(Base):
         String(length=255), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
     )
     created_at = Column(DateTime, default=func.now())
-    blog = relationship("Blog", backref="favorite_info")
-    user = relationship("User", backref="favorite_info")
+    blog = relationship("Blog", backref="blog_favorite_info")
+    user = relationship("User", backref="blog_favorite_info")
 
 
 class Blog(Base):
