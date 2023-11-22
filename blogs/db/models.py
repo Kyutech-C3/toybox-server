@@ -2,8 +2,7 @@ from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 
-from db.db import Base, Column
-from db.enums import BlogAssetType, Visibility
+from db import Base, BlogAssetType, Column, Visibility
 from utils.db import generate_uuid
 
 

@@ -4,9 +4,9 @@ from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 
+from blogs.db import BlogTagging
 from utils.db import generate_uuid
 
-from .blogs.models import BlogTagging
 from .db import Base, Column
 from .enums import AssetType, UrlType, Visibility
 
