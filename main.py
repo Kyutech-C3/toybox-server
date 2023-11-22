@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from blogs import router as blog_router
 from routers import router, v2_router
 from utils.limit_upload_size import LimitUploadSize
 
@@ -20,3 +21,4 @@ app.add_middleware(
 
 app.include_router(router, prefix="/api/v1")
 app.include_router(v2_router, prefix="/api/v2", tags=["v2"])
+app.include_router(blog_router, prefix="/api/v1")
