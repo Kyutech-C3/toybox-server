@@ -21,7 +21,7 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    key = f"{BLOG_S3_DIR}_blog/{asset_type}/{asset_orm.id}/origin.{extension}"
+    key = f"{BLOG_S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}"
     wasabi.put_object(
         Body=file.file,
         Bucket=S3_BUCKET,
