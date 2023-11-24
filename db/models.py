@@ -4,7 +4,6 @@ from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 
-from blogs.db import BlogTagging
 from utils.db import generate_uuid
 
 from .db import Base, Column
@@ -159,9 +158,6 @@ class Tag(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     works = relationship("Work", secondary=Tagging.__tablename__, back_populates="tags")
-    blogs = relationship(
-        "Blog", secondary=BlogTagging.__tablename__, back_populates="tags"
-    )
 
 
 class Comment(Base):

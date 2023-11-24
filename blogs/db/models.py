@@ -65,7 +65,6 @@ class Blog(Base):
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     title = Column(String(length=255))
-    thumbnail_url = Column(String)
     body_text = Column(String)
     user_id = Column(
         String(length=255), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
@@ -75,9 +74,7 @@ class Blog(Base):
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
     user = relationship("User", back_populates="blogs")
-    tags = relationship(
-        "Tag", secondary=BlogTagging.__tablename__, back_populates="blogs"
-    )
+    tags = relationship("Tag", secondary=BlogTagging.__tablename__, backref="blogs")
     thumbnail = relationship(
         "BlogAsset",
         secondary=BlogThumbnail.__tablename__,
