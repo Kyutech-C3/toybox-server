@@ -41,7 +41,7 @@ def delete_asset_by_id(db: Session, asset_id: str, user_id: str) -> DeleteStatus
     if asset_orm.user_id != user_id:
         raise HTTPException(status_code=403, detail="cannot delete other's asset")
 
-    remove_asset(asset_orm.id, asset_orm.asset_type)
+    remove_asset(asset_orm.id, asset_orm.asset_type, asset_orm.extension)
 
     db.delete(asset_orm)
     db.commit()

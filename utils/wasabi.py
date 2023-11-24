@@ -84,6 +84,7 @@ def upload_asset(
             Body=file_bin,
             Bucket=S3_BUCKET,
             Key=key,
+            ContentType=MIME_TYPE_DICT.get(extension, MIME_TYPE_DICT["default"]),
         )
     except botocore.exceptions.ClientError as e:
         print(e)
@@ -92,9 +93,11 @@ def upload_asset(
     return f"https://s3.{REGION_NAME}.wasabisys.com/{S3_BUCKET}/{key}"
 
 
-def remove_asset(asset_id: str, asset_type: str):
+def remove_asset(asset_id: str, asset_type: str, extension: str):
     try:
-        wasabi.delete_object(Bucket=S3_BUCKET, Key=f"{S3_DIR}/{asset_type}/{asset_id}")
+        wasabi.delete_object(
+            Bucket=S3_BUCKET, Key=f"{S3_DIR}/{asset_type}/{asset_id}/origin.{extension}"
+        )
     except botocore.exceptions.ClientError as e:
         print(e)
 
@@ -119,10 +122,10 @@ def upload_avatar(
     return f"https://s3.{REGION_NAME}.wasabisys.com/{S3_BUCKET}/{key}"
 
 
-def delete_avatar(user_id: str, extension: str):
+def delete_avatar(user_id: str, extension: str, size: int = 256):
     try:
         wasabi.delete_object(
-            Bucket=S3_BUCKET, Key=f"{S3_DIR}/avatar/{user_id}.{extension}"
+            Bucket=S3_BUCKET, Key=f"{S3_DIR}/avatar/{user_id}_{size}.{extension}"
         )
     except botocore.exceptions.ClientError as e:
         print(e)
