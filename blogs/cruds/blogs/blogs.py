@@ -47,7 +47,7 @@ def create_blog(
             raise HTTPException(
                 status_code=400, detail=f'tag_id "{assets_id}" is not exist'
             )
-        tagging_orm = blog_models.BlogTagging(blog_id=blog_models.id, tag_id=tag_id)
+        tagging_orm = blog_models.BlogTagging(blog_id=blog_orm.id, tag_id=tag_id)
         db.add(tagging_orm)
         db.commit()
 
