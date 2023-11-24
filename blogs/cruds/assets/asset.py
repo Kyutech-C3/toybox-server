@@ -3,13 +3,13 @@ from fastapi.exceptions import HTTPException
 from sqlalchemy.orm.session import Session
 
 from blogs.db import models as blog_models
-from blogs.schemas import Asset
+from blogs.schemas import BlogAsset
 from utils.wasabi import ALLOW_EXTENSIONS, BLOG_S3_DIR, REGION_NAME, S3_BUCKET, wasabi
 
 
 def create_asset(
     db: Session, user_id: str, asset_type: str, file: UploadFile, extension: str
-) -> Asset:
+) -> BlogAsset:
     extension = extension.lower()
     if extension not in ALLOW_EXTENSIONS.get(asset_type, []):
         raise HTTPException(status_code=400, detail="this file extension is invalid")
@@ -31,7 +31,7 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    asset = Asset.from_orm(asset_orm)
+    asset = BlogAsset.from_orm(asset_orm)
     asset.url = f"https://s3.{REGION_NAME}.wasabisys.com/{S3_BUCKET}/{key}"
 
     return asset

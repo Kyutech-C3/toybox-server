@@ -4,7 +4,7 @@ from fastapi.param_functions import Depends, File, Form
 from sqlalchemy.orm.session import Session
 
 from blogs.cruds.assets import create_asset
-from blogs.schemas import Asset
+from blogs.schemas import BlogAsset
 from cruds.users import GetCurrentUser
 from db import BlogAssetType, get_db
 from schemas.user import User
@@ -12,7 +12,7 @@ from schemas.user import User
 asset_router = APIRouter()
 
 
-@asset_router.post("", response_model=Asset)
+@asset_router.post("", response_model=BlogAsset)
 async def post_asset(
     file: UploadFile = File(...),
     asset_type: BlogAssetType = Form(...),

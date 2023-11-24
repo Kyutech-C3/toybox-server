@@ -8,7 +8,7 @@ from db import Visibility
 from schemas.tag import GetTag
 from schemas.user import User
 
-from .asset import Asset
+from .asset import BlogAsset
 
 
 class PostBlog(BaseModel):
@@ -32,10 +32,10 @@ class Blog(BaseModel):
     title: str
     body_text: str
     user: User
-    assets: list[Asset]
+    assets: list[BlogAsset]
     visibility: str
     tags: list[GetTag]
-    thumbnail: Asset
+    thumbnail: BlogAsset
     favorite_count: Optional[int]
     is_favorite: Optional[bool]
     created_at: datetime

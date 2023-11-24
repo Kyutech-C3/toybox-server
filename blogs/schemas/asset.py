@@ -8,7 +8,7 @@ from db import BlogAssetType
 from schemas.user import User
 
 
-class BaseAsset(BaseModel):
+class BaseBlogAsset(BaseModel):
     asset_type: str
 
     @validator("asset_type")
@@ -29,7 +29,7 @@ class BaseAsset(BaseModel):
         return value
 
 
-class Asset(BaseAsset):
+class BlogAsset(BaseBlogAsset):
     id: str
     user: User
     extension: str
