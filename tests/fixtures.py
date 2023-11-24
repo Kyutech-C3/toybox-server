@@ -11,6 +11,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
+from blogs.db import models as blog_models
 from cruds.assets import create_asset
 from cruds.tags import create_tag
 from cruds.users import auth
