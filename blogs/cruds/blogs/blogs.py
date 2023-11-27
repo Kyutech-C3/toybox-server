@@ -14,8 +14,8 @@ def create_blog(
     user_id: str,
     visibility: Visibility,
     thumbnail_asset_id: str,
-    assets_id: str,
-    tags_id: str,
+    assets_id: list[str],
+    tags_id: list[str],
 ) -> Blog:
     if title == "":
         raise HTTPException(status_code=400, detail="title is empty")
