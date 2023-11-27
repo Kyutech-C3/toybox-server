@@ -1,62 +1,16 @@
 import datetime
-import enum
-from typing import Any
-from uuid import uuid4
 
-from sqlalchemy import Column as Col
 from sqlalchemy import DateTime, Enum, ForeignKey, String
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 
+from utils.db import generate_uuid
 
-class Column(Col):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("nullable", False)
-        super().__init__(*args, **kwargs)
-
-    inherit_cache: bool = True
-
+from .db import Base, Column
+from .enums import AssetType, UrlType, Visibility
 
 # 2 weeks
 DEFAULT_REFRESH_TOKEN_EXPIRED_DAYS = 14
-
-
-def generate_uuid():
-    return str(uuid4())
-
-
-@as_declarative()
-class Base:
-    id: Any
-    __name__: Any
-
-    @declared_attr
-    def __tablename__(self) -> str:
-        return self.__name__.lower()
-
-
-class Visibility(str, enum.Enum):
-    public = "public"
-    private = "private"
-    draft = "draft"
-
-
-class UrlType(str, enum.Enum):
-    youtube = "youtube"
-    soundcloud = "soundcloud"
-    github = "github"
-    sketchfab = "sketchfab"
-    unityroom = "unityroom"
-    other = "other"
-
-
-class AssetType(str, enum.Enum):
-    zip = "zip"
-    image = "image"
-    video = "video"
-    music = "music"
-    model = "model"
 
 
 class Favorite(Base):
@@ -94,6 +48,7 @@ class User(Base):
     urls = relationship("UrlInfo", foreign_keys="UrlInfo.user_id")
     tokens = relationship("Token", foreign_keys="Token.user_id")
     comments = relationship("Comment", back_populates="user")
+    blogs = relationship("Blog", foreign_keys="Blog.user_id", back_populates="user")
 
 
 class Token(Base):
