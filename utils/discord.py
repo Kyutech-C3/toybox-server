@@ -135,7 +135,6 @@ def discord_verify_user_belongs_to_valid_guild(access_token: str) -> bool:
 
     for guild in guilds:
         for valid_guild_id in valid_guild_ids:
-            print(guild.id, "==", valid_guild_id)
             if guild.id == valid_guild_id:
                 return True
 

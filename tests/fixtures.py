@@ -24,13 +24,13 @@ from schemas.url_info import BaseUrlInfo
 from schemas.user import TokenResponse as TokenResponseSchema
 from schemas.user import User as UserSchema
 from schemas.work import Work as WorkSchema
+from utils.wasabi import init_wasabi_for_test
 
 DATABASE = "postgresql"
 USER = os.environ.get("POSTGRES_USER")
 PASSWORD = os.environ.get("POSTGRES_PASSWORD")
 HOST = os.environ.get("POSTGRES_HOST")
 DB_NAME = "toybox_test"
-os.environ["S3_DIR"] = "test_assets"
 
 DATABASE_URL = "{}://{}:{}@{}/{}".format(DATABASE, USER, PASSWORD, HOST, DB_NAME)
 
@@ -41,6 +41,10 @@ client = TestClient(app)
 engine = sqlalchemy.create_engine(DATABASE_URL, echo=ECHO_LOG)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+MINIO_HOST = os.environ.get("MINIO_HOST")
+MINIO_PORT = os.environ.get("MINIO_PORT")
+init_wasabi_for_test(minio_host=MINIO_HOST, minio_port=MINIO_PORT)
 
 
 @pytest.fixture(scope="function")

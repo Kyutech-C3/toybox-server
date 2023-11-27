@@ -91,7 +91,9 @@ async def delete_user_avatar(
     if user.avatar_url:
         extension = user.avatar_url[user.avatar_url.rfind(".") + 1 :]
         remove_avatar_url(db, user_id=user.id)
-        delete_avatar(user.id, extension)
+        sizes = [64, 128, 256, 512]
+        for size in sizes:
+            delete_avatar(user.id, extension, size)
     user = get_user_by_id(db, user.id)
     return user
 
