@@ -4,7 +4,7 @@ from sqlalchemy.orm.session import Session
 
 from blogs.db import models as blog_models
 from blogs.schemas import BlogAsset
-from utils.wasabi import ALLOW_EXTENSIONS, BLOG_S3_DIR, REGION_NAME, S3_BUCKET, wasabi
+from utils.wasabi import ALLOW_EXTENSIONS, upload_asset
 
 
 def create_asset(
@@ -21,17 +21,11 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    key = f"{BLOG_S3_DIR}/{asset_type}/{asset_orm.id}/origin.{extension}"
-    wasabi.put_object(
-        Body=file.file,
-        Bucket=S3_BUCKET,
-        Key=key,
-    )
-
-    db.commit()
-    db.refresh(asset_orm)
+    file_url = upload_asset(asset_orm.id, file.file, extension)
+    if file_url is None:
+        raise HTTPException(status_code=500, detail="file upload failed")
 
     asset = BlogAsset.from_orm(asset_orm)
-    asset.url = f"https://s3.{REGION_NAME}.wasabisys.com/{S3_BUCKET}/{key}"
+    asset.url = file_url
 
     return asset
