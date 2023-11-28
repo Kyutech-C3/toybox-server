@@ -21,7 +21,7 @@ def create_asset(
     db.commit()
     db.refresh(asset_orm)
 
-    file_url = upload_asset(asset_orm.id, file.file, extension)
+    file_url = upload_asset(asset_orm.id, file.file, extension, True)
     if file_url is None:
         raise HTTPException(status_code=500, detail="file upload failed")
 
