@@ -8,6 +8,7 @@ from blogs.db import models as blog_models
 from blogs.schemas import Blog, BlogsResponse
 from db import models
 from db.enums import Visibility
+from utils.wasabi import get_asset_url
 
 
 def create_blog(
@@ -71,6 +72,14 @@ def create_blog(
     # schemaに変換
     db.refresh(blog_orm)
     blog = Blog.from_orm(blog_orm)
+
+    # url生成
+    for i, asset in enumerate(blog.assets):
+        blog.assets[i].url = get_asset_url(asset.id, asset.extension, True)
+    blog.thumbnail.url = get_asset_url(
+        blog.thumbnail.id, blog.thumbnail.extension, True
+    )
+
     blog.is_favorite = False
     blog.favorite_count = 0
 
@@ -125,6 +134,12 @@ def get_blogs_pagination(
             .filter(blog_models.BlogFavorite.blog_id == blog.id)
             .count()
         )
+        # url生成
+        for i, asset in enumerate(blog.assets):
+            blog.assets[i].url = get_asset_url(asset.id, asset.extension, True)
+        blog.thumbnail.url = get_asset_url(
+            blog.thumbnail.id, blog.thumbnail.extension, True
+        )
         blogs.append(blog)
 
     response = BlogsResponse(blogs=blogs, blogs_total_count=blogs_total_count)
@@ -155,5 +170,11 @@ def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
         db.query(blog_models.BlogFavorite)
         .filter(blog_models.BlogFavorite.blog_id == blog.id)
         .count()
+    )
+    # url生成
+    for i, asset in enumerate(blog.assets):
+        blog.assets[i].url = get_asset_url(asset.id, asset.extension, True)
+    blog.thumbnail.url = get_asset_url(
+        blog.thumbnail.id, blog.thumbnail.extension, True
     )
     return blog

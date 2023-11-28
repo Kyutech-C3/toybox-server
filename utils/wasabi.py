@@ -46,6 +46,21 @@ wasabi = boto3.client(
 )
 
 
+def get_asset_url(
+    asset_id: str, extension: str, is_blog: bool = False
+) -> Optional[str]:
+    asset_type = ""
+    for type, allow_extension in ALLOW_EXTENSIONS.items():
+        if extension in allow_extension:
+            asset_type = type
+    if asset_type == "":
+        return
+
+    s3_dir = BLOG_S3_DIR if is_blog else S3_DIR
+    key = f"{s3_dir}/{asset_type}/{asset_id}/origin.{extension}"
+    return f"https://s3.{REGION_NAME}.wasabisys.com/{S3_BUCKET}/{key}"
+
+
 def init_wasabi_for_test(
     minio_host: str,
     minio_port: int = 9000,
