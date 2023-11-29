@@ -178,6 +178,89 @@ def get_works_by_limit(
     return resWorks
 
 
+def get_works_by_pagination(
+    db: Session,
+    limit: int,
+    visibility: models.Visibility,
+    page: int,
+    tag_names: str,
+    tag_ids: str,
+    user: Optional[User],
+    search_word: str,
+) -> ResWorks:
+    if tag_names is not None and tag_ids is not None:
+        raise HTTPException(
+            status_code=422,
+            detail="tag name and ID cannot be specified at the same time.",
+        )
+
+    works_orm = (
+        db.query(models.Work)
+        .join(models.User, models.Work.user_id == models.User.id)
+        .join(models.Tagging, models.Work.id == models.Tagging.work_id)
+        .join(models.Tag, models.Tagging.tag_id == models.Tag.id)
+        .group_by(models.Work.id)
+        .order_by(desc(models.Work.created_at))
+        .filter(models.Work.visibility != models.Visibility.draft)
+    )
+    if search_word:
+        works_orm = works_orm.filter(
+            or_(
+                models.User.name.ilike(f"%{search_word}%"),
+                models.Tag.name.ilike(f"%{search_word}%"),
+                models.Work.title.ilike(f"%{search_word}%"),
+            )
+        )
+
+    if tag_ids:
+        tag_id_list = tag_ids.split(",")
+        works_orm = works_orm.filter(models.Tagging.tag_id.in_(tag_id_list)).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_id_list)
+        )
+    if tag_names:
+        tag_name_list = tag_names.split(",")
+        works_orm = works_orm.filter(models.Tag.name.in_(tag_name_list)).filter(
+            models.Tagging.work_id == models.Work.id
+        )
+        works_orm = works_orm.group_by(models.Work.id).having(
+            func.count(models.Work.id) == len(tag_name_list)
+        )
+
+    if user is None:
+        works_orm = works_orm.filter(models.Work.visibility == models.Visibility.public)
+    elif visibility is not None:
+        works_orm = works_orm.filter(models.Work.visibility == visibility)
+
+    works_total_count = works_orm.count()
+    offset = (page - 1) * limit
+    works_orm = works_orm.offset(offset).limit(limit).all()
+
+    works = []
+    for work_orm in works_orm:
+        work = Work.from_orm(work_orm)
+        if user is not None:
+            work.is_favorite = (
+                db.query(models.Favorite)
+                .filter(
+                    models.Favorite.work_id == work.id,
+                    models.Favorite.user_id == user.id,
+                )
+                .first()
+                is not None
+            )
+        else:
+            work.is_favorite = False
+        work.favorite_count = (
+            db.query(models.Favorite).filter(models.Favorite.work_id == work.id).count()
+        )
+        works.append(work)
+    resWorks = ResWorks(works=works, works_total_count=works_total_count)
+    return resWorks
+
+
 def get_work_by_id(db: Session, work_id: str, user_id: Optional[str]) -> Work:
     work_orm = db.query(models.Work).get(work_id)
     if (work_orm is None) or (
