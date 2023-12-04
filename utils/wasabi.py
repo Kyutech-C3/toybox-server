@@ -33,6 +33,7 @@ MIME_TYPE_DICT = {
 
 S3_BUCKET = os.environ.get("S3_BUCKET")
 S3_DIR = os.environ.get("S3_DIR")
+BLOG_S3_DIR = f"{S3_DIR}_blog"
 REGION_NAME = os.environ.get("REGION_NAME")
 ACCESS_KEY = os.environ.get("ACCESS_KEY")
 SECRET_ACCESS_KEY = os.environ.get("SECRET_ACCESS_KEY")
@@ -69,6 +70,7 @@ def upload_asset(
     asset_id: str,
     file_bin: bytes,
     extension: str,
+    is_blog: bool = False,
 ) -> Optional[str]:
     extension = extension.lower()
     asset_type = ""
@@ -78,7 +80,8 @@ def upload_asset(
     if asset_type == "":
         return
 
-    key = f"{S3_DIR}/{asset_type}/{asset_id}/origin.{extension}"
+    s3_dir = BLOG_S3_DIR if is_blog else S3_DIR
+    key = f"{s3_dir}/{asset_type}/{asset_id}/origin.{extension}"
     try:
         wasabi.put_object(
             Body=file_bin,
