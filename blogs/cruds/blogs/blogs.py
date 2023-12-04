@@ -88,10 +88,11 @@ def create_blog(
 
 def get_blogs_pagination(
     db: Session,
-    visibility: Visibility,
     limit: int,
     page: int,
-    user_id: Optional[str],
+    visibility: Optional[Visibility] = None,
+    user_id: Optional[str] = None,
+    searched_user_id: Optional[str] = None,
 ) -> BlogsResponse:
     blogs_orm = (
         db.query(blog_models.Blog)
@@ -103,12 +104,15 @@ def get_blogs_pagination(
         .join(models.Tag, blog_models.BlogTagging.tag_id == models.Tag.id)
         .group_by(blog_models.Blog.id)
         .order_by(desc(blog_models.Blog.created_at))
-        .filter(blog_models.Blog.visibility != Visibility.draft)
     )
+    if user_id != searched_user_id:
+        blogs_orm = blogs_orm.filter(blog_models.Blog.visibility != Visibility.draft)
     if user_id is None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == Visibility.public)
     elif visibility is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == visibility)
+    if searched_user_id is not None:
+        blogs_orm = blogs_orm.filter(blog_models.Blog.user_id == searched_user_id)
 
     blogs_total_count = blogs_orm.count()
 

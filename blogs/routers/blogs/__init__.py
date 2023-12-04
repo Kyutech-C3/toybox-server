@@ -1,1 +1,1 @@
-from .blogs import blog_router
+from .blogs import blog_router, users_blog_router
