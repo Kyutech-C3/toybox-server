@@ -1,8 +1,11 @@
-from datetime import datetime
 import json
+from datetime import datetime
+
 from pydantic import BaseModel
 from pydantic.class_validators import validator
-from db.models import UrlType
+
+from db import UrlType
+
 from .user import User
 
 

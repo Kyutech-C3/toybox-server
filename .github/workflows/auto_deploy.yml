@@ -30,6 +30,7 @@ jobs:
 
           echo "HOST_URL=${{ secrets.HOST_URL }}" >> .env
           echo "FRONTEND_HOST_URL=${{ secrets.FRONTEND_HOST_URL }}" >> .env
+          echo "ALLOW_ORIGIN_URLS=${{ secrets.ALLOW_ORIGIN_URLS }}" >> .env
 
           echo "S3_BUCKET=${{ secrets.S3_BUCKET }}" >> .env
           echo "S3_DIR=${{ secrets.S3_DIR }}" >> .env
@@ -51,7 +52,7 @@ jobs:
       - name: deploy
         run: |
           rsync -av ./ takowasa:/opt/toybox-server
-          ssh takowasa "cd /opt/toybox-server; docker-compose build; docker-compose down; docker-compose up -d"
+          ssh takowasa "cd /opt/toybox-server; docker compose build; docker compose down; docker compose up -d"
       - name: migrate
         run: |
-          ssh takowasa "cd /opt/toybox-server; docker-compose exec -T api pipenv run alembic upgrade head"
+          ssh takowasa "cd /opt/toybox-server; docker compose exec -T api pipenv run alembic upgrade head"

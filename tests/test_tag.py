@@ -1,13 +1,14 @@
 import pytest
+
 from .fixtures import (
     client,
-    use_test_db_fixture,
     session_for_test,
-    user_token_factory_for_test,
-    user_factory_for_test,
     tag_for_test,
-    user_for_test,
     tags_for_test,
+    use_test_db_fixture,
+    user_factory_for_test,
+    user_for_test,
+    user_token_factory_for_test,
 )
 
 
@@ -30,7 +31,6 @@ class TestTag:
         assert res.status_code == 200, "tagの作成に成功する"
 
         res_json = res.json()
-        print(res_json)
         assert res_json["name"] == name
         assert res_json["color"] == color
 
@@ -62,7 +62,7 @@ class TestTag:
 
         assert res_json == tags_for_test
 
-    def test_get_tags_forword_match_search(use_test_db_fixture, tags_for_test):
+    def test_get_tags_forward_match_search(use_test_db_fixture, tags_for_test):
         """
         前方一致検索タグ一覧を取得する
         """
@@ -86,7 +86,7 @@ class TestTag:
         res_json = res.json()
         assert res_json == tags3
 
-    def test_get_tags_forword_match_search_by_nothing_tag_name(
+    def test_get_tags_forward_match_search_by_nothing_tag_name(
         use_test_db_fixture, tags_for_test
     ):
         """
@@ -117,7 +117,6 @@ class TestTag:
 
         res_json = res.json()
 
-        print(res_json)
         assert res_json["id"] == tag_id
         assert res_json["name"] == name
         assert res_json["color"] == color
@@ -140,7 +139,6 @@ class TestTag:
         assert res.status_code == 200, "タグの編集に成功する"
 
         res_json = res.json()
-        print(res_json)
         assert res_json["id"] == tag_id
         assert res_json["name"] == name
         assert res_json["color"] == color
@@ -150,8 +148,6 @@ class TestTag:
         タグを削除する
         """
         tag_id: str = tag_for_test.id
-        name: str = "hogehoge"
-        color: str = "#00000000"
         token = user_token_factory_for_test()
 
         res = client.delete(
@@ -162,5 +158,4 @@ class TestTag:
         assert res.status_code == 200, "タグの削除に成功する"
 
         res_json = res.json()
-        print(res_json)
         assert res_json == {"status": "OK"}

@@ -1,17 +1,15 @@
-from schemas.user import Token as TokenSchema, User as UserSchema
+from datetime import timedelta
+
 import pytest
-from db.models import User
-from fastapi.param_functions import Form
+
 from .fixtures import (
     client,
-    use_test_db_fixture,
     session_for_test,
+    use_test_db_fixture,
     user_factory_for_test,
-    user_token_factory_for_test,
     user_for_test,
+    user_token_factory_for_test,
 )
-from cruds.users.auth import create_refresh_token, get_user
-from datetime import timedelta
 
 
 @pytest.mark.usefixtures("use_test_db_fixture")
@@ -32,7 +30,7 @@ class TestAuth:
         assert res.status_code == 200, "アクセストークンの更新が成功する"
         body_dict = res.json()
 
-        assert body_dict["access_token"] != None, "アクセストークンがちゃんと返っている"
+        assert body_dict["access_token"] is not None, "アクセストークンがちゃんと返っている"
 
         access_token = body_dict["access_token"]
         refresh_token = body_dict["refresh_token"]
@@ -82,8 +80,6 @@ class TestAuth:
         )
 
         assert res.status_code == 200, "アクセストークンの更新が成功する"
-        body_dict = res.json()
-        renewed_refresh_token = body_dict["refresh_token"]
 
         res = client.post(
             "/api/v1/auth/token",
@@ -97,6 +93,6 @@ class TestAuth:
         """
         Discordログイン画面へ遷移する
         """
-        res = client.get("/api/v1/auth/discord", allow_redirects=False)
+        res = client.get("/api/v1/auth/discord", follow_redirects=False)
 
         assert res.status_code == 307, "Discordログイン画面へリダイレクトする"

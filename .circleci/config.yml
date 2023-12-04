@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test:
     docker:
-      - image: circleci/python:3.9.7
+      - image: cimg/python:3.9
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -17,33 +17,45 @@ jobs:
           S3_BUCKET: toyboxdev
           S3_DIR: test_assets
           REGION_NAME: ap-northeast-2
+          ALLOW_ORIGIN_URLS: '*'
+          MINIO_HOST: 127.0.0.1
+          MINIO_PORT: 9000
+          ACCESS_KEY: KW6J6L5FHALG7VKY6UVY
+          SECRET_ACCESS_KEY: WH3dCfYPn6Czds2PetGJwFv4V4QsuFqGRphBqUPg
+          APP_TYPE: dev
 
-      - image: circleci/postgres:13.3
+      - image: cimg/postgres:13.3
         environment:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
           POSTGRES_HOST: 127.0.0.1
           POSTGRES_DB: toybox
 
+      - image: quay.io/minio/minio:latest
+        environment:
+          MINIO_ROOT_USER: KW6J6L5FHALG7VKY6UVY
+          MINIO_ROOT_PASSWORD: WH3dCfYPn6Czds2PetGJwFv4V4QsuFqGRphBqUPg
+        command: server --console-address ":9001" /data
+
     steps:
       - checkout
 
       - restore_cache:
           key: toybox-{{ checksum "Pipfile.lock" }}
-      
+
       - run:
           name: Install Pipfile dependencies
           command: |
             pip install pipenv
-            pipenv install
+            pipenv sync
       - run:
-          name: make env file
-          command: echo $ENV_FILE | base64 --decode > .env
-      
+          name: Run lint
+          command: pipenv run flake8
+
       - run:
           name: Run Test
           command: pipenv run pytest
-      
+
       - discord/status:
           mentions: '@here'
 

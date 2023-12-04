@@ -1,76 +1,27 @@
-from typing import Any
-from sqlalchemy import (
-    Column as Col,
-    String,
-    Enum,
-    ForeignKey,
-    DateTime,
-    Boolean,
-    Integer,
-)
-from uuid import uuid4
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import relationship
-import enum
 import datetime
+
+from sqlalchemy import DateTime, Enum, ForeignKey, String
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql.functions import func
 
+from utils.db import generate_uuid
 
-class Column(Col):
-    def __init__(self, *args, **kwargs):
-        kwargs.setdefault("nullable", False)
-        super().__init__(*args, **kwargs)
-
-    inherit_cache: bool = True
-
+from .db import Base, Column
+from .enums import AssetType, UrlType, Visibility
 
 # 2 weeks
 DEFAULT_REFRESH_TOKEN_EXPIRED_DAYS = 14
 
 
-def generate_uuid():
-    return str(uuid4())
-
-
-@as_declarative()
-class Base:
-    id: Any
-    __name__: Any
-
-    @declared_attr
-    def __tablename__(self) -> str:
-        return self.__name__.lower()
-
-
-class Visibility(str, enum.Enum):
-    public = "public"
-    private = "private"
-    draft = "draft"
-
-
-class UrlType(str, enum.Enum):
-    youtube = "youtube"
-    soundcloud = "soundcloud"
-    github = "github"
-    sketchfab = "sketchfab"
-    unityroom = "unityroom"
-    other = "other"
-
-
-class AssetType(str, enum.Enum):
-    zip = "zip"
-    image = "image"
-    video = "video"
-    music = "music"
-    model = "model"
-
-
 class Favorite(Base):
-
     __tablename__ = "favorite"
 
-    work_id = Column(String(length=255), ForeignKey("works.id"), primary_key=True)
-    user_id = Column(String(length=255), ForeignKey("user.id"), primary_key=True)
+    work_id = Column(
+        String(length=255), ForeignKey("works.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id = Column(
+        String(length=255), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
+    )
     created_at = Column(DateTime, default=func.now())
     work = relationship("Work", backref="favorite_info")
     user = relationship("User", backref="favorite_info")
@@ -97,11 +48,12 @@ class User(Base):
     urls = relationship("UrlInfo", foreign_keys="UrlInfo.user_id")
     tokens = relationship("Token", foreign_keys="Token.user_id")
     comments = relationship("Comment", back_populates="user")
+    blogs = relationship("Blog", foreign_keys="Blog.user_id", back_populates="user")
 
 
 class Token(Base):
     refresh_token = Column(String(length=255), primary_key=True, default=generate_uuid)
-    user_id = Column(String(length=255), ForeignKey("user.id"))
+    user_id = Column(String(length=255), ForeignKey("user.id", ondelete="CASCADE"))
     expired_at = Column(DateTime, default=func.now() + datetime.timedelta(days=14))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -109,28 +61,36 @@ class Token(Base):
 
 
 class Tagging(Base):
-
     __tablename__ = "taggings"
 
-    work_id = Column(String(length=255), ForeignKey("works.id"), primary_key=True)
-    tag_id = Column(String(length=255), ForeignKey("tags.id"), primary_key=True)
+    work_id = Column(
+        String(length=255), ForeignKey("works.id", ondelete="CASCADE"), primary_key=True
+    )
+    tag_id = Column(
+        String(length=255), ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Thumbnail(Base):
     __tablename__ = "thumbnails"
-    work_id = Column(String(length=255), ForeignKey("works.id"), primary_key=True)
-    asset_id = Column(String(length=255), ForeignKey("asset.id"), primary_key=True)
+    work_id = Column(
+        String(length=255), ForeignKey("works.id", ondelete="CASCADE"), primary_key=True
+    )
+    asset_id = Column(
+        String(length=255), ForeignKey("asset.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class Work(Base):
-
     __tablename__ = "works"
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     title = Column(String(length=100))
     description = Column(String)
     description_html = Column(String)
-    user_id = Column(String(length=255), ForeignKey("user.id"), nullable=True)
+    user_id = Column(
+        String(length=255), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
+    )
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
@@ -155,7 +115,9 @@ class Work(Base):
 
 class Asset(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    work_id = Column(String(length=255), ForeignKey("works.id"), nullable=True)
+    work_id = Column(
+        String(length=255), ForeignKey("works.id", ondelete="CASCADE"), nullable=True
+    )
     asset_type = Column(Enum(AssetType))
     user_id = Column(String(length=255), ForeignKey("user.id"))
     extension = Column(String(length=255))
@@ -173,7 +135,9 @@ class Asset(Base):
 
 class UrlInfo(Base):
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
-    work_id = Column(String(length=255), ForeignKey("works.id"), nullable=True)
+    work_id = Column(
+        String(length=255), ForeignKey("works.id", ondelete="CASCADE"), nullable=True
+    )
     url = Column(String(length=255))
     url_type = Column(Enum(UrlType))
     user_id = Column(String(length=255), ForeignKey("user.id"))
@@ -185,7 +149,6 @@ class UrlInfo(Base):
 
 
 class Tag(Base):
-
     __tablename__ = "tags"
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
@@ -198,13 +161,12 @@ class Tag(Base):
 
 
 class Comment(Base):
-
     __tablename__ = "comment"
 
     id = Column(String(length=255), primary_key=True, default=generate_uuid)
     content = Column(String, nullable=False)
-    work_id = Column(String, ForeignKey("works.id"))
-    user_id = Column(String, ForeignKey("user.id"), nullable=True)
+    work_id = Column(String, ForeignKey("works.id", ondelete="CASCADE"))
+    user_id = Column(String, ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
     reply_at = Column(String, nullable=True)
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())

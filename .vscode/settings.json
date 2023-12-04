@@ -1,7 +1,51 @@
 {
-  "python.formatting.provider": "black",
   "[python]": {
-    "editor.defaultFormatter": null,
+    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
-  }
+  },
+  "cSpell.words": [
+    "ASGI",
+    "autoflush",
+    "backref",
+    "boto",
+    "botocore",
+    "datname",
+    "fastapi",
+    "gltf",
+    "ilike",
+    "isort",
+    "minio",
+    "msvideo",
+    "ondelete",
+    "onupdate",
+    "passlib",
+    "pydantic",
+    "quicktime",
+    "sessionfinish",
+    "sessionmaker",
+    "sketchfab",
+    "soundcloud",
+    "sqlalchemy",
+    "starlette",
+    "taggings",
+    "toybox",
+    "unityroom",
+    "usefixtures",
+    "uselist"
+  ],
+  "files.insertFinalNewline": true,
+  "black-formatter.args": [
+    "--exclude=alembic/**"
+  ],
+  "isort.args": [
+    "--profile=black",
+    "--extend-skip-glob=alembic/**",
+    "-l 88"
+  ],
+  "flake8.args": [
+    "--exclude=alembic/**",
+    "--max-line-length=88",
+    "--extend-ignore=E203,W503",
+    "--per-file-ignores=*/__init__.py:F401,F403,tests/**.py:F401,F811"
+  ]
 }

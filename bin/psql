@@ -1,0 +1,8 @@
+#! /bin/sh
+
+DB=$1
+if [ $DB = "toybox" ]; then
+  docker compose exec db psql -U postgres -d $@
+else
+  docker compose exec db psql $@
+fi

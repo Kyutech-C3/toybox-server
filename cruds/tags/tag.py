@@ -1,9 +1,10 @@
 from typing import List
+
 from fastapi import HTTPException
-from sqlalchemy import desc
-from db import models
 from sqlalchemy.orm.session import Session
-from schemas.tag import PostTag, GetTag, BaseTag, TagResponsStatus
+
+from db import models
+from schemas.tag import GetTag, TagResponsStatus
 
 
 def create_tag(db: Session, name: str, color_code: str) -> GetTag:
@@ -11,16 +12,13 @@ def create_tag(db: Session, name: str, color_code: str) -> GetTag:
         raise HTTPException(status_code=400, detail="Name is empty")
 
     result_by_name = db.query(models.Tag).filter(models.Tag.name == name).first()
-    if result_by_name != None:
+    if result_by_name is not None:
         raise HTTPException(status_code=400, detail="The tag is exist")
 
     tag_orm = models.Tag(name=name, color=color_code)
     db.add(tag_orm)
     db.commit()
     db.refresh(tag_orm)
-
-    print(tag_orm.name)
-    print(tag_orm.color)
 
     tag = GetTag.from_orm(tag_orm)
 
@@ -83,7 +81,7 @@ def change_tag_by_id(db: Session, name: str, color: str, tag_id: str) -> GetTag:
 
 def delete_tag_by_id(db: Session, tag_id: str) -> TagResponsStatus:
     tag_orm = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
-    if tag_orm == None:
+    if tag_orm is None:
         raise HTTPException(status_code=400, detail="The tag is not exist")
 
     db.delete(tag_orm)
