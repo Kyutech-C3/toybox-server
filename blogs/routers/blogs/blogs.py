@@ -27,6 +27,7 @@ async def post_blog(
         payload.thumbnail_asset_id,
         payload.assets_id,
         payload.tags_id,
+        payload.published_at,
     )
     return work
 

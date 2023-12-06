@@ -72,6 +72,7 @@ class Blog(Base):
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime, default=func.now())
     updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    published_at = Column(DateTime, default=func.now(), nullable=True)
 
     user = relationship("User", back_populates="blogs")
     tags = relationship("Tag", secondary=BlogTagging.__tablename__, backref="blogs")

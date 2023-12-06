@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException
@@ -20,6 +21,7 @@ def create_blog(
     thumbnail_asset_id: str,
     assets_id: list[str],
     tags_id: list[str],
+    published_at: Optional[datetime],
 ) -> Blog:
     if title == "":
         raise HTTPException(status_code=400, detail="title is empty")
@@ -30,6 +32,7 @@ def create_blog(
         body_text=body_text,
         user_id=user_id,
         visibility=visibility,
+        published_at=published_at,
     )
     db.add(blog_orm)
     db.commit()
