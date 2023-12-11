@@ -2,7 +2,12 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from blogs.cruds.blogs import create_blog, get_blog_by_id, get_blogs_pagination, delete_blog_by_id
+from blogs.cruds.blogs import (
+    create_blog, 
+    get_blog_by_id, 
+    get_blogs_pagination, 
+    delete_blog_by_id,
+)
 from blogs.schemas import Blog, BlogsResponse, PostBlog
 from cruds.users import GetCurrentUser
 from db import Visibility, get_db
