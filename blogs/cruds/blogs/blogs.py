@@ -10,6 +10,8 @@ from db import models
 from db.enums import Visibility
 from utils.wasabi import get_asset_url
 
+from schemas.common import DeleteStatus
+
 
 def create_blog(
     db: Session,
@@ -182,3 +184,14 @@ def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
         blog.thumbnail.id, blog.thumbnail.extension, True
     )
     return blog
+
+
+def delete_blog_by_id(db: Session, blog_id: str, user_id: str) -> DeleteStatus:
+    blog_orm = db.query(blog_models.Blog).get(blog_id)
+    if (blog_orm is None):
+        raise HTTPException(status_code=404, detail="blog is not found")
+    if (blog_orm.user_id != user_id):
+        raise HTTPException(status_code=403, detail="cannot delete other's blog")
+    db.delete(blog_orm)
+    db.commit()
+    return {"status": "OK"}
