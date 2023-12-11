@@ -3,9 +3,9 @@ from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
 from blogs.cruds.blogs import (
-    create_blog, 
-    get_blog_by_id, 
-    get_blogs_pagination, 
+    create_blog,
+    get_blog_by_id,
+    get_blogs_pagination,
     delete_blog_by_id,
 )
 from blogs.schemas import Blog, BlogsResponse, PostBlog
