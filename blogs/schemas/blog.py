@@ -18,6 +18,7 @@ class PostBlog(BaseModel):
     thumbnail_asset_id: str
     assets_id: list[str]
     tags_id: list[str]
+    published_at: Optional[datetime]
 
     @validator("visibility")
     def value_of(cls, v):
@@ -40,6 +41,7 @@ class Blog(BaseModel):
     is_favorite: Optional[bool]
     created_at: datetime
     updated_at: datetime
+    published_at: Optional[datetime]
 
     class Config:
         orm_mode = True

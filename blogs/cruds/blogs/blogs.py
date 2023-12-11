@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException
@@ -20,6 +21,7 @@ def create_blog(
     thumbnail_asset_id: str,
     assets_id: list[str],
     tags_id: list[str],
+    published_at: Optional[datetime],
 ) -> Blog:
     if title == "":
         raise HTTPException(status_code=400, detail="title is empty")
@@ -30,6 +32,7 @@ def create_blog(
         body_text=body_text,
         user_id=user_id,
         visibility=visibility,
+        published_at=published_at,
     )
     db.add(blog_orm)
     db.commit()
@@ -105,6 +108,8 @@ def get_blogs_pagination(
         .group_by(blog_models.Blog.id)
         .order_by(desc(blog_models.Blog.created_at))
     )
+    if not (user_id == searched_user_id and user_id is not None):
+        blogs_orm = blogs_orm.filter(blog_models.Blog.published_at <= datetime.now())
     if user_id != searched_user_id:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility != Visibility.draft)
     if user_id is None:
@@ -153,7 +158,11 @@ def get_blogs_pagination(
 def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
     blog_orm = db.query(blog_models.Blog).get(blog_id)
     if (blog_orm is None) or (
-        blog_orm.visibility == Visibility.draft and user_id != blog_orm.user_id
+        (
+            blog_orm.visibility == Visibility.draft
+            or blog_orm.published_at > datetime.now()
+        )
+        and user_id != blog_orm.user_id
     ):
         raise HTTPException(status_code=404, detail="work is not found")
     if blog_orm.visibility == Visibility.private and user_id is None:
