@@ -315,11 +315,9 @@ def replace_blog(
             )
             db.add(new_thumbnail_orm)
 
-        # commit
         db.commit()
 
     except SQLAlchemyError as e:
-        # rollback
         db.rollback()
         raise HTTPException(
             status_code=500, detail=f"database transaction error: {str(e)}"
