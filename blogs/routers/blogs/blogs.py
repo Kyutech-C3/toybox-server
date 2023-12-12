@@ -2,11 +2,17 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from blogs.cruds.blogs import create_blog, get_blog_by_id, get_blogs_pagination
+from blogs.cruds.blogs import (
+    create_blog,
+    get_blog_by_id,
+    get_blogs_pagination,
+    delete_blog_by_id,
+)
 from blogs.schemas import Blog, BlogsResponse, PostBlog
 from cruds.users import GetCurrentUser
 from db import Visibility, get_db
 from schemas.user import User
+from schemas.common import DeleteStatus
 
 blog_router = APIRouter()
 users_blog_router = APIRouter()
@@ -73,3 +79,13 @@ async def get_my_blog(
         db, limit, page, user_id=user.id, searched_user_id=user.id
     )
     return blog
+
+
+@blog_router.delete("/{blog_id}", response_model=DeleteStatus)
+async def delete_blog(
+    blog_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(GetCurrentUser()),
+):
+    result = delete_blog_by_id(db, blog_id, user.id)
+    return result
