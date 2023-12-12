@@ -4,15 +4,16 @@ from sqlalchemy.orm import Session
 
 from blogs.cruds.blogs import (
     create_blog,
+    delete_blog_by_id,
     get_blog_by_id,
     get_blogs_pagination,
-    delete_blog_by_id,
+    replace_blog,
 )
 from blogs.schemas import Blog, BlogsResponse, PostBlog
 from cruds.users import GetCurrentUser
 from db import Visibility, get_db
-from schemas.user import User
 from schemas.common import DeleteStatus
+from schemas.user import User
 
 blog_router = APIRouter()
 users_blog_router = APIRouter()
@@ -89,3 +90,25 @@ async def delete_blog(
 ):
     result = delete_blog_by_id(db, blog_id, user.id)
     return result
+
+
+@blog_router.put("/{blog_id}", response_model=Blog)
+async def put_blog(
+    blog_id: str,
+    payload: PostBlog,
+    db: Session = Depends(get_db),
+    user: User = Depends(GetCurrentUser()),
+):
+    blog = replace_blog(
+        db,
+        blog_id,
+        user.id,
+        payload.title,
+        payload.body_text,
+        payload.visibility,
+        payload.thumbnail_asset_id,
+        payload.assets_id,
+        payload.tags_id,
+        payload.published_at,
+    )
+    return blog
