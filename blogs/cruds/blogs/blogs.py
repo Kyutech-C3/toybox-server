@@ -228,6 +228,7 @@ def replace_blog(
     if thumbnail_asset_id == "":
         raise HTTPException(status_code=400, detail="thumbnail is empty")
 
+    # 本来はwithを使うべきだが、ネストがかなり深くなってしまうのでこのような書き方をする
     if db.transaction is None:
         db.begin()
 
