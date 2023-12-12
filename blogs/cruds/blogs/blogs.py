@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import HTTPException
 from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 from blogs.db import models as blog_models
 from blogs.schemas import Blog, BlogsResponse
@@ -252,6 +252,7 @@ def replace_blog(
         )
         new_assets_orm = (
             db.query(blog_models.BlogAsset)
+            .options(selectinload(blog_models.BlogAsset.blog))
             .filter(blog_models.BlogAsset.id.in_(new_assets_id))
             .all()
         )
