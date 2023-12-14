@@ -280,22 +280,21 @@ def replace_blog(
         new_tags_id = set(tags_id) - set(
             [old_tag_orm.tag_id for old_tag_orm in old_tags_orm]
         )
+        new_tags_orm = db.query(models.Tag).filter(models.Tag.id.in_(new_tags_id)).all()
+        not_found_tags_id = set(new_tags_id) - set(
+            [new_tag_orm.id for new_tag_orm in new_tags_orm]
+        )
+        if len(not_found_tags_id) > 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f'tag_id "{not_found_tags_id[0]}" is invalid',
+            )
         for new_tag_id in new_tags_id:
+            # assetsと同様にここにもN+1問題がある
             new_tagging_orm = blog_models.BlogTagging(
                 blog_id=blog_id, tag_id=new_tag_id
             )
             db.add(new_tagging_orm)
-        existing_tags_orm = (
-            db.query(blog_models.BlogTagging).filter_by(blog_id=blog_id).all()
-        )
-        existing_tags_id = set(
-            [existing_tag_orm.tag_id for existing_tag_orm in existing_tags_orm]
-        )
-        for tag_id in tags_id:
-            if tag_id not in existing_tags_id:
-                raise HTTPException(
-                    status_code=400, detail=f'tag_id "{tag_id}" is invalid'
-                )
 
         # Thumbnailを中間テーブルで紐付け
         thumbnail = db.query(blog_models.BlogAsset).get(thumbnail_asset_id)
