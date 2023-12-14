@@ -248,25 +248,23 @@ def replace_blog(
                 old_asset_orm.blog_id = None
 
         # 新しいassetsの紐付け
-        new_assets_id = set(assets_id) - set(
-            [old_asset_orm.id for old_asset_orm in old_assets_orm]
-        )
         new_assets_orm = (
             db.query(blog_models.BlogAsset)
-            .filter(blog_models.BlogAsset.id.in_(new_assets_id))
+            .filter(blog_models.BlogAsset.id.in_(assets_id))
             .all()
         )
-        not_found_assets_id = set(new_assets_id) - set(
+        not_found_assets_id = set(assets_id) - set(
             [new_asset_orm.id for new_asset_orm in new_assets_orm]
         )
-        if len(not_found_assets_id) > 0:
+        if not_found_assets_id:
             raise HTTPException(
                 status_code=400,
-                detail=f'asset_id "{not_found_assets_id[0]}" is invalid',
+                detail=f'asset_id "{not_found_assets_id}" is invalid',
             )
         for new_asset_orm in new_assets_orm:
-            # ここでN+1問題が発生しているが、assetsはそんなに多くならないので許容できる
-            new_asset_orm.blog_id = blog_id
+            # ここでN+1問題が発生しているが、assetsはそんなに多くならないので許容する
+            if new_asset_orm.blog_id != blog_id:
+                new_asset_orm.blog_id = blog_id
 
         # 使用していないtagsの紐付け中間テーブルを削除
         old_tags_orm = (
@@ -277,24 +275,30 @@ def replace_blog(
                 db.delete(old_tag_orm)
 
         # 新しいtagsを中間テーブルで紐付け
-        new_tags_id = set(tags_id) - set(
-            [old_tag_orm.tag_id for old_tag_orm in old_tags_orm]
+        new_tags_orm = (
+            db.query(blog_models.BlogTagging)
+            .filter(blog_models.BlogTagging.tag_id.in_(tags_id))
+            .all()
         )
-        new_tags_orm = db.query(models.Tag).filter(models.Tag.id.in_(new_tags_id)).all()
-        not_found_tags_id = set(new_tags_id) - set(
-            [new_tag_orm.id for new_tag_orm in new_tags_orm]
+        not_found_tags_id = set(tags_id) - set(
+            [new_tag_orm.tag_id for new_tag_orm in new_tags_orm]
         )
-        if len(not_found_tags_id) > 0:
+        if not_found_tags_id:
             raise HTTPException(
                 status_code=400,
-                detail=f'tag_id "{not_found_tags_id[0]}" is invalid',
+                detail=f'tag_id "{not_found_tags_id}" is invalid',
             )
-        for new_tag_id in new_tags_id:
+        for new_tag_orm in new_tags_orm:
             # assetsと同様にここにもN+1問題がある
-            new_tagging_orm = blog_models.BlogTagging(
-                blog_id=blog_id, tag_id=new_tag_id
-            )
-            db.add(new_tagging_orm)
+            if (
+                not db.query(blog_models.BlogTagging)
+                .filter_by(blog_id=blog_id, tag_id=new_tag_orm.tag_id)
+                .all()
+            ):
+                new_tagging_orm = blog_models.BlogTagging(
+                    blog_id=blog_id, tag_id=new_tag_orm.tag_id
+                )
+                db.add(new_tagging_orm)
 
         # Thumbnailを中間テーブルで紐付け
         thumbnail = db.query(blog_models.BlogAsset).get(thumbnail_asset_id)
