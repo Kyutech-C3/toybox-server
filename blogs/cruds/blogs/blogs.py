@@ -256,20 +256,17 @@ def replace_blog(
             .filter(blog_models.BlogAsset.id.in_(new_assets_id))
             .all()
         )
+        not_found_assets_id = set(new_assets_id) - set(
+            [new_asset_orm.id for new_asset_orm in new_assets_orm]
+        )
+        if len(not_found_assets_id) > 0:
+            raise HTTPException(
+                status_code=400,
+                detail=f'asset_id "{not_found_assets_id[0]}" is invalid',
+            )
         for new_asset_orm in new_assets_orm:
             # ここでN+1問題が発生しているが、assetsはそんなに多くならないので許容できる
             new_asset_orm.blog_id = blog_id
-        existing_assets_orm = (
-            db.query(blog_models.BlogAsset).filter_by(blog_id=blog_id).all()
-        )
-        existing_assets_id = set(
-            [existing_asset_orm.id for existing_asset_orm in existing_assets_orm]
-        )
-        for asset_id in assets_id:
-            if asset_id not in existing_assets_id:
-                raise HTTPException(
-                    status_code=400, detail=f'asset_id "{asset_id}" is invalid'
-                )
 
         # 使用していないtagsの紐付け中間テーブルを削除
         old_tags_orm = (
