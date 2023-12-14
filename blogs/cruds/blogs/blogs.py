@@ -257,6 +257,7 @@ def replace_blog(
             .all()
         )
         for new_asset_orm in new_assets_orm:
+            # ここでN+1問題が発生しているが、assetsはそんなに多くならないので許容できる
             new_asset_orm.blog_id = blog_id
         existing_assets_orm = (
             db.query(blog_models.BlogAsset).filter_by(blog_id=blog_id).all()
