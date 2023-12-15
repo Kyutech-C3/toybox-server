@@ -267,12 +267,10 @@ def replace_blog(
                 new_asset_orm.blog_id = blog_id
 
         # 使用していないtagsの紐付け中間テーブルを削除
-        old_tags_orm = (
-            db.query(blog_models.BlogTagging).filter_by(blog_id=blog_id).all()
-        )
-        for old_tag_orm in old_tags_orm:
-            if old_tag_orm.tag_id not in tags_id:
-                db.delete(old_tag_orm)
+        db.query(blog_models.BlogTagging).filter(
+            blog_models.BlogTagging.blog_id == blog_id,
+            blog_models.BlogTagging.tag_id.notin_(tags_id),
+        ).delete()
 
         # 新しいtagsを中間テーブルで紐付け
         new_tags_orm = (
