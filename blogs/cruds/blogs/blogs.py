@@ -110,7 +110,7 @@ def get_blogs_pagination(
         .group_by(blog_models.Blog.id)
         .order_by(desc(blog_models.Blog.created_at))
     )
-    if user_id != searched_user_id:
+    if user_id != searched_user_id and user_id is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility != Visibility.draft)
         blogs_orm = blogs_orm.filter(
             blog_models.Blog.published_at
