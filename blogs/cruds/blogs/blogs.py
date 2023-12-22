@@ -161,12 +161,14 @@ def get_blogs_pagination(
 
 def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
     blog_orm = db.query(blog_models.Blog).get(blog_id)
-    if (blog_orm is None) or (
-        (
-            blog_orm.visibility == Visibility.draft
-            or blog_orm.published_at > datetime.now()
-        )
-        and user_id != blog_orm.user_id
+    if blog_orm is None:
+        raise HTTPException(status_code=404, detail="work is not found")
+    if blog_orm.user_id != user_id and blog_orm.visibility == Visibility.draft:
+        raise HTTPException(status_code=404, detail="work is not found")
+    if (
+        blog_orm.user_id != user_id
+        and blog_orm.published_at is not None
+        and blog_orm.published_at > datetime.now()
     ):
         raise HTTPException(status_code=404, detail="work is not found")
     if blog_orm.visibility == Visibility.private and user_id is None:
