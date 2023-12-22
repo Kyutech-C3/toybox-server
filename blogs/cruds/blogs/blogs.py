@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, null, or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -113,8 +113,10 @@ def get_blogs_pagination(
     if user_id != searched_user_id and user_id is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility != Visibility.draft)
         blogs_orm = blogs_orm.filter(
-            blog_models.Blog.published_at
-            and blog_models.Blog.published_at <= datetime.now()
+            or_(
+                blog_models.Blog.published_at.is_(null()),
+                blog_models.Blog.published_at <= datetime.now(),
+            )
         )
     if user_id is None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == Visibility.public)
