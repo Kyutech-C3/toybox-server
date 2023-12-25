@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlalchemy import desc
+from sqlalchemy import desc, null, or_
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -110,10 +110,14 @@ def get_blogs_pagination(
         .group_by(blog_models.Blog.id)
         .order_by(desc(blog_models.Blog.created_at))
     )
-    if not (user_id == searched_user_id and user_id is not None):
-        blogs_orm = blogs_orm.filter(blog_models.Blog.published_at <= datetime.now())
-    if user_id != searched_user_id:
+    if user_id != searched_user_id and user_id is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility != Visibility.draft)
+        blogs_orm = blogs_orm.filter(
+            or_(
+                blog_models.Blog.published_at.is_(null()),
+                blog_models.Blog.published_at <= datetime.now(),
+            )
+        )
     if user_id is None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == Visibility.public)
     elif visibility is not None:
@@ -159,12 +163,14 @@ def get_blogs_pagination(
 
 def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
     blog_orm = db.query(blog_models.Blog).get(blog_id)
-    if (blog_orm is None) or (
-        (
-            blog_orm.visibility == Visibility.draft
-            or blog_orm.published_at > datetime.now()
-        )
-        and user_id != blog_orm.user_id
+    if blog_orm is None:
+        raise HTTPException(status_code=404, detail="work is not found")
+    if blog_orm.user_id != user_id and blog_orm.visibility == Visibility.draft:
+        raise HTTPException(status_code=404, detail="work is not found")
+    if (
+        blog_orm.user_id != user_id
+        and blog_orm.published_at is not None
+        and blog_orm.published_at > datetime.now()
     ):
         raise HTTPException(status_code=404, detail="work is not found")
     if blog_orm.visibility == Visibility.private and user_id is None:
