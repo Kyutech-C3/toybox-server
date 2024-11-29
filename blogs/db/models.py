@@ -5,6 +5,7 @@ from sqlalchemy.sql.functions import func
 from db import Base, BlogAssetType, Column, Visibility
 from utils.db import generate_uuid
 
+
 class BlogTagging(Base):
     __tablename__ = "blog_tagging"
 
