@@ -5,7 +5,6 @@ from sqlalchemy.sql.functions import func
 from db import Base, BlogAssetType, Column, Visibility
 from utils.db import generate_uuid
 
-
 class BlogTagging(Base):
     __tablename__ = "blog_tagging"
 
@@ -39,8 +38,8 @@ class BlogAsset(Base):
     asset_type = Column(Enum(BlogAssetType))
     user_id = Column(String(length=255), ForeignKey("user.id"))
     extension = Column(String(length=255))
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
     user = relationship("User", backref="blog_assets")
     blog = relationship("Blog", foreign_keys=[blog_id], back_populates="assets")
@@ -55,7 +54,7 @@ class BlogFavorite(Base):
     user_id = Column(
         String(length=255), ForeignKey("user.id", ondelete="CASCADE"), primary_key=True
     )
-    created_at = Column(DateTime, default=func.now())
+    created_at = Column(DateTime(timezone=True), default=func.now())
     blog = relationship("Blog", backref="blog_favorite_info")
     user = relationship("User", backref="blog_favorite_info")
 
@@ -70,9 +69,9 @@ class Blog(Base):
         String(length=255), ForeignKey("user.id", ondelete="CASCADE"), nullable=True
     )
     visibility = Column(Enum(Visibility))
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
-    published_at = Column(DateTime, default=func.now(), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    published_at = Column(DateTime(timezone=True), default=func.now(), nullable=True)
 
     user = relationship("User", back_populates="blogs")
     tags = relationship("Tag", secondary=BlogTagging.__tablename__, backref="blogs")
