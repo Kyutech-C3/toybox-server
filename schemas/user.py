@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Optional
 
 from pydantic import BaseModel, EmailStr, HttpUrl
@@ -49,7 +50,7 @@ class Token(BaseModel):
         orm_mode = True
 
     def has_expired(self):
-        return self.expired_at < datetime.now()
+        return self.expired_at < datetime.now(ZoneInfo("Asia/Tokyo"))
 
 
 class UserWithPlainPassword(User):
