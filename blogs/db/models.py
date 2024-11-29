@@ -39,7 +39,9 @@ class BlogAsset(Base):
     user_id = Column(String(length=255), ForeignKey("user.id"))
     extension = Column(String(length=255))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
 
     user = relationship("User", backref="blog_assets")
     blog = relationship("Blog", foreign_keys=[blog_id], back_populates="assets")
@@ -70,7 +72,9 @@ class Blog(Base):
     )
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
     published_at = Column(DateTime(timezone=True), default=func.now(), nullable=True)
 
     user = relationship("User", back_populates="blogs")

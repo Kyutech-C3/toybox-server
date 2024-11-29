@@ -42,7 +42,9 @@ class User(Base):
     twitter_id = Column(String, nullable=True)
     github_id = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
     works = relationship("Work", foreign_keys="Work.user_id", back_populates="user")
     assets = relationship("Asset", foreign_keys="Asset.user_id")
     urls = relationship("UrlInfo", foreign_keys="UrlInfo.user_id")
@@ -52,11 +54,16 @@ class User(Base):
 
 
 class Token(Base):
-    refresh_token = Column(String(length=255), primary_key=True, default=generate_uuid)
+    refresh_token = Column(
+        String(length=255), primary_key=True, default=generate_uuid)
     user_id = Column(String(length=255), ForeignKey("user.id", ondelete="CASCADE"))
-    expired_at = Column(DateTime(timezone=True), default=func.now() + datetime.timedelta(days=14))
+    expired_at = Column(
+        DateTime(timezone=True), default=func.now() + datetime.timedelta(days=14)
+    )
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
     user = relationship("User", back_populates="tokens")
 
 
@@ -93,7 +100,9 @@ class Work(Base):
     )
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
 
     user = relationship("User", back_populates="works")
     assets = relationship("Asset", foreign_keys="Asset.work_id", back_populates="work")
@@ -123,7 +132,9 @@ class Asset(Base):
     extension = Column(String(length=255))
     url = Column(String(length=255))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
 
     user = relationship("User", back_populates="assets")
     work = relationship("Work", foreign_keys=[work_id], back_populates="assets")
@@ -142,7 +153,9 @@ class UrlInfo(Base):
     url_type = Column(Enum(UrlType))
     user_id = Column(String(length=255), ForeignKey("user.id"))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
 
     user = relationship("User", back_populates="urls")
     work = relationship("Work", foreign_keys=[work_id], back_populates="urls")
@@ -155,7 +168,9 @@ class Tag(Base):
     name = Column(String(length=32))
     color = Column(String)
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
 
     works = relationship("Work", secondary=Tagging.__tablename__, back_populates="tags")
 
@@ -170,6 +185,8 @@ class Comment(Base):
     reply_at = Column(String, nullable=True)
     visibility = Column(Enum(Visibility))
     created_at = Column(DateTime(timezone=True), default=func.now())
-    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), default=func.now(), onupdate=func.now()
+    )
     user = relationship("User", back_populates="comments")
     work = relationship("Work", back_populates="comments")
