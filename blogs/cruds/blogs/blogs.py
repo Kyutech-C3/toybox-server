@@ -315,6 +315,9 @@ def replace_blog(
             db.query(blog_models.BlogThumbnail).filter_by(blog_id=blog_id).first()
         )
         if thumbnail_orm.asset_id != thumbnail.id:
+            # 古いThumbnailを紐付け解除
+            db.delete(thumbnail_orm)
+            # 新しいThumbnailを紐付け
             new_thumbnail_orm = blog_models.BlogThumbnail(
                 blog_id=blog_id, asset_id=thumbnail.id
             )
