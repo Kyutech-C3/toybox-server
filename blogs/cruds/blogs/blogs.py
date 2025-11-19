@@ -121,6 +121,12 @@ def get_blogs_pagination(
         )
     if user_id is None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == Visibility.public)
+        blogs_orm = blogs_orm.filter(
+            or_(
+                blog_models.Blog.published_at.is_(null()),
+                blog_models.Blog.published_at <= datetime.now(ZoneInfo("Asia/Tokyo")),
+            )
+        )
     elif visibility is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == visibility)
     if searched_user_id is not None:
