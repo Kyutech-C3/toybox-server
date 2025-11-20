@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 from typing import Optional
 
 from fastapi import HTTPException
@@ -115,11 +116,17 @@ def get_blogs_pagination(
         blogs_orm = blogs_orm.filter(
             or_(
                 blog_models.Blog.published_at.is_(null()),
-                blog_models.Blog.published_at <= datetime.now(),
+                blog_models.Blog.published_at <= datetime.now(ZoneInfo("Asia/Tokyo")),
             )
         )
     if user_id is None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == Visibility.public)
+        blogs_orm = blogs_orm.filter(
+            or_(
+                blog_models.Blog.published_at.is_(null()),
+                blog_models.Blog.published_at <= datetime.now(ZoneInfo("Asia/Tokyo")),
+            )
+        )
     elif visibility is not None:
         blogs_orm = blogs_orm.filter(blog_models.Blog.visibility == visibility)
     if searched_user_id is not None:
@@ -170,7 +177,7 @@ def get_blog_by_id(db: Session, blog_id: str, user_id: str) -> Blog:
     if (
         blog_orm.user_id != user_id
         and blog_orm.published_at is not None
-        and blog_orm.published_at > datetime.now()
+        and blog_orm.published_at > datetime.now(ZoneInfo("Asia/Tokyo"))
     ):
         raise HTTPException(status_code=404, detail="work is not found")
     if blog_orm.visibility == Visibility.private and user_id is None:
