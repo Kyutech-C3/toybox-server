@@ -96,6 +96,7 @@ def get_blogs_pagination(
     db: Session,
     limit: int,
     page: int,
+    disable_pagination: bool,
     visibility: Optional[Visibility] = None,
     user_id: Optional[str] = None,
     searched_user_id: Optional[str] = None,
@@ -134,8 +135,10 @@ def get_blogs_pagination(
 
     blogs_total_count = blogs_orm.count()
 
-    offset = limit * (page - 1)
-    blogs_orm = blogs_orm.offset(offset).limit(limit).all()
+    if not disable_pagination:
+        offset = limit * (page - 1)
+        blogs_orm = blogs_orm.offset(offset).limit(limit)
+    blogs_orm = blogs_orm.all()
 
     blogs = []
     for blog_orm in blogs_orm:
