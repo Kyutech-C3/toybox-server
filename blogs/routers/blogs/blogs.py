@@ -42,8 +42,9 @@ async def post_blog(
 @blog_router.get("", response_model=BlogsResponse)
 async def get_blogs(
     visibility: Visibility = None,
-    limit: int = 30,
+    limit: int = 3,
     page: int = 1,
+    disable_pagination: bool = True,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser(auto_error=False)),
 ):
@@ -52,6 +53,7 @@ async def get_blogs(
         db,
         limit,
         page,
+        disable_pagination,
         visibility,
         user_id,
     )
