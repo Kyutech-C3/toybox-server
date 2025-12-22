@@ -75,11 +75,12 @@ async def get_blog(
 async def get_my_blog(
     limit: int = 30,
     page: int = 1,
+    disable_pagination: bool = True,
     db: Session = Depends(get_db),
     user: User = Depends(GetCurrentUser()),
 ):
     blog = get_blogs_pagination(
-        db, limit, page, user_id=user.id, searched_user_id=user.id
+        db, limit, page, disable_pagination, user_id=user.id, searched_user_id=user.id
     )
     return blog
 
