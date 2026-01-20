@@ -22,7 +22,7 @@ services:
     volumes:
       - .:/api
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       TZ: Asia/Tokyo
     env_file:
@@ -40,8 +40,8 @@ services:
         MINIO_ROOT_PASSWORD: ${SECRET_ACCESS_KEY}
       command: server --console-address ":9001" /data
       ports:
-        - '9000:9000'
-        - '9001:9001'
+        - '127.0.0.1:9000:9000'
+        - '127.0.0.1:9001:9001'
 
 volumes:
   dbdata: null
